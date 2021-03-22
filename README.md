@@ -1,2 +1,2 @@
-# compositional-inference
-Experiment on compositional inference and trace decoding
+# Compositional inference and trace decoding
+work in progress
