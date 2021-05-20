@@ -243,7 +243,7 @@ def apply_map(display, general_map, past_transforms = 0, sep = '-'):
     return display_in, past_transforms
 
 
-def draw_target(stimuli, resp, instances, instance_count, p=None):
+def draw_count_target(stimuli, resp, instances, instance_count, p=None):
     '''draw a target item with an adaptive probability distr. depending on
         previous target draws, the correct response and output display'''
     target = None
@@ -268,19 +268,27 @@ def draw_target(stimuli, resp, instances, instance_count, p=None):
             target = remainder[0]
     return target
 
-# def draw_target(stimuli, resp, instances, instance_count):
-#     '''draw a target item depending on the correct response and output display'''
-#     target = None
-#     if resp in instance_count:
-#         target = instances[resp == instance_count][0]
-#     elif resp == 0:
-#         remainder = list(set(stimuli)-set(instances))
-#         target = np.random.choice(remainder)
-#     return target
+
+def draw_position_target(stimuli, resp, display_out,
+                         display_size = 6, n_options = 4, p = None):
+    '''randomly draw a target position,
+    put corresponding item from display_out into ordered response_options
+    randomly fill the remaining options up with distinct categories'''
+    target_position = None
+    target_position = np.random.choice(range(display_size), p = p) # randomly draw position  # TODO: p
+    target_item = display_out[target_position]
+    response_options = np.tile(None, n_options) # init ordered response options
+    response_options[resp] = target_item
+    remaining_categories = np.delete(stimuli, stimuli == target_item, axis = 0)
+    other_options = np.random.choice(remaining_categories, size = n_options-1,
+                                     replace = False)
+    response_options[response_options == None] = other_options
+    return target_position, response_options
 
 
 def gen_trial_dict(stimuli, general_map, resp,
-                   p = None, display_size = 5, max_resp = 3, sep = '-'):
+                   resp_list = None, test_type = "count",               #response options TODO
+                   p = None, display_size = 5, max_duplicates = 3, sep = '-'):
     ''' takes a set of stimuli, a general map and a fixed correct response,
         then generates a dict containing adequate input, output displays,
         a target item and the (max) number of mental transformations''' 
@@ -288,8 +296,10 @@ def gen_trial_dict(stimuli, general_map, resp,
         general_map = [general_map]
     map_type = analyze_map_type(general_map, sep = sep)        
     target = None
-    max_ic = 99    
-    while target is None or max_ic > max_resp:
+    max_ic = 99 #initialization
+
+    # generate displays until criteria for counting are met
+    while target is None or max_ic > max_duplicates:
         necessary_items = np.concatenate(
                             np.char.split(general_map, sep = sep))[0]
         if map_type == "second-only":
@@ -307,9 +317,18 @@ def gen_trial_dict(stimuli, general_map, resp,
         instances, instance_count = np.unique(display_out,
                                               return_counts=True)
         max_ic = instance_count.max()
-        target = draw_target(stimuli, resp, instances, instance_count,
-                              p=p
-                             )
+        if test_type == "count":
+            response_options = resp_list.copy()
+            target = draw_count_target(
+                stimuli, resp, instances, instance_count, p = p) 
+        elif test_type == "position":
+            target, response_options = draw_position_target(
+                    stimuli, resp, display_out, display_size = display_size,
+                    n_options = len(resp_list), p = p) 
+        else:
+            raise Exception("Test type not implemented") 
+
+                              
     # compile down
     compiled_map = compile_down(general_map, map_type = map_type,
                                 display = display_in, sep = sep)
@@ -321,7 +340,9 @@ def gen_trial_dict(stimuli, general_map, resp,
     output_dict = {"input_disp" : display_in,
                    "map" : general_map,
                    "output_disp": display_out,
+                   "test_type": test_type,
                    "target": target,
+                   "resp_options": response_options,
                    "correct_resp": resp,
                    "trans_ub" : past_transforms,
                    "trans_lb" : past_transforms_sparse,
@@ -331,25 +352,37 @@ def gen_trial_dict(stimuli, general_map, resp,
 
 
 def gen_trials(stimuli, map_list,
-               resp_list = list(range(4)), display_size = 5, sep='-'):
+               resp_list = list(range(4)),
+               test_type = "count", display_size = 6, sep='-'):
     ''' takes a list of maps and generates a datafreame (input display, map,
-        output display, target, correct response)'''
+        output display, target, correct response)'''     
+    if test_type == "count":
+        target_list = stimuli.copy()
+    elif test_type == "position":
+        target_list = np.array(range(display_size))
+    else:
+        raise Exception("Test type not implemented") 
     trials = []
     num_trials = len(map_list)
     num_tiles_r = np.ceil(num_trials/len(resp_list)).astype('int')
     resp_sequence = np.random.permutation(np.tile(resp_list, num_tiles_r))
-    target_urn = np.tile(num_trials/len(stimuli), len(stimuli))
+    target_urn = np.tile(num_trials/len(target_list), len(target_list))
     
     for i in range(num_trials):
         trial_dict = gen_trial_dict(stimuli, map_list[i], resp_sequence[i],
+                                    test_type = test_type,
+                                    resp_list = resp_list,
                                     p = target_urn/sum(target_urn),
                                     display_size = display_size, sep = sep)
-        if target_urn[stimuli == trial_dict["target"]] >= 1:
-            target_urn[stimuli == trial_dict["target"]] -= 1                       #remove instance-specific counter from target urn
+        if target_urn[target_list == trial_dict["target"]] >= 1:
+            target_urn[target_list == trial_dict["target"]] -= 1               #remove instance-specific counter from target urn
+        # if sum(target_urn)+i+1 > 90:
+        #     raise Exception("Target urn contains more targets than expected") 
         trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
     df = pd.concat(trials, ignore_index=True)
-    return df[["input_disp", "map", "output_disp", "target", "correct_resp",
-               "trans_ub", "trans_lb", "map_type", "arg_set"]]    
+    return df[["input_disp", "map", "output_disp", "test_type", "target",
+               "resp_options", "correct_resp", "trans_ub", "trans_lb",
+               "map_type", "arg_set"]]    
 
 
 def compile_down(general_map, map_type = None, display = None, sep = '-'):
@@ -365,62 +398,6 @@ def compile_down(general_map, map_type = None, display = None, sep = '-'):
         if general_map[0][2] not in display:
             compiled_map = general_map[0][0] + sep + general_map[1][2]
     return compiled_map 
-
-
-# def gen_df_binary_maps(prim_list, sep = '-'):
-#     ''' creates all unique compositions from a list of primitives
-#         and stores them in a df alongside the map type and arg_set'''
-#     unique_compositions = cartesian_product(prim_list,
-#                                             discard_reps = True,
-#                                             strcat = False,
-#                                             sep = sep)
-#     df = pd.DataFrame(columns=["map", "map_type", "arg_set"])
-#     # to store each map as a list in a df, we sadly need to loop
-#     for i in range(len(unique_compositions)):
-#         df.at[i, "map"] = unique_compositions[i]
-#         df.at[i, "map_type"] = analyze_map_type(unique_compositions[i],
-#                                                 sep = sep)
-#         df.at[i, "arg_set"] = get_arg_set(unique_compositions[i],
-#                                                 sep = sep)
-#     return df
-
-
-# def gen_conjugate_space(general_map, df,
-#                         map_type = None, arg_set = None, sep = '-'):
-#     ''' take in an i-nary map and searches a df of maps for
-#         of different i-nary maps that are either of the same map_type XOR
-#         have the same arg_list'''
-#     if isinstance(general_map, str):
-#         general_map = [general_map]
-#     if map_type is None:
-#         map_type = analyze_map_type(general_map, sep = sep)
-#     if arg_set is None:
-#         arg_set = get_arg_set(general_map, sep = sep)
-    
-#     map_type_idx = np.array(df["map_type"] == map_type)
-#     arg_set_idx = np.array(df["arg_set"] == arg_set)
-#     conj_space_struct = df[map_type_idx & ~arg_set_idx]
-#     conj_space_arg = df[~map_type_idx & arg_set_idx]
-#     return np.array(conj_space_struct["map"]), np.array(conj_space_arg["map"])
-
-
-# def gen_conjugate_compositions(selection_binary, df_binary_maps, sep = '-'):
-#     ''' 
-#         '''
-#     selection_conj_struct, selection_conj_arg = [], []
-#     for general_map in selection_binary:
-#          conj_space_struct, conj_space_arg = gen_conjugate_space(
-#                                                  general_map,
-#                                                  df_binary_maps,
-#                                                  sep = sep)
-#          selection_conj_struct.append(np.random.choice(conj_space_struct))
-
-#          if len(conj_space_arg) > 0:
-#              selection_conj_arg.append(np.random.choice(conj_space_arg))
-#          else:
-#              selection_conj_arg.append([None, None])    
-#     return np.array(selection_conj_struct), np.array(selection_conj_arg)
-
 
 # ============================================================================
 # Stimuli & Maps
@@ -479,16 +456,22 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 
 # ============================================================================
 # Displays, Trials & Blocks
+test_types = ["count", "position"]
 
-# 1. Primitive blocks
-
-map_list_prim = np.random.permutation(np.repeat(selection_prim, n_exposure,
-                                           axis = 0))
-trials_prim = gen_trials(stimuli,
-                         map_list_prim,                         
-                         resp_list = resp_list,
-                         display_size = display_size,
-                         sep = sep)
+# generate trials twice with n_exposure/2 and each test display type,
+# then randomly permute both generated lists
+df_list = []
+for j in range(2):
+    map_list_prim = np.random.permutation(np.repeat(selection_prim, np.ceil(n_exposure/2),
+                                            axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_prim,                         
+                             resp_list = resp_list,
+                             test_type = test_types[j],
+                             display_size = display_size,
+                             sep = sep))
+trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+    
 # plt.figure()
 # trials_prim["correct_resp"].plot.hist(alpha=0.5)
 # trials_prim["trans_ub"].plot.hist(alpha=0.5)
@@ -496,13 +479,17 @@ trials_prim = gen_trials(stimuli,
 
 
 # 2. Compositional blocks
-map_list_binary = np.random.permutation(np.repeat(selection_binary, n_exposure/2,
-                                                  axis = 0))
-trials_binary = gen_trials(stimuli,
-                           map_list_binary,
-                           resp_list = resp_list,
-                           display_size = display_size,
-                           sep = sep)
+df_list = []
+for j in range(2):
+    map_list_binary = np.random.permutation(np.repeat(
+        selection_binary, np.ceil(n_exposure/4), axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_binary,                         
+                             resp_list = resp_list,
+                             test_type = test_types[j],
+                             display_size = display_size,
+                             sep = sep))
+trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
 
 # trials_binary["correct_resp"].plot.hist(alpha=0.5)
 # trials_binary["trans_ub"].plot.hist(alpha=0.5)
@@ -510,19 +497,28 @@ trials_binary = gen_trials(stimuli,
 
 
 # 3. Conjugate blocks
-map_list_binary_conj = np.random.permutation(np.repeat(selection_binary_conj,
-                                                       n_exposure/2, axis = 0))
-trials_binary_conj = gen_trials(stimuli,
-                                map_list_binary_conj,
-                                resp_list = resp_list,
-                                display_size = display_size,
-                                sep = sep)
+df_list = []
+for j in range(2):
+    map_list_binary_conj = np.random.permutation(np.repeat(
+        selection_binary_conj, np.ceil(n_exposure/4), axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_binary_conj,                         
+                             resp_list = resp_list,
+                             test_type = test_types[j],
+                             display_size = display_size,
+                             sep = sep))
+trials_binary_conj = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+
 
 # 4. Trinary blocks
-map_list_trinary = np.random.permutation(np.repeat(selection_trinary,
-                                                       n_exposure, axis = 0))
-trials_trinary = gen_trials(stimuli,
-                            map_list_trinary,
-                            resp_list = resp_list,
-                            display_size = display_size,
-                            sep = sep)
+df_list = []
+for j in range(2):
+    map_list_trinary = np.random.permutation(
+        np.repeat(selection_trinary, np.ceil(n_exposure/2), axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_trinary,                         
+                             resp_list = resp_list,
+                             test_type = test_types[j],
+                             display_size = display_size,
+                             sep = sep))
+trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
