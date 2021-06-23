@@ -5,6 +5,7 @@ Created on Thu Feb 11 18:07:53 2021
 
 @author: alex
 """
+import os
 import string
 from itertools import product 
 from itertools import combinations
@@ -12,7 +13,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 plt.close("all")
-
+save_directory = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/trial-lists/"
 #=============================================================================
 # Helper Functions
 
@@ -384,6 +385,27 @@ def gen_trials(stimuli, map_list,
                "resp_options", "correct_resp", "trans_ub", "trans_lb",
                "map_type", "arg_set"]]    
 
+def map_to_integers(general_map, sep = '-'):
+    ''' takes map and generates a list of corresponding integers'''
+    categories = general_map.split(sep = sep)
+    categories_int = []
+    for i in range(len(categories)):
+        categories_int.append(ord(categories[i]) - 65)
+    return categories_int
+    
+def gen_cue_trials(map_list, stimuli,
+                   display_size = 6, sep='-'):
+    ''' takes a list of maps and generates a datafreame (map, target, correct response)'''     
+    trials = []
+    num_trials = len(map_list)
+    for i in range(num_trials):
+        trial_dict = {"map" : [map_list[i]],
+                      "resp_options": stimuli,
+                      "correct_resp": map_to_integers(map_list[i])}
+        trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
+    df = pd.concat(trials, ignore_index=True)
+    return df  
+
 
 def compile_down(general_map, map_type = None, display = None, sep = '-'):
     ''' takes map and generates sparser but equivalent version of it'''
@@ -456,10 +478,17 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 
 # ============================================================================
 # Displays, Trials & Blocks
-test_types = ["count", "position"]
 
+# 0. Practice blocks
+cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+trials_prim_cue = gen_cue_trials(cue_list_prim, stimuli,
+                                 display_size = 6, sep='-')
+trials_prim_cue.to_pickle(save_directory + os.sep + "trials_prim_cue.pkl")
+
+# 1. Primitive blocks
 # generate trials twice with n_exposure/2 and each test display type,
 # then randomly permute both generated lists
+test_types = ["count", "position"]
 df_list = []
 for j in range(2):
     map_list_prim = np.random.permutation(np.repeat(selection_prim, np.ceil(n_exposure/2),
@@ -471,7 +500,7 @@ for j in range(2):
                              display_size = display_size,
                              sep = sep))
 trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    
+trials_prim.to_pickle(save_directory + os.sep + "trials_prim.pkl")
 # plt.figure()
 # trials_prim["correct_resp"].plot.hist(alpha=0.5)
 # trials_prim["trans_ub"].plot.hist(alpha=0.5)
@@ -522,3 +551,4 @@ for j in range(2):
                              display_size = display_size,
                              sep = sep))
 trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+
