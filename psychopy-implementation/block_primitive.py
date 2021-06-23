@@ -13,27 +13,169 @@ import pandas as pd
 from psychopy import core, visual, gui, data, event
 from psychopy.tools.filetools import toFile
 
-
 # set directories
-main_dir = "/mnt/win10/Users/Alex/Desktop/Hub/psychopy-experiment/"
+main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 
-# get participant id
-expInfo = {'ID':'#'}
-expInfo['dateStr'] = data.getDateStr()  # add the current time
+#=============================================================================
+# Helper Functions
+def tFixation():
+    fixation.draw()
+    win.flip()
+    core.wait(0.3)
 
-# present a dialogue to change params
-dlg = gui.DlgFromDict(expInfo, title = 'Primitive Blocks', fixed = ['dateStr'])
-if dlg.OK:
-    toFile('participantParams.pickle', expInfo)
-else:
-    core.quit()  # the user hit cancel so exit
+
+def tMapcue(trial):
+    # rect.pos = center_pos
+    # rect.size = center_size
+    # rect.draw()
+    if np.random.randint(0, 2) == 1:
+        cue = vcue_dict[trial.map[0]]
+    else:
+        cue = tcue_dict[trial.map[0]]
+    cue.draw()
+    win.flip()
+    core.wait(0.5)
+
+
+def tDisplay(trial):
+    # draw rectangles
+    rect.size = normal_size
+    for pos in rect_pos:
+            rect.pos = pos
+            rect.draw()
+    
+    # draw stimuli
+    for i in range(set_size):
+        stim = stim_dict[trial.input_disp[i]]
+        stim.pos = rect_pos[i]
+        stim.draw()
+    win.flip()
+    IRClock = core.Clock()
+    core.wait(1) 
+    return(IRClock)
+
+
+def tEmpty(trial, IRClock):
+    for pos in rect_pos:
+            rect.pos = pos
+            rect.draw()
+    win.flip()
+    # get intermediate response
+    intermediateResp = None
+    while intermediateResp == None:
+        allKeys = event.waitKeys()
+        for thisKey in allKeys:
+            if thisKey == 'space': 
+                intermediateRT = IRClock.getTime()
+                intermediateResp = 1
+            elif thisKey in ['escape']:
+                core.quit()  # abort experiment
+        event.clearEvents()
+    return(intermediateRT)
+   
+
+def tCount(trial):
+    rect.pos = center_pos
+    rect.lineColor = [0, 0.5, 0]
+    rect.size = center_size
+    rect.draw()
+    rect.lineColor = [-0.6, -0.6, -0.6]
+    stim = stim_dict[trial.target]
+    stim.pos = center_pos
+    stim.size = center_size
+    stim.draw()
+    for i in range(len(resp_pos)):
+        rect.pos = resp_pos[i]
+        rect.draw()
+        resp = count_dict[str(i)]
+        resp.pos = resp_pos[i]
+        resp.draw()
+
+
+def tPosition(trial):
+    # position cues
+    for i in range(len(rect_pos)):
+        rect.pos = rect_pos[i]
+        if trial.target == i:
+            rect.lineColor = [0, 0.5, 0]
+            qm.pos = rect_pos[i]
+        rect.draw()
+        rect.lineColor = [-0.6, -0.6, -0.6]
+    qm.draw()
+            
+    # response options
+    for i in range(len(resp_pos)):
+        rect.pos = resp_pos[i]
+        rect.draw()
+        resp = stim_dict[trial.resp_options[i]]
+        resp.pos = resp_pos[i]
+        resp.draw()
+
+
+def tTestresponse(TestClock):
+    testResp = None
+    while testResp == None:
+        allKeys = event.waitKeys()
+        for thisKey in allKeys:
+            if thisKey in resp_keys: 
+                testRT = TestClock.getTime()
+                testResp = np.where(resp_keys == thisKey)[0][0]
+            elif thisKey in ['escape']:
+                core.quit()  # abort experiment
+        event.clearEvents()      
+    return(testRT, testResp)
+    
+
+def GenericBlock(trial_df):
+    # create the trial handler
+    trials = data.TrialHandler(
+    trial_df.to_dict('records'), 1, method='sequential')
+
+    for trial in trials:
+        # 1. Fixation
+        tFixation()
+        
+        # 2. Map Cue
+        tMapcue(trial)
+        
+        # 3. Display Family
+        IRClock = tDisplay(trial)
+        
+        # 4. Transformation Display
+        intermediateRT = tEmpty(trial, IRClock)
+        trials.addData('intermediateRT', intermediateRT)
+        
+        # 5. Empty Display
+        win.flip()
+        core.wait(0.3)
+        
+        # 6. Test Display
+        TestClock = core.Clock()
+        if trial.test_type == 'count':
+            tCount(trial)   
+        elif trial.test_type == 'position':
+            tPosition(trial)
+        rect.size = normal_size
+        win.flip()
+        
+        # get test response
+        testRT, testResp = tTestresponse(TestClock)
+        trials.addData('testRT', testRT)
+        trials.addData('testResp', testResp)
+        dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
+        core.wait(0.5)
+    trials.saveAsPickle(fileName)
+
+#=============================================================================
+# Prepare Experiment
+#=============================================================================
 
 # load triallists and adapt setup to their parameters
 trials_prim = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim.pkl"))
-trials_prim = trials_prim[0:3]
+trials_prim = trials_prim[0:12]
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
@@ -43,6 +185,7 @@ map_names = np.unique(trials_prim.map.to_list())
 resp_keys = np.array(['d', 'f', 'j', 'k'])
 center_pos = [0, 5]
 center_size = [8, 8]
+cue_size = [9, 9]
 normal_size = [6, 6]
 rect_hpos = [-10 , 0 , 10] 
 rect_vpos = [10, 0]
@@ -52,15 +195,6 @@ resp_hpos = [-15, -5, 5, 15]
 resp_vpos = [-10]
 resp_pos = np.transpose([np.tile(resp_hpos, len(resp_vpos)),
                            np.repeat(resp_vpos, len(resp_hpos))])
-
-# make a text file to save data
-fileName = 'data' + os.sep + expInfo['ID'] + '_' + expInfo['dateStr']
-dataFile = open(fileName + '.csv', 'w')
-dataFile.write('intermediateRT, testRT, testResp\n')
-
-# create the trial handler
-trials = data.TrialHandler(
-    trials_prim.to_dict('records'), 1, method='sequential')
 
 # create window
 win = visual.Window(
@@ -76,11 +210,24 @@ rect = visual.Rect(
     units = "deg",
     width = 6,
     height = 6,
-    fillColor = [0.5, 0.5, 0.5],
+    fillColor = [0.7, 0.7, 0.7],
     lineColor = [-0.6, -0.6, -0.6])
 
 fixation = visual.GratingStim(win, color = -0.9, colorSpace = 'rgb',
                               pos = center_pos, mask = 'circle', size = 0.2)
+
+# create textual cues
+tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
+tcue_list = np.random.permutation(tcue_list)
+assert len(tcue_list) >= len(map_names)
+tcue_dict = {}
+for i in range(len(map_names)):
+    cue_name = map_names[i]
+    tcue_dict.update({cue_name:visual.TextStim(win,
+                                               text = tcue_list[i],
+                                               pos = center_pos,
+                                               height = 4,
+                                               color= [-0.9, -0.9, -0.9])})
 
 # create visual cues
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
@@ -92,7 +239,7 @@ for i in range(len(map_names)):
     vcue_dict.update({cue_name:visual.ImageStim(win,
                                                 image = vcue_list[i],
                                                 pos = center_pos,
-                                                size = center_size)})
+                                                size = cue_size)})
     
 # create stimuli
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
@@ -117,120 +264,33 @@ qm = visual.TextStim(win,
                      height = 4,
                      color= [-0.9, -0.9, -0.9])    
 
+
+#=============================================================================
+# Run Experiment
+#=============================================================================
+
+# get participant id
+expInfo = {'ID':'#'}
+expInfo['dateStr'] = data.getDateStr()  # add the current time
+
+# present a dialogue to change params
+# dlg = gui.DlgFromDict(expInfo, title = 'Primitive Blocks', fixed = ['dateStr'])
+# if dlg.OK:
+#     toFile('participantParams.pickle', expInfo)
+# else:
+#     core.quit()  # the user hit cancel so exit
+
+# make a text file to save data
+fileName = 'data' + os.sep + expInfo['ID'] + '_' + expInfo['dateStr']
+dataFile = open(fileName + '.csv', 'w')
+dataFile.write('intermediateRT, testRT, testResp\n')
+
 # and some handy clocks to keep track of time
 globalClock = core.Clock()
 
-
 # loop through trial list
-for trial in trials:
-    # 1. Fixation
-    fixation.draw()
-    win.flip()
-    core.wait(0.3)
-    
-    # 2. Map Cue
-    cue = vcue_dict[trial.map[0]]
-    cue.draw()
-    win.flip()
-    core.wait(0.5)
-    
-    # 3. Display Family
-    # draw rectangles
-    for pos in rect_pos:
-            rect.pos = pos
-            rect.draw()
-    
-    # draw stimuli
-    for i in range(set_size):
-        stim = stim_dict[trial.input_disp[i]]
-        stim.pos = rect_pos[i]
-        stim.draw()
-    
-    win.flip()
-    IRClock = core.Clock()
-    core.wait(1)
-    
-    # 4. Transformation Display
-    for pos in rect_pos:
-            rect.pos = pos
-            rect.draw()
-    win.flip()
-    
-    # get intermediate response
-    intermediateResp = None
-    while intermediateResp == None:
-        allKeys = event.waitKeys()
-        for thisKey in allKeys:
-            if thisKey == 'space': 
-                intermediateRT = IRClock.getTime()
-                intermediateResp = 1
-            elif thisKey in ['escape']:
-                core.quit()  # abort experiment
-        event.clearEvents()
-    trials.addData('intermediateRT', intermediateRT)
-    
-    # 5. Empty Display
-    win.flip()
-    core.wait(0.3)
-    
-    # 6. Test Display
-    TestClock = core.Clock()
-    # 6.A Count
-    if trial.test_type == 'count':
-        rect.pos = center_pos
-        rect.lineColor = [0, 0.9, 0]
-        rect.size = center_size
-        rect.draw()
-        stim = stim_dict[trial.target]
-        stim.pos = center_pos
-        stim.size = center_size
-        stim.draw()
-        for i in range(len(resp_pos)):
-            rect.pos = resp_pos[i]
-            rect.draw()
-            resp = count_dict[str(i)]
-            resp.pos = resp_pos[i]
-            resp.draw()
-    
-    # 6.B Position    
-    elif trial.test_type == 'position':
-        # position cues
-        for i in range(len(rect_pos)):
-            rect.pos = rect_pos[i]
-            if trial.target == i:
-                rect.lineColor = [0, 0.5, 0]
-                qm.pos = rect_pos[i]
-            else:
-                rect.lineColor = [-0.6, -0.6, -0.6]
-            rect.draw()
-        qm.draw()
-        
-        # options
-        for i in range(len(resp_pos)):
-            rect.pos = resp_pos[i]
-            rect.draw()
-            resp = stim_dict[trial.resp_options[i]]
-            resp.pos = resp_pos[i]
-            resp.draw()
-    rect.size = normal_size
-    
-    win.flip()
-    
-    # get intermediate response
-    testResp = None
-    while testResp == None:
-        allKeys = event.waitKeys()
-        for thisKey in allKeys:
-            if thisKey in resp_keys: 
-                testRT = TestClock.getTime()
-                testResp = np.where(resp_keys == thisKey)[0][0]
-            elif thisKey in ['escape']:
-                core.quit()  # abort experiment
-        event.clearEvents()      
-    trials.addData('testRT', testRT)
-    trials.addData('testResp', testResp)
-    dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
-    core.wait(0.5)
+GenericBlock(trials_prim)
+
 dataFile.close()
-trials.saveAsPickle(fileName)
+
 win.close()
