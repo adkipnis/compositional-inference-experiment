@@ -114,14 +114,14 @@ def tPosition(trial):
         resp.draw()
 
 
-def tTestresponse(TestClock):
+def tTestresponse(TestClock, respKeys):
     testResp = None
     while testResp == None:
         allKeys = event.waitKeys()
         for thisKey in allKeys:
-            if thisKey in resp_keys: 
+            if thisKey in respKeys: 
                 testRT = TestClock.getTime()
-                testResp = np.where(resp_keys == thisKey)[0][0]
+                testResp = np.where(respKeys == thisKey)[0][0]
             elif thisKey in ['escape']:
                 core.quit()  # abort experiment
         event.clearEvents()      
@@ -131,7 +131,7 @@ def tTestresponse(TestClock):
 def GenericBlock(trial_df):
     # create the trial handler
     trials = data.TrialHandler(
-    trial_df.to_dict('records'), 1, method='sequential')
+        trial_df.to_dict('records'), 1, method='sequential')
 
     for trial in trials:
         # 1. Fixation
@@ -161,21 +161,65 @@ def GenericBlock(trial_df):
         win.flip()
         
         # get test response
-        testRT, testResp = tTestresponse(TestClock)
+        testRT, testResp = tTestresponse(TestClock, resp_keys)
         trials.addData('testRT', testRT)
         trials.addData('testResp', testResp)
         dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
         core.wait(0.5)
     trials.saveAsPickle(fileName)
 
+
+def PracticeCues(trials_prim_cue):
+    # create the trial handler
+    trials = data.TrialHandler(
+        trials_prim_cue.to_dict('records'), 1, method='sequential')
+    
+    for trial in trials:
+        # 1. Fixation
+        tFixation()
+        
+        # 2. Map Cue & Test Display
+        cue = vcue_dict[trial.map[0]]
+        cue.draw()
+        win.flip(clearBuffer=False)
+        core.wait(0.5)
+               
+        # 3. response options
+        rect.lineColor = [-0.6, -0.6, -0.6]
+        for i in range(len(cuepractice_pos)):
+            rect.pos = cuepractice_pos[i]
+            rect.draw()
+            resp = stim_dict[trial.resp_options[i]]
+            resp.pos = cuepractice_pos[i]
+            resp.draw()
+        win.flip(clearBuffer=False)
+        
+        # 4. log two responses
+        for j in range(len(trial.correct_resp)):
+            TestClock = core.Clock()
+            _, testResp = tTestresponse(TestClock, resp_keys_wide)
+            rect.pos = cuepractice_pos[testResp]
+            if trial.correct_resp[j] == testResp:
+                rect.lineColor = [0, 1, 0]
+            else:
+                rect.lineColor = [1, 0, 0]
+            rect.draw()
+            resp = stim_dict[trial.resp_options[testResp]]
+            resp.pos = cuepractice_pos[testResp]
+            resp.draw()
+            win.flip(clearBuffer=False)
+        core.wait(1)
+        
 #=============================================================================
 # Prepare Experiment
 #=============================================================================
 
 # load triallists and adapt setup to their parameters
+trials_prim_cue = pd.read_pickle(
+    os.path.join(trial_list_dir, "trials_prim_cue.pkl"))
 trials_prim = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim.pkl"))
-trials_prim = trials_prim[0:12]
+trials_prim = trials_prim
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
@@ -183,6 +227,8 @@ map_names = np.unique(trials_prim.map.to_list())
 
 # set positions #TODO: adaptive positions
 resp_keys = np.array(['d', 'f', 'j', 'k'])
+resp_keys_wide = np.array(['s', 'd', 'f', 'j', 'k', 'l'])
+# dict_keys_to_resp_wide = dict(zip(resp_keys_wide, range(len(resp_keys_wide))))
 center_pos = [0, 5]
 center_size = [8, 8]
 cue_size = [9, 9]
@@ -195,12 +241,16 @@ resp_hpos = [-15, -5, 5, 15]
 resp_vpos = [-10]
 resp_pos = np.transpose([np.tile(resp_hpos, len(resp_vpos)),
                            np.repeat(resp_vpos, len(resp_hpos))])
+cuepractice_hpos = [-25] + resp_hpos + [25]
+cuepractice_pos = np.transpose([np.tile(cuepractice_hpos, len(resp_vpos)),
+                                np.repeat(resp_vpos, len(cuepractice_hpos))])
 
 # create window
 win = visual.Window(
     [1920, 1080],
-    allowGUI = True,
-    fullscr = True,
+    # [800, 600],
+    # allowGUI = True,
+    fullscr = False,
     color = [0.85, 0.85, 0.85],
     monitor = 'testMonitor',
     units = 'deg')
@@ -288,8 +338,11 @@ dataFile.write('intermediateRT, testRT, testResp\n')
 # and some handy clocks to keep track of time
 globalClock = core.Clock()
 
-# loop through trial list
-GenericBlock(trials_prim)
+# Practice Block: Cue-Map-Pairs
+PracticeCues(trials_prim_cue)
+
+# Block: Primitives
+# GenericBlock(trials_prim)
 
 dataFile.close()
 
