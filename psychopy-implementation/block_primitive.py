@@ -20,6 +20,42 @@ trial_list_dir = os.path.join(main_dir, "trial-lists")
 
 #=============================================================================
 # Helper Functions
+def rectangularGrindPositions(center_pos = [0, 0],
+                              v_dist = 10, h_dist = 10, dim = (2, 3)):
+    # horizontal positions
+    c = np.floor(dim[1]/2)
+    if dim[1] % 2 != 0: # odd number of items on vertical tile => center
+        rect_hpos = np.arange(-c * h_dist + center_pos[0],
+                              c * h_dist + 1 + center_pos[0], h_dist).tolist()
+    else:
+        rect_hpos = np.arange(-c * h_dist + h_dist/2 + center_pos[0],
+                              c * h_dist - h_dist/2 + center_pos[0] + 1,
+                              h_dist).tolist()
+        
+    # vertical positions 
+    c = np.floor(dim[0]/2)
+    if dim[0] % 2 != 0: 
+        rect_vpos = np.arange(-c * v_dist + center_pos[1],
+                              c * v_dist + 1 + center_pos[1], v_dist).tolist()
+    else: # even number of items on horizontal tile => shift upwards
+        rect_vpos = np.arange(-c * v_dist + v_dist/2 + center_pos[1],
+                              c * v_dist  - v_dist/2 + center_pos[1] + 1,
+                              v_dist).tolist()
+    
+    # combine
+    rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
+                                np.repeat(rect_vpos, len(rect_hpos))])
+    return rect_pos
+
+
+def circularGridPositions(center_pos = [0, 0], set_size = 6, radius = 10):
+    angle = 2*np.pi/set_size
+    rect_pos = np.empty((set_size, 2), dtype=float)
+    for i in range(set_size):
+        rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
+                       center_pos[1] + radius * np.cos(i * angle)]
+    return rect_pos
+
 def tFixation():
     fixation.draw()
     win.flip()
@@ -232,18 +268,14 @@ resp_keys_wide = np.array(['s', 'd', 'f', 'j', 'k', 'l'])
 center_pos = [0, 5]
 center_size = [8, 8]
 cue_size = [9, 9]
-normal_size = [6, 6]
-rect_hpos = [-10 , 0 , 10] 
-rect_vpos = [10, 0]
-rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
-                           np.repeat(rect_vpos, len(rect_hpos))])
-resp_hpos = [-15, -5, 5, 15]
-resp_vpos = [-10]
-resp_pos = np.transpose([np.tile(resp_hpos, len(resp_vpos)),
-                           np.repeat(resp_vpos, len(resp_hpos))])
-cuepractice_hpos = [-25] + resp_hpos + [25]
-cuepractice_pos = np.transpose([np.tile(cuepractice_hpos, len(resp_vpos)),
-                                np.repeat(resp_vpos, len(cuepractice_hpos))])
+normal_size = [5, 5]
+# rect_pos = rectangularGrindPositions(center_pos, h_dist = 10, dim = (2, 3))
+rect_pos = circularGridPositions(center_pos = center_pos,
+                                 set_size = set_size, radius = 7)
+resp_pos = rectangularGrindPositions(center_pos = [0, -10],
+                                     h_dist = 10, dim = (1, 4))
+cuepractice_pos = rectangularGrindPositions(center_pos = [0, -10],
+                                            h_dist = 10, dim = (1, 6))
 
 # create window
 win = visual.Window(
@@ -339,10 +371,10 @@ dataFile.write('intermediateRT, testRT, testResp\n')
 globalClock = core.Clock()
 
 # Practice Block: Cue-Map-Pairs
-PracticeCues(trials_prim_cue)
+# PracticeCues(trials_prim_cue)
 
 # Block: Primitives
-# GenericBlock(trials_prim)
+GenericBlock(trials_prim)
 
 dataFile.close()
 
