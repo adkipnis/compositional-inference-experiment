@@ -117,11 +117,13 @@ def tCount(trial):
     rect.lineColor = [0, 0.5, 0]
     rect.size = center_size
     rect.draw()
+    rect.size = normal_size
     rect.lineColor = [-0.6, -0.6, -0.6]
     stim = stim_dict[trial.target]
     stim.pos = center_pos
     stim.size = center_size
     stim.draw()
+    stim.size = normal_size
     for i in range(len(resp_pos)):
         rect.pos = resp_pos[i]
         rect.draw()
