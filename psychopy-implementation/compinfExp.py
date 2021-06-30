@@ -6,7 +6,7 @@ Created on Fri Jun 18 12:00:24 2021
 @author: alex
 """
 
-import os, glob
+import os, glob, pickle
 from string import ascii_uppercase
 import numpy as np
 import pandas as pd
@@ -15,9 +15,9 @@ from psychopy.tools.filetools import toFile
 from psychopy.hardware import keyboard
 
 # set directories
-main_dir = os.path.dirname(os.path.abspath(__file__))
+# main_dir = os.path.dirname(os.path.abspath(__file__))
 # main_dir = r"C:\Users\Alex\Desktop\Hub\psychopy-implementation"
-# main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
@@ -96,7 +96,7 @@ def tDisplay(trial):
         stim.draw()
     win.flip()
     IRClock = core.Clock()
-    core.wait(3) 
+    core.wait(1) 
     return(IRClock)
 
 
@@ -174,62 +174,105 @@ def tTestresponse(TestClock, respKeys, return_numeric = True):
                 core.quit()  # abort experiment
         event.clearEvents()      
     return(testRT, testResp)
-    
+   
+ 
+def iTransmutableObjects(dim = [2, 3]):
+    categories = list(stim_dict.keys())
+    category_pos = rectangularGrindPositions(
+        center_pos = [0, 0], h_dist = 10, dim = dim)                     # TODO: make dim dependent on len(categories)
 
-# Blocks ----------------------------------------------------------------------
-def GenericBlock(trial_df):
-    # create the trial handler
+    # draw categories
+    for i in range(len(categories)):
+        rect.pos = category_pos[i]
+        rect.draw()
+        stim = stim_dict[categories[i]]
+        stim.pos = category_pos[i]
+        stim.draw()
+    win.flip()
+
+
+def iSpellExample():
     trials = data.TrialHandler(
-        trial_df.to_dict('records'), 1, method='sequential')
-
+        [trials_prim.to_dict('records')[0]], 1, method='sequential')
     for trial in trials:
-        # 1. Fixation
-        tFixation()
-        
-        # 2. Map Cue
-        tMapcue(trial)
-        
-        # 3. Display Family
-        IRClock = tDisplay(trial)
-        
-        # 4. Transformation Display
-        intermediateRT = tEmpty(trial, IRClock)
-        trials.addData('intermediateRT', intermediateRT)
-        
-        # 5. Empty Display
-        win.flip()
-        core.wait(0.3)
-        
-        # 6. Test Display
+        for i in range(3):
+            for j in range(set_size):
+                rect.pos = rect_pos[j]
+                rect.draw()
+                stim = stim_dict[trial.input_disp[j]]
+                stim.pos = rect_pos[j]
+                stim.draw()
+            if i == 0:
+                win.flip()
+                core.wait(1.5)
+                continue
+            
+            cue = tcue_dict[trial.map[0]]
+            cue.height = 2
+            cue.draw()
+            if i == 1:
+                win.flip()
+                core.wait(1.5)
+                continue
+            
+            for j in range(set_size):
+                rect.pos = rect_pos[j]
+                rect.draw()
+                stim = stim_dict[trial.output_disp[j]]
+                stim.pos = rect_pos[j]
+                stim.draw()
+            if i == 2:
+                win.flip()
+                core.wait(1)
+                continue
+    
+# Blocks ----------------------------------------------------------------------
+def Introduction():
+    # Initialize parameters
+    finished = False
+    Story = instructions['Story']
+    page = 0
+    special_displays = [iTransmutableObjects, iSpellExample]
+    while not finished:
+        page_content = Story[page]
+        if type(page_content) is str:
+            text = visual.TextStim(
+                win,
+                text = page_content,
+                font = "Times New Roman",
+                height = 1.8,
+                wrapWidth = 30,
+                color = [-0.9, -0.9, -0.9])
+            text.draw()
+            win.flip()
+        elif type(page_content) is int:
+            special_displays[page_content]()
+    
+        # Flip through displays
         TestClock = core.Clock()
-        if trial.test_type == 'count':
-            tCount(trial)   
-        elif trial.test_type == 'position':
-            tPosition(trial)
-        rect.size = normal_size
-        win.flip()
+        _, testResp = tTestresponse(TestClock, ['left', 'right'],
+                                    return_numeric = False)
+        if testResp == 'right':
+            if page < len(Story)-1:
+                page +=1
+            else:
+                finished = True
+        elif testResp == 'left' and page > 0:
+            page -= 1
+    
         
-        # get test response
-        testRT, testResp = tTestresponse(TestClock, resp_keys)
-        trials.addData('testRT', testRT)
-        trials.addData('testResp', testResp)
-        dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
-        core.wait(0.5)
-    trials.saveAsPickle(fileName)
-
-
 def LearnCues(center_pos = [0, -6]):
     # Initialize parameters
-    still_learning = True
+    finished = False
     page = 0
     category_pos = rectangularGrindPositions(
         center_pos = center_pos, h_dist = 15, dim = (1, 2))
     
-    while still_learning:
+    while not finished:
         # Draw map cue
         map_name = map_names[page]
         categories = map_name.split('-')
-        cue = vcue_dict[map_name]
+        cue = tcue_dict[map_name]
         cue.draw()
         
         # Draw corresponding explicit map
@@ -260,7 +303,7 @@ def LearnCues(center_pos = [0, -6]):
             if contResp == 'space':
                 continue
             elif  contResp == 'return':
-                still_learning = False
+                finished = True
 
 
 def PracticeCues(trials_prim_cue):
@@ -323,10 +366,54 @@ def PracticeCues(trials_prim_cue):
                 win.flip()
                 core.wait(1)
  
+      
+def GenericBlock(trial_df):
+    # create the trial handler
+    trials = data.TrialHandler(
+        trial_df.to_dict('records'), 1, method='sequential')
+
+    for trial in trials:
+        # 1. Fixation
+        tFixation()
         
+        # 2. Map Cue
+        tMapcue(trial)
+        
+        # 3. Display Family
+        IRClock = tDisplay(trial)
+        
+        # 4. Transformation Display
+        intermediateRT = tEmpty(trial, IRClock)
+        trials.addData('intermediateRT', intermediateRT)
+        
+        # 5. Empty Display
+        win.flip()
+        core.wait(0.3)
+        
+        # 6. Test Display
+        TestClock = core.Clock()
+        if trial.test_type == 'count':
+            tCount(trial)   
+        elif trial.test_type == 'position':
+            tPosition(trial)
+        rect.size = normal_size
+        win.flip()
+        
+        # get test response
+        testRT, testResp = tTestresponse(TestClock, resp_keys)
+        trials.addData('testRT', testRT)
+        trials.addData('testResp', testResp)
+        dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
+        core.wait(0.5)
+    trials.saveAsPickle(fileName)
+    
 #=============================================================================
 # Prepare Experiment
 #=============================================================================
+
+# load instructions
+with open(stim_dir + os.sep + 'instructions_en.pkl', 'rb') as handle:
+    instructions = pickle.load(handle)
 
 # load triallists and adapt setup to their parameters
 trials_prim_cue = pd.read_pickle(
@@ -383,7 +470,8 @@ fixation = visual.GratingStim(
 # create textual cues
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
 tcue_list = np.random.permutation(tcue_list)
-assert len(tcue_list) >= len(map_names)
+assert len(tcue_list) == len(map_names)
+spellname_dict = dict(zip(tcue_list, map_names))
 tcue_dict = {}
 for i in range(len(map_names)):
     cue_name = map_names[i]
@@ -484,6 +572,7 @@ logging.console.setLevel(logging.WARNING)
 globalClock = core.Clock()
 
 # Introduction
+Introduction()
 
 # Pre-Practice: Learn Cues
 LearnClock = core.Clock()
