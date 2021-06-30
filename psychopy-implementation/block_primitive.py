@@ -10,11 +10,15 @@ import os, glob
 from string import ascii_uppercase
 import numpy as np
 import pandas as pd
-from psychopy import core, visual, gui, data, event
+from psychopy import core, visual, gui, data, event, logging
 from psychopy.tools.filetools import toFile
 
+
 # set directories
-main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+main_dir = os.path.dirname(os.path.abspath(__file__))
+# main_dir = r"C:\Users\Alex\Desktop\Hub\psychopy-implementation"
+# main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 
@@ -56,6 +60,7 @@ def circularGridPositions(center_pos = [0, 0], set_size = 6, radius = 10):
                        center_pos[1] + radius * np.cos(i * angle)]
     return rect_pos
 
+
 def tFixation():
     fixation.draw()
     win.flip()
@@ -89,7 +94,7 @@ def tDisplay(trial):
         stim.draw()
     win.flip()
     IRClock = core.Clock()
-    core.wait(1) 
+    core.wait(3) 
     return(IRClock)
 
 
@@ -213,40 +218,60 @@ def PracticeCues(trials_prim_cue):
         trials_prim_cue.to_dict('records'), 1, method='sequential')
     
     for trial in trials:
-        # 1. Fixation
-        tFixation()
+        num_cr = len(trial.correct_resp)
+        testRespList = []
         
-        # 2. Map Cue & Test Display
-        cue = vcue_dict[trial.map[0]]
-        cue.draw()
-        win.flip(clearBuffer=False)
-        core.wait(0.5)
-               
-        # 3. response options
-        rect.lineColor = [-0.6, -0.6, -0.6]
-        for i in range(len(cuepractice_pos)):
-            rect.pos = cuepractice_pos[i]
-            rect.draw()
-            resp = stim_dict[trial.resp_options[i]]
-            resp.pos = cuepractice_pos[i]
-            resp.draw()
-        win.flip(clearBuffer=False)
+        # Incrementally display stuff
+        for inc in range(3 + num_cr): 
         
-        # 4. log two responses
-        for j in range(len(trial.correct_resp)):
+            # 0. Fixation
+            if inc == 0: 
+                tFixation()
+                win.flip()
+                continue
+            
+            # 1. Map Cue 
+            cue = vcue_dict[trial.map[0]]
+            cue.draw()
+            if inc == 1:
+                win.flip()
+                core.wait(0.5)
+                continue
+            
+            # 2. Response options
+            rect.lineColor = [-0.6, -0.6, -0.6]
+            for i in range(len(cuepractice_pos)):
+                rect.pos = cuepractice_pos[i]
+                rect.draw()
+                resp = stim_dict[trial.resp_options[i]]
+                resp.pos = cuepractice_pos[i]
+                resp.draw()
+            if inc == 2:
+                win.flip()
+                continue
+            
+            # 3. Feedback
             TestClock = core.Clock()
             _, testResp = tTestresponse(TestClock, resp_keys_wide)
-            rect.pos = cuepractice_pos[testResp]
-            if trial.correct_resp[j] == testResp:
-                rect.lineColor = [0, 1, 0]
+            testRespList.append(testResp)
+            for i in range(len(testRespList)):
+                testResp = testRespList[i]
+                rect.pos = cuepractice_pos[testResp]
+                if trial.correct_resp[inc-3-i] == testResp:
+                    rect.lineColor = [0, 1, 0]
+                else:
+                    rect.lineColor = [1, 0, 0]
+                rect.draw()
+                resp = stim_dict[trial.resp_options[testResp]]
+                resp.pos = cuepractice_pos[testResp]
+                resp.draw()
+            if inc in list(range(3, 3 + num_cr - 1)):
+                win.flip()
+                continue
             else:
-                rect.lineColor = [1, 0, 0]
-            rect.draw()
-            resp = stim_dict[trial.resp_options[testResp]]
-            resp.pos = cuepractice_pos[testResp]
-            resp.draw()
-            win.flip(clearBuffer=False)
-        core.wait(1)
+                win.flip()
+                core.wait(1)
+ 
         
 #=============================================================================
 # Prepare Experiment
@@ -263,10 +288,11 @@ n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
 map_names = np.unique(trials_prim.map.to_list())
 
-# set positions #TODO: adaptive positions
+# set positions 
 resp_keys = np.array(['d', 'f', 'j', 'k'])
 resp_keys_wide = np.array(['s', 'd', 'f', 'j', 'k', 'l'])
-# dict_keys_to_resp_wide = dict(zip(resp_keys_wide, range(len(resp_keys_wide))))
+# dict_keys_to_resp_wide = dict(
+#     zip(resp_keys_wide, range(len(resp_keys_wide))))
 center_pos = [0, 5]
 center_size = [8, 8]
 cue_size = [9, 9]
@@ -277,15 +303,15 @@ rect_pos = circularGridPositions(center_pos = center_pos,
 resp_pos = rectangularGrindPositions(center_pos = [0, -10],
                                      h_dist = 10, dim = (1, 4))
 cuepractice_pos = rectangularGrindPositions(center_pos = [0, -10],
-                                            h_dist = 10, dim = (1, 6))
+                                            h_dist = 8, dim = (1, 6))
 
 # create window
 win = visual.Window(
     [1920, 1080],
     # [800, 600],
-    # allowGUI = True,
     fullscr = False,
     color = [0.85, 0.85, 0.85],
+    screen = 1,
     monitor = 'testMonitor',
     units = 'deg')
 
@@ -296,6 +322,7 @@ rect = visual.Rect(
     height = 6,
     fillColor = [0.7, 0.7, 0.7],
     lineColor = [-0.6, -0.6, -0.6])
+
 
 fixation = visual.GratingStim(win, color = -0.9, colorSpace = 'rgb',
                               pos = center_pos, mask = 'circle', size = 0.2)
@@ -346,34 +373,56 @@ for i in range(n_resp):
 qm = visual.TextStim(win,
                      text = '?',
                      height = 4,
-                     color= [-0.9, -0.9, -0.9])    
+                     color = [-0.9, -0.9, -0.9])    
 
 
 #=============================================================================
 # Run Experiment
 #=============================================================================
 
-# get participant id
-expInfo = {'ID':'#'}
+# Store info about the experiment session
+psychopyVersion = '2021.1.4'
+expName = 'compositionalInference'
+expInfo = {'participant': '', 'session': '01'}
 expInfo['dateStr'] = data.getDateStr()  # add the current time
+expInfo['psychopyVersion'] = psychopyVersion
 
-# present a dialogue to change params
-# dlg = gui.DlgFromDict(expInfo, title = 'Primitive Blocks', fixed = ['dateStr'])
+# Dialogue Box
+# dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
 # if dlg.OK:
 #     toFile('participantParams.pickle', expInfo)
 # else:
 #     core.quit()  # the user hit cancel so exit
 
-# make a text file to save data
-fileName = 'data' + os.sep + expInfo['ID'] + '_' + expInfo['dateStr']
+# Text file to save data
+fileName = main_dir + os.sep + u'data/%s_%s_%s' %(expInfo['participant'],
+                                                  expName, expInfo['dateStr'])
 dataFile = open(fileName + '.csv', 'w')
 dataFile.write('intermediateRT, testRT, testResp\n')
+
+# ExperimentHandler
+thisExp = data.ExperimentHandler(
+    name = expName, version='', extraInfo = expInfo, runtimeInfo = None,
+    originPath = os.path.abspath(__file__),
+    savePickle = True, saveWideText = True,
+    dataFileName = fileName)
+
+# Log file for detail verbose info
+logFile = logging.LogFile(fileName + '.log', level = logging.EXP)
+logging.console.setLevel(logging.WARNING) 
+# this outputs to the screen, not a file
+endExpNow = False  # flag for 'escape' or other condition => quit the exp
+frameTolerance = 0.001  # how close to onset before 'same' frame
+
 
 # and some handy clocks to keep track of time
 globalClock = core.Clock()
 
+# Introduction
+
+
 # Practice Block: Cue-Map-Pairs
-# PracticeCues(trials_prim_cue)
+PracticeCues(trials_prim_cue)
 
 # Block: Primitives
 GenericBlock(trials_prim)
