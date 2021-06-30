@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from psychopy import core, visual, gui, data, event, logging
 from psychopy.tools.filetools import toFile
-
+from psychopy.hardware import keyboard
 
 # set directories
 main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +24,8 @@ trial_list_dir = os.path.join(main_dir, "trial-lists")
 
 #=============================================================================
 # Helper Functions
+#=============================================================================
+# Positions ------------------------------------------------------------------
 def rectangularGrindPositions(center_pos = [0, 0],
                               v_dist = 10, h_dist = 10, dim = (2, 3)):
     # horizontal positions
@@ -60,7 +62,7 @@ def circularGridPositions(center_pos = [0, 0], set_size = 6, radius = 10):
                        center_pos[1] + radius * np.cos(i * angle)]
     return rect_pos
 
-
+# Trial Components ------------------------------------------------------------
 def tFixation():
     fixation.draw()
     win.flip()
@@ -157,20 +159,24 @@ def tPosition(trial):
         resp.draw()
 
 
-def tTestresponse(TestClock, respKeys):
+def tTestresponse(TestClock, respKeys, return_numeric = True):
     testResp = None
     while testResp == None:
         allKeys = event.waitKeys()
         for thisKey in allKeys:
             if thisKey in respKeys: 
                 testRT = TestClock.getTime()
-                testResp = np.where(respKeys == thisKey)[0][0]
+                if return_numeric:
+                    testResp = np.where(respKeys == thisKey)[0][0]
+                else:
+                    testResp = thisKey
             elif thisKey in ['escape']:
                 core.quit()  # abort experiment
         event.clearEvents()      
     return(testRT, testResp)
     
 
+# Blocks ----------------------------------------------------------------------
 def GenericBlock(trial_df):
     # create the trial handler
     trials = data.TrialHandler(
@@ -210,6 +216,51 @@ def GenericBlock(trial_df):
         dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
         core.wait(0.5)
     trials.saveAsPickle(fileName)
+
+
+def LearnCues(center_pos = [0, -6]):
+    # Initialize parameters
+    still_learning = True
+    page = 0
+    category_pos = rectangularGrindPositions(
+        center_pos = center_pos, h_dist = 15, dim = (1, 2))
+    
+    while still_learning:
+        # Draw map cue
+        map_name = map_names[page]
+        categories = map_name.split('-')
+        cue = vcue_dict[map_name]
+        cue.draw()
+        
+        # Draw corresponding explicit map
+        for i in range(len(categories)):
+            rect.pos = category_pos[i]
+            rect.draw()
+            cat = stim_dict[categories[i]]
+            cat.pos = category_pos[i]
+            cat.draw()
+        leftArrow.pos = center_pos
+        leftArrow.draw()
+        win.flip()
+        
+        # Flip through displays
+        TestClock = core.Clock()
+        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+                                    return_numeric = False)
+        if testResp == 'right':
+            if page < len(map_names)-1:
+                page +=1
+        elif testResp == 'left' and page > 0:
+            page -= 1
+        elif testResp == 'space':
+            ruReady.draw()
+            win.flip()
+            _, contResp = tTestresponse(TestClock, ['return', 'space'],
+                                        return_numeric = False)
+            if contResp == 'space':
+                continue
+            elif  contResp == 'return':
+                still_learning = False
 
 
 def PracticeCues(trials_prim_cue):
@@ -257,7 +308,7 @@ def PracticeCues(trials_prim_cue):
             for i in range(len(testRespList)):
                 testResp = testRespList[i]
                 rect.pos = cuepractice_pos[testResp]
-                if trial.correct_resp[inc-3-i] == testResp:
+                if trial.correct_resp[i] == testResp:
                     rect.lineColor = [0, 1, 0]
                 else:
                     rect.lineColor = [1, 0, 0]
@@ -282,7 +333,6 @@ trials_prim_cue = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim_cue.pkl"))
 trials_prim = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim.pkl"))
-trials_prim = trials_prim
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
@@ -323,9 +373,12 @@ rect = visual.Rect(
     fillColor = [0.7, 0.7, 0.7],
     lineColor = [-0.6, -0.6, -0.6])
 
-
-fixation = visual.GratingStim(win, color = -0.9, colorSpace = 'rgb',
-                              pos = center_pos, mask = 'circle', size = 0.2)
+fixation = visual.GratingStim(
+    win, color = -0.9,
+    colorSpace = 'rgb',
+    pos = center_pos,
+    mask = 'circle',
+    size = 0.2)
 
 # create textual cues
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
@@ -373,8 +426,17 @@ for i in range(n_resp):
 qm = visual.TextStim(win,
                      text = '?',
                      height = 4,
-                     color = [-0.9, -0.9, -0.9])    
+                     color = [-0.9, -0.9, -0.9])  
 
+ruReady = visual.TextStim(win,
+                          text = 'Press Spacebar to practice longer\n or continue with Enter key',
+                          height = 1.5,
+                          wrapWidth = 30,
+                          color = [-0.9, -0.9, -0.9]) 
+
+leftArrow = visual.ImageStim(
+    win, image = glob.glob(stim_dir + os.sep + "leftArrow.png")[0],
+    size = normal_size)
 
 #=============================================================================
 # Run Experiment
@@ -386,6 +448,11 @@ expName = 'compositionalInference'
 expInfo = {'participant': '', 'session': '01'}
 expInfo['dateStr'] = data.getDateStr()  # add the current time
 expInfo['psychopyVersion'] = psychopyVersion
+expInfo['frameRate'] = win.getActualFrameRate()
+# if expInfo['frameRate'] != None:
+#     frameDur = 1.0 / round(expInfo['frameRate'])
+# else:
+#     frameDur = 1.0 / 60.0  # could not measure, so guess
 
 # Dialogue Box
 # dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
@@ -411,8 +478,6 @@ thisExp = data.ExperimentHandler(
 logFile = logging.LogFile(fileName + '.log', level = logging.EXP)
 logging.console.setLevel(logging.WARNING) 
 # this outputs to the screen, not a file
-endExpNow = False  # flag for 'escape' or other condition => quit the exp
-frameTolerance = 0.001  # how close to onset before 'same' frame
 
 
 # and some handy clocks to keep track of time
@@ -420,6 +485,10 @@ globalClock = core.Clock()
 
 # Introduction
 
+# Pre-Practice: Learn Cues
+LearnClock = core.Clock()
+LearnCues()
+learnDuration = LearnClock.getTime()
 
 # Practice Block: Cue-Map-Pairs
 PracticeCues(trials_prim_cue)
