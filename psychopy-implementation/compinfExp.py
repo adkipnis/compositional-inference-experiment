@@ -190,7 +190,7 @@ def tTestresponse(TestClock, respKeys, return_numeric = True):
 def iSingleImage(*args):
     for arg in args:
         arg.pos = [0, 0]
-        arg.size = [10, 10]
+        # arg.size = [10, 10]
         arg.draw()
         win.flip()
         core.wait(0.2)
@@ -270,40 +270,38 @@ def iNavigate(page = 0, max_page = 99, continue_after_last_page = True):
     return page, finished 
     
 # Blocks ----------------------------------------------------------------------
-def Introduction():
+
+def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
+                 font = "Times New Roman", fontcolor = [-0.9, -0.9, -0.9]):
+    assert len(special_displays) == len(args),\
+        "Number of special displays must match the number of args"
+    assert part_key in instructions.keys(),\
+        "No instructions provided for this part"
+        
     # Initialize parameters
     finished = False
-    Story = instructions['Story']
+    Part = instructions[part_key]
     page = 0
-    special_displays = [iSingleImage,
-                        iTransmutableObjects,
-                        iSpellExample,
-                        iSpellExample]
-    args = [[magicBooks],
-            [None],
-            [['A', 'B', 'C', 'C', 'E', 'C'], ['A', 'E', 'C', 'C', 'E', 'C']],
-            [['B', 'A', 'C', 'B', 'B', 'D'], ['E', 'A', 'C', 'E', 'E', 'D']]
-            ]
     while not finished:
-        page_content = Story[page]
+        page_content = Part[page]
         if type(page_content) is str:
             text = visual.TextStim(
                 win,
                 text = page_content,
-                font = "Times New Roman",
+                font = font,
                 height = 1.8,
                 wrapWidth = 30,
-                color = [-0.9, -0.9, -0.9])
+                color = fontcolor)
             text.draw()
             win.flip()
         elif type(page_content) is int:
             special_displays[page_content](*args[page_content])
-    
-        page, finished = iNavigate(page = page, max_page = len(Story))
+        page, finished = iNavigate(page = page, max_page = len(Part))
         
         
 def LearnCues(center_pos = [0, -6], mode = "visual"):
     # Initialize parameters
+    LearnClock = core.Clock()
     finished = False
     page = 0
     category_pos = rectangularGrindPositions(
@@ -329,7 +327,10 @@ def LearnCues(center_pos = [0, -6], mode = "visual"):
         core.wait(0.2)
         
         page, finished = iNavigate(page = page, max_page = len(map_names),
-                                   continue_after_last_page = False)                
+                                   continue_after_last_page = False)  
+    # Save learning duration
+    learnDuration = LearnClock.getTime()       
+    return learnDuration    
 
 
 def PracticeCues(trials_prim_cue, mode = "visual"):
@@ -517,7 +518,8 @@ for i in range(len(map_names)):
     vcue_dict.update({cue_name:visual.ImageStim(win,
                                                 image = vcue_list[i],
                                                 pos = center_pos,
-                                                size = cue_size)})
+                                                size = cue_size,
+                                                interpolate = True)})
     
 # create stimuli
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
@@ -528,7 +530,8 @@ for i in range(n_cats):
     stim_name = ascii_uppercase[i]
     stim_dict.update({stim_name:visual.ImageStim(win,
                                                  image=stim_list[i],
-                                                 size = normal_size)})
+                                                 size = normal_size,
+                                                 interpolate = True)})
 
 # create count responses
 count_dict = {}
@@ -538,30 +541,55 @@ for i in range(n_resp):
                                              height = 4,
                                              color= [-0.9, -0.9, -0.9])})
     
+# create keyboard prompts
+keyboard_dict = {}
+keyboard_list = glob.glob(stim_dir + os.sep + "keyBoard*.png")
+for i in range(len(keyboard_list)):
+    key_name = os.path.basename(
+        os.path.normpath(keyboard_list[i])).split('.')[0]
+    keyboard_dict.update({key_name: visual.ImageStim(win,
+                                                image = keyboard_list[i],
+                                                size = [40, 20],
+                                                interpolate = True)})
+    
 # misc. stimuli    
 qm = visual.TextStim(win,
                      text = "?",
                      height = 4,
                      color = [-0.9, -0.9, -0.9])  
 
+firstPrompt = visual.TextStim(
+    win, text = "For the following displays, you can navigate back and forth"\
+        " using the arrow keys:",
+    height = 1.5,
+    wrapWidth = 30,
+    font = "mono",
+    color = [0, 0, 0]) 
+    
 nextPrompt = visual.TextStim(
-    win, text = "Press Spacebar to go back longer\n or press the Enter key to"\
+    win, text = "Press Spacebar to go back \nor press the Enter key to"\
         " continue to next section.",
     height = 1.5,
     wrapWidth = 30,
+    font = "mono",
     color = [0, 0, 0]) 
 
 leftArrow = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "leftArrow.png")[0],
-    size = normal_size)
+    size = normal_size, interpolate = True)
 
 magicWand = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "magicWand.png")[0],
-    size = normal_size)
+    size = normal_size, interpolate = True)
 
 magicBooks = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "magicBooks.png")[0],
-    size = normal_size)
+    units = 'pix',
+    size = [640, 575], interpolate = True)
+
+keyBoard6 = visual.ImageStim(
+    win, image = glob.glob(stim_dir + os.sep + "keyBoard6.png")[0],
+    size = [40, 20], interpolate = True)
 
 #=============================================================================
 # Run Experiment
@@ -608,16 +636,41 @@ logging.console.setLevel(logging.WARNING)
 # and some handy clocks to keep track of time
 globalClock = core.Clock()
 
+# Navigation
+firstPrompt.draw()
+win.flip()
+core.wait(4)
+Instructions(part_key = 'Navigation',
+             special_displays = [iSingleImage,
+                                 iSingleImage], 
+             args = [[keyboard_dict['keyBoardArrows']],
+                     [keyboard_dict['keyBoardEsc']]],
+             font = "mono",
+             fontcolor = [0, 0, 0])
+
 # Introduction
-Introduction()
+Instructions(part_key = 'Intro',
+             special_displays = [iSingleImage,
+                                 iTransmutableObjects,
+                                 iSpellExample,
+                                 iSpellExample,
+                                 iSingleImage], 
+             args = [[magicBooks],
+                     [None],
+                     [['A', 'B', 'C', 'C', 'E', 'C'],
+                      ['A', 'E', 'C', 'C', 'E', 'C']],
+                     [['B', 'A', 'C', 'B', 'B', 'D'],
+                      ['E', 'A', 'C', 'E', 'E', 'D']],
+                     [keyboard_dict['keyBoardSpacebar']]]
+                     )
 
-# Pre-Practice: Learn Cues
-LearnClock = core.Clock()
-LearnCues(mode = "textual")
-learnDuration = LearnClock.getTime()
-
-# Practice Block: Cue-Map-Pairs
+# Pre-Practice: Learn textual cues and test memory performance
+learnDuration = LearnCues(mode = "textual")
+Instructions(part_key = 'Intermezzo1',
+             special_displays = [iSingleImage], 
+             args = [[keyboard_dict['keyBoard6']]])
 PracticeCues(trials_prim_cue, mode = "textual")
+
 
 # Block: Primitives
 GenericBlock(trials_prim)
