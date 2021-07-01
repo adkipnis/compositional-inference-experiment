@@ -341,9 +341,9 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
     for trial in trials:
         num_cr = len(trial.correct_resp)
         testRespList = []
-        
+        j = 0
         # Incrementally display stuff
-        for inc in range(3 + num_cr): 
+        for inc in range(3 + 2 * num_cr): 
         
             # 0. Fixation
             if inc == 0: 
@@ -371,10 +371,11 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 win.flip()
                 continue
             
-            # 3. Feedback
-            TestClock = core.Clock()
-            _, testResp = tTestresponse(TestClock, resp_keys_wide)
-            testRespList.append(testResp)
+            # 3. - 3 + num_cr: Immediate Feedback
+            if inc in list(range(3, 3 + num_cr)):
+                TestClock = core.Clock()
+                _, testResp = tTestresponse(TestClock, resp_keys_wide)
+                testRespList.append(testResp)
             for i in range(len(testRespList)):
                 testResp = testRespList[i]
                 rect.pos = cuepractice_pos[testResp]
@@ -386,12 +387,30 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 resp = stim_dict[trial.resp_options[testResp]]
                 resp.pos = cuepractice_pos[testResp]
                 resp.draw()
-            if inc in list(range(3, 3 + num_cr - 1)):
+            
+            if inc in list(range(3, 3 + num_cr)):
+                win.flip()
+                continue
+            
+            # 4. If errors were made, draw correct response
+            if trial.correct_resp != testRespList:
+                core.wait(1)
+                for i in range(1 + j):
+                    corResp = trial.correct_resp[i]
+                    rect.pos = cuepractice_pos[corResp]
+                    rect.lineColor = [0, 0, 1]
+                    rect.draw()
+                    resp = stim_dict[trial.resp_options[corResp]]
+                    resp.pos = cuepractice_pos[corResp]
+                    resp.draw()
+            if inc in list(range(3 + num_cr, 3 + 2 * num_cr - 1)):
+                j += 1
                 win.flip()
                 continue
             else:
                 win.flip()
-                core.wait(1)
+                core.wait(2)
+                
  
       
 def GenericBlock(trial_df):
