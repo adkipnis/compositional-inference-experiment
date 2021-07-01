@@ -181,7 +181,7 @@ def iSingleImage(*args):
         arg.size = [10, 10]
         arg.draw()
         win.flip()
-        core.wait(1)
+        core.wait(0.5)
  
 def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
@@ -211,7 +211,7 @@ def iSpellExample(*displays):
             stim.draw()
         if i == 0:
             win.flip()
-            core.wait(1.5)
+            core.wait(1)
             continue
         
         cue = magicWand
@@ -219,7 +219,7 @@ def iSpellExample(*displays):
         cue.draw()
         if i == 1:
             win.flip()
-            core.wait(1.5)
+            core.wait(1)
     
     # Output Display
     rect_pos = circularGridPositions(center_pos = [0, 0],
@@ -232,7 +232,30 @@ def iSpellExample(*displays):
         stim.draw()
     win.flip()
     core.wait(1)
-            
+ 
+
+def iNavigate(page = 0, max_page = 99, continue_after_last_page = True):
+    finished = False
+    TestClock = core.Clock()
+    _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+                                return_numeric = False)
+    if testResp == 'right':
+        if page < max_page-1:
+            page +=1
+        elif continue_after_last_page:
+            finished = True
+    elif testResp == 'left' and page > 0:
+        page -= 1
+    elif testResp == 'space':
+        nextPrompt.draw()
+        win.flip()
+        _, contResp = tTestresponse(TestClock, ['return', 'space'],
+                                    return_numeric = False)
+        if contResp == 'space':
+            finished = False
+        elif  contResp == 'return':
+            finished = True  
+    return page, finished 
     
 # Blocks ----------------------------------------------------------------------
 def Introduction():
@@ -264,26 +287,7 @@ def Introduction():
         elif type(page_content) is int:
             special_displays[page_content](*args[page_content])
     
-        # Flip through displays
-        TestClock = core.Clock()
-        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
-                                    return_numeric = False)
-        if testResp == 'right':
-            if page < len(Story)-1:
-                page +=1
-            else:
-                finished = True
-        elif testResp == 'left' and page > 0:
-            page -= 1
-        elif testResp == 'space':
-            nextPrompt.draw()
-            win.flip()
-            _, contResp = tTestresponse(TestClock, ['return', 'space'],
-                                        return_numeric = False)
-            if contResp == 'space':
-                continue
-            elif  contResp == 'return':
-                finished = True
+        page, finished = iNavigate(page = page, max_page = len(Story))
         
         
 def LearnCues(center_pos = [0, -6]):
@@ -310,25 +314,10 @@ def LearnCues(center_pos = [0, -6]):
         leftArrow.pos = center_pos
         leftArrow.draw()
         win.flip()
+        core.wait(0.2)
         
-        # Flip through displays
-        TestClock = core.Clock()
-        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
-                                    return_numeric = False)
-        if testResp == 'right':
-            if page < len(map_names)-1:
-                page +=1
-        elif testResp == 'left' and page > 0:
-            page -= 1
-        elif testResp == 'space':
-            nextPrompt.draw()
-            win.flip()
-            _, contResp = tTestresponse(TestClock, ['return', 'space'],
-                                        return_numeric = False)
-            if contResp == 'space':
-                continue
-            elif  contResp == 'return':
-                finished = True
+        page, finished = iNavigate(page = page, max_page = len(map_names),
+                                   continue_after_last_page = False)                
 
 
 def PracticeCues(trials_prim_cue):
@@ -473,7 +462,7 @@ win = visual.Window(
     # [800, 600],
     fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 0,
+    screen = 1,
     monitor = 'testMonitor',
     units = 'deg')
 
@@ -592,11 +581,11 @@ dataFile = open(fileName + '.csv', 'w')
 dataFile.write('intermediateRT, testRT, testResp\n')
 
 # ExperimentHandler
-thisExp = data.ExperimentHandler(
-    name = expName, version='', extraInfo = expInfo, runtimeInfo = None,
-    originPath = os.path.abspath(__file__),
-    savePickle = True, saveWideText = True,
-    dataFileName = fileName)
+# thisExp = data.ExperimentHandler(
+#     name = expName, version='', extraInfo = expInfo, runtimeInfo = None,
+#     originPath = os.path.abspath(__file__),
+#     savePickle = True, saveWideText = True,
+#     dataFileName = fileName)
 
 # Log file for detail verbose info
 logFile = logging.LogFile(fileName + '.log', level = logging.EXP)
