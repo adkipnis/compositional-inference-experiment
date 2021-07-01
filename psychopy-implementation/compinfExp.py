@@ -68,15 +68,27 @@ def tFixation():
     win.flip()
     core.wait(0.3)
 
+def setCue(key, mode = "visual"):
+    if mode == "visual":
+        cue = vcue_dict[key]
+    elif mode == "textual":
+        cue = tcue_dict[key]
+    elif mode == "random":
+        if np.random.randint(0, 2) == 1:
+            cue = vcue_dict[key]
+        else:
+            cue = tcue_dict[key]
+    return cue
 
-def tMapcue(trial):
-    # rect.pos = center_pos
-    # rect.size = center_size
-    # rect.draw()
-    if np.random.randint(0, 2) == 1:
-        cue = vcue_dict[trial.map[0]]
-    else:
-        cue = tcue_dict[trial.map[0]]
+
+def tMapcue(trial, mode = "visual", with_background = False):
+    assert mode in ["visual", "textual", "random"],\
+        "Chosen cue mode not implemented."
+    if with_background:
+        rect.pos = center_pos
+        rect.size = center_size
+        rect.draw()           
+    cue = setCue(trial.map[0], mode = mode)
     cue.draw()
     win.flip()
     core.wait(0.5)
@@ -181,7 +193,7 @@ def iSingleImage(*args):
         arg.size = [10, 10]
         arg.draw()
         win.flip()
-        core.wait(0.5)
+        core.wait(0.2)
  
 def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
@@ -290,7 +302,7 @@ def Introduction():
         page, finished = iNavigate(page = page, max_page = len(Story))
         
         
-def LearnCues(center_pos = [0, -6]):
+def LearnCues(center_pos = [0, -6], mode = "visual"):
     # Initialize parameters
     finished = False
     page = 0
@@ -301,7 +313,7 @@ def LearnCues(center_pos = [0, -6]):
         # Draw map cue
         map_name = map_names[page]
         categories = map_name.split('-')
-        cue = tcue_dict[map_name]
+        cue = setCue(map_name, mode = mode)
         cue.draw()
         
         # Draw corresponding explicit map
@@ -320,7 +332,7 @@ def LearnCues(center_pos = [0, -6]):
                                    continue_after_last_page = False)                
 
 
-def PracticeCues(trials_prim_cue):
+def PracticeCues(trials_prim_cue, mode = "visual"):
     # create the trial handler
     trials = data.TrialHandler(
         trials_prim_cue.to_dict('records'), 1, method='sequential')
@@ -338,8 +350,8 @@ def PracticeCues(trials_prim_cue):
                 win.flip()
                 continue
             
-            # 1. Map Cue 
-            cue = vcue_dict[trial.map[0]]
+            # 1. Map Cue
+            cue = setCue(trial.map[0], mode = mode)
             cue.draw()
             if inc == 1:
                 win.flip()
@@ -453,7 +465,7 @@ rect_pos = circularGridPositions(center_pos = center_pos,
                                  set_size = set_size, radius = 7)
 resp_pos = rectangularGrindPositions(center_pos = [0, -10],
                                      h_dist = 10, dim = (1, 4))
-cuepractice_pos = rectangularGrindPositions(center_pos = [0, -10],
+cuepractice_pos = rectangularGrindPositions(center_pos = [0, -8],
                                             h_dist = 8, dim = (1, 6))
 
 # create window
@@ -601,11 +613,11 @@ Introduction()
 
 # Pre-Practice: Learn Cues
 LearnClock = core.Clock()
-LearnCues()
+LearnCues(mode = "textual")
 learnDuration = LearnClock.getTime()
 
 # Practice Block: Cue-Map-Pairs
-PracticeCues(trials_prim_cue)
+PracticeCues(trials_prim_cue, mode = "textual")
 
 # Block: Primitives
 GenericBlock(trials_prim)
