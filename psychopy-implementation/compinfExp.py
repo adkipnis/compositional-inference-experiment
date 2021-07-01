@@ -174,12 +174,19 @@ def tTestresponse(TestClock, respKeys, return_numeric = True):
                 core.quit()  # abort experiment
         event.clearEvents()      
     return(testRT, testResp)
-   
+
+def iSingleImage(*args):
+    for arg in args:
+        arg.pos = [0, 0]
+        arg.size = [10, 10]
+        arg.draw()
+        win.flip()
+        core.wait(1)
  
-def iTransmutableObjects(dim = [2, 3]):
+def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
     category_pos = rectangularGrindPositions(
-        center_pos = [0, 0], h_dist = 10, dim = dim)                     # TODO: make dim dependent on len(categories)
+        center_pos = [0, 0], h_dist = 10, dim = [2, 3])                     # TODO: make dim dependent on len(categories)
 
     # draw categories
     for i in range(len(categories)):
@@ -191,40 +198,41 @@ def iTransmutableObjects(dim = [2, 3]):
     win.flip()
 
 
-def iSpellExample():
-    trials = data.TrialHandler(
-        [trials_prim.to_dict('records')[0]], 1, method='sequential')
-    for trial in trials:
-        for i in range(3):
-            for j in range(set_size):
-                rect.pos = rect_pos[j]
-                rect.draw()
-                stim = stim_dict[trial.input_disp[j]]
-                stim.pos = rect_pos[j]
-                stim.draw()
-            if i == 0:
-                win.flip()
-                core.wait(1.5)
-                continue
+def iSpellExample(*displays):
+    # Input Display
+    for i in range(2):
+        rect_pos = circularGridPositions(center_pos = [0, 0],
+                                 set_size = len(displays[0]), radius = 8)
+        for j in range(len(displays[0])):
+            rect.pos = rect_pos[j]
+            rect.draw()
+            stim = stim_dict[displays[0][j]]
+            stim.pos = rect_pos[j]
+            stim.draw()
+        if i == 0:
+            win.flip()
+            core.wait(1.5)
+            continue
+        
+        cue = magicWand
+        cue.height = 2
+        cue.draw()
+        if i == 1:
+            win.flip()
+            core.wait(1.5)
+    
+    # Output Display
+    rect_pos = circularGridPositions(center_pos = [0, 0],
+                                 set_size = len(displays[1]), radius = 8)
+    for j in range(len(displays[1])):
+        rect.pos = rect_pos[j]
+        rect.draw()
+        stim = stim_dict[displays[1][j]]
+        stim.pos = rect_pos[j]
+        stim.draw()
+    win.flip()
+    core.wait(1)
             
-            cue = tcue_dict[trial.map[0]]
-            cue.height = 2
-            cue.draw()
-            if i == 1:
-                win.flip()
-                core.wait(1.5)
-                continue
-            
-            for j in range(set_size):
-                rect.pos = rect_pos[j]
-                rect.draw()
-                stim = stim_dict[trial.output_disp[j]]
-                stim.pos = rect_pos[j]
-                stim.draw()
-            if i == 2:
-                win.flip()
-                core.wait(1)
-                continue
     
 # Blocks ----------------------------------------------------------------------
 def Introduction():
@@ -232,7 +240,15 @@ def Introduction():
     finished = False
     Story = instructions['Story']
     page = 0
-    special_displays = [iTransmutableObjects, iSpellExample]
+    special_displays = [iSingleImage,
+                        iTransmutableObjects,
+                        iSpellExample,
+                        iSpellExample]
+    args = [[magicBooks],
+            [None],
+            [['A', 'B', 'C', 'C', 'E', 'C'], ['A', 'E', 'C', 'C', 'E', 'C']],
+            [['B', 'A', 'C', 'B', 'B', 'D'], ['E', 'A', 'C', 'E', 'E', 'D']]
+            ]
     while not finished:
         page_content = Story[page]
         if type(page_content) is str:
@@ -246,11 +262,11 @@ def Introduction():
             text.draw()
             win.flip()
         elif type(page_content) is int:
-            special_displays[page_content]()
+            special_displays[page_content](*args[page_content])
     
         # Flip through displays
         TestClock = core.Clock()
-        _, testResp = tTestresponse(TestClock, ['left', 'right'],
+        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
                                     return_numeric = False)
         if testResp == 'right':
             if page < len(Story)-1:
@@ -259,7 +275,16 @@ def Introduction():
                 finished = True
         elif testResp == 'left' and page > 0:
             page -= 1
-    
+        elif testResp == 'space':
+            nextPrompt.draw()
+            win.flip()
+            _, contResp = tTestresponse(TestClock, ['return', 'space'],
+                                        return_numeric = False)
+            if contResp == 'space':
+                continue
+            elif  contResp == 'return':
+                finished = True
+        
         
 def LearnCues(center_pos = [0, -6]):
     # Initialize parameters
@@ -296,7 +321,7 @@ def LearnCues(center_pos = [0, -6]):
         elif testResp == 'left' and page > 0:
             page -= 1
         elif testResp == 'space':
-            ruReady.draw()
+            nextPrompt.draw()
             win.flip()
             _, contResp = tTestresponse(TestClock, ['return', 'space'],
                                         return_numeric = False)
@@ -448,7 +473,7 @@ win = visual.Window(
     # [800, 600],
     fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 1,
+    screen = 0,
     monitor = 'testMonitor',
     units = 'deg')
 
@@ -511,19 +536,30 @@ for i in range(n_resp):
                                              text = str(i),
                                              height = 4,
                                              color= [-0.9, -0.9, -0.9])})
+    
+# misc. stimuli    
 qm = visual.TextStim(win,
-                     text = '?',
+                     text = "?",
                      height = 4,
                      color = [-0.9, -0.9, -0.9])  
 
-ruReady = visual.TextStim(win,
-                          text = 'Press Spacebar to practice longer\n or continue with Enter key',
-                          height = 1.5,
-                          wrapWidth = 30,
-                          color = [-0.9, -0.9, -0.9]) 
+nextPrompt = visual.TextStim(
+    win, text = "Press Spacebar to go back longer\n or press the Enter key to"\
+        " continue to next section.",
+    height = 1.5,
+    wrapWidth = 30,
+    color = [0, 0, 0]) 
 
 leftArrow = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "leftArrow.png")[0],
+    size = normal_size)
+
+magicWand = visual.ImageStim(
+    win, image = glob.glob(stim_dir + os.sep + "magicWand.png")[0],
+    size = normal_size)
+
+magicBooks = visual.ImageStim(
+    win, image = glob.glob(stim_dir + os.sep + "magicBooks.png")[0],
     size = normal_size)
 
 #=============================================================================

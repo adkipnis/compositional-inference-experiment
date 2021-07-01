@@ -17,17 +17,20 @@ nMaps = len(tcue_list)
 
 # Story
 Story = ["You are a mage apprentice, preparing for your Alteration classes.",
-         "Luckily, you own the newest edition of the famous book"\
-             " 'Principles of Alteration Magic', written by Leandra Philbertine.",
-         "This tome lists the following transmutable objects:",
+         "Luckily, you own a copy of the famous book series"\
+             " 'Principles of Alteration Magic', written by Jade Philbertine.",
          0,
-         "With the correct spell, some of them can be transmuted into others!",
-         "Each spell has a name. \nHere you see an example:",
+         "The first volume lists the following transmutable objects:",
          1,
+         "With the correct spell, some of them can be transmuted into others!",
+         "Here you see an example of an unknown spell:",
+         2,
          "Note, that these spells have an area effect: If you cast it on one"\
              " point, all susceptible objects around it will be transmuted.",
-         "Luckily, Philbertine provides a cheat-sheet of the " + str(nMaps) +
-             " beginner spells.\n You need to study them first."
+         3,
+         "Each spell has a name. Philbertine provides a cheat-sheet of the "
+             + str(nMaps) + " beginner spells.",
+         "You decide to study them first."
     ]
     
 
