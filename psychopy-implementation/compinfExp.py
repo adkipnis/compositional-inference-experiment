@@ -194,7 +194,8 @@ def iSingleImage(*args):
         arg.draw()
         win.flip()
         core.wait(0.2)
- 
+
+
 def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
     category_pos = rectangularGrindPositions(
@@ -335,12 +336,15 @@ def LearnCues(center_pos = [0, -6], mode = "visual"):
 
 def PracticeCues(trials_prim_cue, mode = "visual"):
     # create the trial handler
-    trials = data.TrialHandler(
+    PracticeCueTrials = data.TrialHandler(
         trials_prim_cue.to_dict('records'), 1, method='sequential')
+    testRespSuperList = []
+    testRTSuperList = []
     
-    for trial in trials:
+    for trial in PracticeCueTrials:
         num_cr = len(trial.correct_resp)
         testRespList = []
+        testRTList = []
         j = 0
         # Incrementally display stuff
         for inc in range(3 + 2 * num_cr): 
@@ -374,7 +378,8 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
             # 3. - 3 + num_cr: Immediate Feedback
             if inc in list(range(3, 3 + num_cr)):
                 TestClock = core.Clock()
-                _, testResp = tTestresponse(TestClock, resp_keys_wide)
+                testRT, testResp = tTestresponse(TestClock, resp_keys_wide)
+                testRTList.append(testRT)
                 testRespList.append(testResp)
             for i in range(len(testRespList)):
                 testResp = testRespList[i]
@@ -408,11 +413,39 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 win.flip()
                 continue
             else:
+                testRTSuperList.append(testRTList)
+                testRespSuperList.append(testRespList)
                 win.flip()
                 core.wait(2)
-                
- 
-      
+    trials_prim_cue['emp_resp'] = testRespSuperList
+    trials_prim_cue['resp_RT'] = testRTSuperList
+    return trials_prim_cue
+
+
+def PracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
+    mean_acc = 0.0
+    while mean_acc < min_acc:
+        df = trials_prim_cue[i:i+i_step].copy()
+        df = PracticeCues(df, mode = mode)                                     # TODO: Save Data with Time Stamp
+        errors = (df.correct_resp == df.emp_resp).to_list()
+        mean_acc = np.mean(list(map(int, errors))) # convert to integers
+        
+        accPrompt = visual.TextStim(
+            win, text = "In this training run, your score was " + \
+                str(mean_acc * 100) +"%.", height = 1.8, wrapWidth = 30,
+                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
+        
+        # repeat or wrap up
+        i += i_step    
+        if mean_acc < min_acc:
+            feedbacktype = 'Feedback0' 
+        else: 
+            feedbacktype = 'Feedback1'  
+        Instructions(part_key = feedbacktype,
+                 special_displays = [iSingleImage], args = [[accPrompt]])            
+    return i
+    
+        
 def GenericBlock(trial_df):
     # create the trial handler
     trials = data.TrialHandler(
@@ -684,12 +717,18 @@ Instructions(part_key = 'Intro',
                      )
 
 # Pre-Practice: Learn textual cues and test memory performance
-learnDuration = LearnCues(mode = "textual")
+learnDuration = LearnCues(mode = "textual")                                     # TODO: Save Data with Time Stamp
 Instructions(part_key = 'Intermezzo1',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard6']]])
-PracticeCues(trials_prim_cue, mode = "textual")
+i = 1
+i = PracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 2)
 
+# Pre-Practice: Learn visual cues and test memory performance    
+Instructions(part_key = 'NowVisual')
+learnDuration = LearnCues(mode = "visual")
+Instructions(part_key = 'Intermezzo2')
+i = PracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
 
 # Block: Primitives
 GenericBlock(trials_prim)

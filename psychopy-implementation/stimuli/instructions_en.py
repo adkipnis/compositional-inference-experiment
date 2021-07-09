@@ -54,8 +54,8 @@ Intermezzo1 = ["Now that you have committed these spells to your memory, you"\
                    " want to make sure you remember them correctly.",
                "In her wise anticipation, Philbertine provides you with a"\
                    " magical practice board.",
-               "You will first see the spell name. Then you need to select the two"\
-                   " corresponding objects:",
+               "You will first see the spell name. Then you need to select the"\
+                   " two corresponding objects:",
                "(1) The object which is susceptible to the spell, and (2) the"\
                    " object into which it is transformed.",
                "You choose the objects using the marked keys on your keyboard:",
@@ -63,6 +63,31 @@ Intermezzo1 = ["Now that you have committed these spells to your memory, you"\
                "These keys will correspond to your options from left to right.",
                "Ready?"]
 
+# Practice accuracy too bad, repeat:
+Feedback0 = [0,
+             "You feel like you can do better, so you decide to train a"\
+                 " little more."]
+Feedback1 = [0,
+             "This is good, you are confident to make the next step..."]
+
+# Before visual practice
+NowVisual = ["You have now learned the names of the basic spells.",
+             "In reality, you sometimes need to cast a spell without saying"\
+                 " it out loud.",
+             "In fact, each spell also has a specific symbol.",
+             "Yes, you can also cast spells by focusing on that symbol"\
+                 " in your mind.",
+             "You decide to spend a couple more minutes to study these...",
+             "When you are done with studying, you may press the spacebar.",
+             "Ready?"]
+
+Intermezzo2 = ["Now that you have committed these spells to your memory, you"\
+                   " want to make sure you remember them correctly.",
+               "Again, Philbertine provides you with a magical practice board.",
+               "The instructions are completely analogous to the previous"\
+                   " practice board.",
+               "Ready?"]
+    
 # Store as Dictionary
 instructions ={  
   "lang": "Eng",  
@@ -70,6 +95,10 @@ instructions ={
   "Navigation": Navigation,
   "Intro": Intro,
   "Intermezzo1": Intermezzo1,
+  "Intermezzo2": Intermezzo2,
+  "Feedback0": Feedback0,  
+  "Feedback1": Feedback1,
+  "NowVisual": NowVisual
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
