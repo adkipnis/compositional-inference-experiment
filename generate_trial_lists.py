@@ -480,9 +480,13 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 # Displays, Trials & Blocks
 
 # 0. Practice blocks
-cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
-trials_prim_cue = gen_cue_trials(cue_list_prim, stimuli,
-                                 display_size = 6, sep='-')
+
+df_list = []
+for j in range(8):
+    cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    df_list.append(gen_cue_trials(cue_list_prim, stimuli,
+                                     display_size = 6, sep='-'))
+trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
 trials_prim_cue.to_pickle(save_directory + os.sep + "trials_prim_cue.pkl")
 
 # 1. Primitive blocks
