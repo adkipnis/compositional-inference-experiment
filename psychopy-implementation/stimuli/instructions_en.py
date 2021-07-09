@@ -13,6 +13,14 @@ stim_dir = os.path.dirname(os.path.abspath(__file__))
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
 nMaps = len(tcue_list)
 
+def AddProceedKey(instruction_list, proceed_key, wait_s = 3):
+    instruction_list_new = instruction_list.copy()
+    for i in range(len(instruction_list)):
+        instruction_list_new[i] = [instruction_list[i], proceed_key, wait_s]
+    return instruction_list_new
+    
+
+
 # Navigation
 Navigation = [0,
               "Don't worry, there is no shame in going back pages.",
@@ -64,10 +72,12 @@ Intermezzo1 = ["Now that you have committed these spells to your memory, you"\
                "Ready?"]
 
 # Practice accuracy too bad, repeat:
-Feedback0 = [0,
+Feedback0 = ["In this training run, your score was:",
+             0,
              "You feel like you can do better, so you decide to train a"\
                  " little more."]
-Feedback1 = [0,
+Feedback1 = ["In this training run, your score was:", 
+             0, 
              "This is good, you are confident to make the next step..."]
 
 # Before visual practice
@@ -80,7 +90,7 @@ NowVisual = ["You have now learned the names of the basic spells.",
              "You decide to spend a couple more minutes to study these...",
              "When you are done with studying, you may press the spacebar.",
              "Ready?"]
-
+    
 Intermezzo2 = ["Now that you have committed these spells to your memory, you"\
                    " want to make sure you remember them correctly.",
                "Again, Philbertine provides you with a magical practice board.",
@@ -92,13 +102,13 @@ Intermezzo2 = ["Now that you have committed these spells to your memory, you"\
 instructions ={  
   "lang": "Eng",  
   "exp": "CompInf",
-  "Navigation": Navigation,
-  "Intro": Intro,
-  "Intermezzo1": Intermezzo1,
-  "Intermezzo2": Intermezzo2,
-  "Feedback0": Feedback0,  
-  "Feedback1": Feedback1,
-  "NowVisual": NowVisual
+  "Navigation": AddProceedKey(Navigation, '/k'),
+  "Intro": AddProceedKey(Intro, '/k'),
+  "Intermezzo1": AddProceedKey(Intermezzo1, '/k'),
+  "Intermezzo2": AddProceedKey(Intermezzo2, '/k'),
+  "Feedback0": AddProceedKey(Feedback0, '/t'),
+  "Feedback1": AddProceedKey(Feedback1, '/t'),
+  "NowVisual": AddProceedKey(NowVisual, '/k')
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:

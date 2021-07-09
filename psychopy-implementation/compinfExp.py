@@ -247,11 +247,31 @@ def iSpellExample(*displays):
     core.wait(1)
  
 
-def iNavigate(page = 0, max_page = 99, continue_after_last_page = True):
+def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
+              proceed_key = '/k', wait_s = 3):
+    
+    assert proceed_key in ['/k', '/t'], "Unkown proceed key"
     finished = False
+    testResp = None
     TestClock = core.Clock()
-    _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
-                                return_numeric = False)
+    
+    # get response or wait or something in between
+    if proceed_key == '/k': #keypress
+        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+                                    return_numeric = False)
+    elif proceed_key == '/t': #time
+        core.wait(wait_s)
+        testResp = 'right'
+    # elif proceed_key == '/e': #either
+    #     while TestClock.getTime() < wait_s:
+    #         _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+    #                                 return_numeric = False)
+    #         if testResp is not None:
+    #             break
+    #     if testResp is None:
+    #         testResp = 'right'
+            
+    # Proceed accordingly    
     if testResp == 'right':
         if page < max_page-1:
             page +=1
@@ -284,22 +304,26 @@ def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
     Part = instructions[part_key]
     page = 0
     while not finished:
-        page_content = Part[page]
+        page_content = Part[page][0]
+        proceed_key = Part[page][1]
+        proceed_wait = Part[page][2]
         if type(page_content) is str:
-            text = visual.TextStim(
-                win,
-                text = page_content,
-                font = font,
-                height = 1.8,
-                wrapWidth = 30,
-                color = fontcolor)
-            text.draw()
+            textStim = visual.TextStim(
+                        win,
+                        text = page_content,
+                        font = font,
+                        height = 1.8,
+                        wrapWidth = 30,
+                        color = fontcolor)
+            textStim.draw()
             win.flip()
         elif type(page_content) is int:
             special_displays[page_content](*args[page_content])
-        page, finished = iNavigate(page = page, max_page = len(Part))
+        page, finished = iNavigate(page = page, max_page = len(Part),
+                                   proceed_key = proceed_key,
+                                   wait_s = proceed_wait)
         
-        
+              
 def LearnCues(center_pos = [0, -6], mode = "visual"):
     # Initialize parameters
     LearnClock = core.Clock()
@@ -431,8 +455,7 @@ def PracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
         accPrompt = visual.TextStim(
-            win, text = "In this training run, your score was " + \
-                str(mean_acc * 100) +"%.", height = 1.8, wrapWidth = 30,
+            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
                 font = "Times New Roman", color = [-0.9, -0.9, -0.9])
         
         # repeat or wrap up
