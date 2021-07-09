@@ -37,7 +37,7 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 
 # Navigation
 Navigation = [["For the following displays, you can navigate back and forth"\
-                   " using the arrow keys:", "/t", 4],
+                   " using the arrow keys:", "/e", 4],
               0,
               "Don't worry, there is no shame in going back pages.",
               "In this first session, you will learn the basics of the task"\
@@ -107,7 +107,7 @@ NowVisual = ["You have now learned the names of the basic spells.",
              "When you are done with studying, you may press the spacebar.",
              "Ready?"]
     
-Intermezzo2 = ["Now that you have committed these spells to your memory, you"\
+Intermezzo2 = ["Now that you have also learned to cast spells using symbols, you"\
                    " want to make sure you remember them correctly.",
                "Again, Philbertine provides you with a magical practice board.",
                "The instructions are completely analogous to the previous"\
@@ -122,8 +122,8 @@ instructions ={
   "Intro": AddProceedKey2All(Intro, '/k'),
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
-  "Feedback0": AddProceedKey2All(Feedback0, '/t'),
-  "Feedback1": AddProceedKey2All(Feedback1, '/t'),
+  "Feedback0": AddProceedKey2All(Feedback0, '/e', wait_s = 2),
+  "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
   "NowVisual": AddProceedKey2All(NowVisual, '/k')
 }  
 

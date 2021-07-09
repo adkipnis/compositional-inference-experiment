@@ -171,20 +171,25 @@ def tPosition(trial):
         resp.draw()
 
 
-def tTestresponse(TestClock, respKeys, return_numeric = True):
+def tTestresponse(TestClock, respKeys, return_numeric = True,
+                  max_wait = np.inf):
     testResp = None
-    while testResp == None:
-        allKeys = event.waitKeys()
-        for thisKey in allKeys:
-            if thisKey in respKeys: 
-                testRT = TestClock.getTime()
-                if return_numeric:
-                    testResp = np.where(respKeys == thisKey)[0][0]
-                else:
-                    testResp = thisKey
-            elif thisKey in ['escape']:
-                core.quit()  # abort experiment
-        event.clearEvents()      
+    testRT = None
+    while testResp is None:
+        allKeys = event.waitKeys(maxWait = max_wait)
+        if allKeys is None and max_wait < np.inf:
+            break
+        else:
+            for thisKey in allKeys:
+                if thisKey in respKeys: 
+                    testRT = TestClock.getTime()
+                    if return_numeric:
+                        testResp = np.where(respKeys == thisKey)[0][0]
+                    else:
+                        testResp = thisKey
+                elif thisKey in ['escape']:
+                    core.quit()  # abort experiment
+            event.clearEvents()      
     return(testRT, testResp)
 
 def iSingleImage(*args):
@@ -250,7 +255,7 @@ def iSpellExample(*displays):
 def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
               proceed_key = '/k', wait_s = 3):
     
-    assert proceed_key in ['/k', '/t'], "Unkown proceed key"
+    assert proceed_key in ['/k', '/t', '/e'], "Unkown proceed key"
     finished = False
     testResp = None
     TestClock = core.Clock()
@@ -262,14 +267,12 @@ def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
     elif proceed_key == '/t': #time
         core.wait(wait_s)
         testResp = 'right'
-    # elif proceed_key == '/e': #either
-    #     while TestClock.getTime() < wait_s:
-    #         _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
-    #                                 return_numeric = False)
-    #         if testResp is not None:
-    #             break
-    #     if testResp is None:
-    #         testResp = 'right'
+    elif proceed_key == '/e': #either
+        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+                                    return_numeric = False,
+                                    max_wait = wait_s)
+        if testResp is None:
+            testResp = 'right'
             
     # Proceed accordingly    
     if testResp == 'right':
