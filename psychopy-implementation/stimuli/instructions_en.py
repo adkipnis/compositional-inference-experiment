@@ -7,22 +7,38 @@ Created on Wed Jun 30 18:57:59 2021
 """
 import os
 import pickle  
+import numpy as np
 import pandas as pd
 
 stim_dir = os.path.dirname(os.path.abspath(__file__))
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
 nMaps = len(tcue_list)
 
-def AddProceedKey(instruction_list, proceed_key, wait_s = 3):
+def AddProceedKey(instruction_list, proceed_key, indices, wait_s = 3):
     instruction_list_new = instruction_list.copy()
-    for i in range(len(instruction_list)):
-        instruction_list_new[i] = [instruction_list[i], proceed_key, wait_s]
+    assert len(instruction_list_new) >= len(indices),\
+        "mismatch between number of instructions and provided indices"
+    for idx in indices:
+        if type(instruction_list[idx]) is list:                                  # this allows prespecifying meta info per instruction
+            assert len(instruction_list[idx]) == 3, \
+                "prespecified meta-info has wrong dimensions"
+        else:
+            instruction_list_new[idx] = [instruction_list[idx],
+                                         proceed_key, wait_s]
     return instruction_list_new
-    
+
+def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
+    instruction_list_new = AddProceedKey(instruction_list, proceed_key,
+                                         list(range(len(instruction_list))),
+                                         wait_s)
+    return instruction_list_new
+
 
 
 # Navigation
-Navigation = [0,
+Navigation = [["For the following displays, you can navigate back and forth"\
+                   " using the arrow keys:", "/t", 4],
+              0,
               "Don't worry, there is no shame in going back pages.",
               "In this first session, you will learn the basics of the task"\
                   " which you will later perform in the MEG.",
@@ -34,7 +50,7 @@ Navigation = [0,
               "Please be careful not to press this key by accident!",
               "Finally, if you have any questions, please ask the examiner.",
               "Now, the experiment begins...",
-              ""]
+              ["", "/t", 2]]
 # Introduction
 Intro = ["You are a mage apprentice, preparing for your Alteration classes.",
          "Luckily, you own a copy of the famous book series"\
@@ -102,13 +118,13 @@ Intermezzo2 = ["Now that you have committed these spells to your memory, you"\
 instructions ={  
   "lang": "Eng",  
   "exp": "CompInf",
-  "Navigation": AddProceedKey(Navigation, '/k'),
-  "Intro": AddProceedKey(Intro, '/k'),
-  "Intermezzo1": AddProceedKey(Intermezzo1, '/k'),
-  "Intermezzo2": AddProceedKey(Intermezzo2, '/k'),
-  "Feedback0": AddProceedKey(Feedback0, '/t'),
-  "Feedback1": AddProceedKey(Feedback1, '/t'),
-  "NowVisual": AddProceedKey(NowVisual, '/k')
+  "Navigation": AddProceedKey2All(Navigation, '/k'),
+  "Intro": AddProceedKey2All(Intro, '/k'),
+  "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
+  "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
+  "Feedback0": AddProceedKey2All(Feedback0, '/t'),
+  "Feedback1": AddProceedKey2All(Feedback1, '/t'),
+  "NowVisual": AddProceedKey2All(NowVisual, '/k')
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:

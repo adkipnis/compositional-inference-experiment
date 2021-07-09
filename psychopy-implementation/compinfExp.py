@@ -632,14 +632,6 @@ qm = visual.TextStim(win,
                      text = "?",
                      height = 4,
                      color = [-0.9, -0.9, -0.9])  
-
-firstPrompt = visual.TextStim(
-    win, text = "For the following displays, you can navigate back and forth"\
-        " using the arrow keys:",
-    height = 1.5,
-    wrapWidth = 30,
-    font = "mono",
-    color = [0, 0, 0]) 
     
 nextPrompt = visual.TextStim(
     win, text = "Press Spacebar to go back \nor press the Enter key to"\
@@ -712,9 +704,6 @@ logging.console.setLevel(logging.WARNING)
 globalClock = core.Clock()
 
 # Navigation
-firstPrompt.draw()
-win.flip()
-core.wait(4)
 Instructions(part_key = 'Navigation',
              special_displays = [iSingleImage,
                                  iSingleImage], 
