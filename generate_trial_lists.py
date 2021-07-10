@@ -392,6 +392,16 @@ def map_to_integers(general_map, sep = '-'):
     for i in range(len(categories)):
         categories_int.append(ord(categories[i]) - 65)
     return categories_int
+
+def correct_cue_trial_resp(general_map, resp_options, sep = '-'):
+    ''' takes map and an ordered list of response options
+    and generates a list of integers corresponding to the position of the map
+    argument positions in the resp_options'''
+    categories = general_map.split(sep = sep)
+    correct_resp = []
+    for cat in categories:
+        correct_resp.append(np.where(resp_options == cat)[0][0])
+    return correct_resp
     
 def gen_cue_trials(map_list, stimuli,
                    display_size = 6, sep='-'):
@@ -399,9 +409,13 @@ def gen_cue_trials(map_list, stimuli,
     trials = []
     num_trials = len(map_list)
     for i in range(num_trials):
-        trial_dict = {"map" : [map_list[i]],
-                      "resp_options": stimuli,
-                      "correct_resp": map_to_integers(map_list[i])}
+        general_map = [map_list[i]]
+        resp_options = np.random.permutation(stimuli)
+        correct_resp = correct_cue_trial_resp(general_map[0], resp_options,
+                                              sep = sep)
+        trial_dict = {"map" : general_map,
+                      "resp_options": resp_options,
+                      "correct_resp": correct_resp}
         trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
     df = pd.concat(trials, ignore_index=True)
     return df  
@@ -480,7 +494,7 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 # Displays, Trials & Blocks
 
 # 0. Practice blocks
-
+# Cues
 df_list = []
 for j in range(8):
     cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
@@ -488,6 +502,32 @@ for j in range(8):
                                      display_size = 6, sep='-'))
 trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
 trials_prim_cue.to_pickle(save_directory + os.sep + "trials_prim_cue.pkl")
+
+# Count
+df_list = []
+for j in range(8):
+    map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_prim,                         
+                             resp_list = resp_list,
+                             test_type = "count",
+                             display_size = display_size,
+                             sep = sep))
+trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+trials_prim_practice_c.to_pickle(save_directory + os.sep + "trials_prim_prac_c.pkl")
+
+# Position
+df_list = []
+for j in range(8):
+    map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    df_list.append(gen_trials(stimuli,
+                             map_list_prim,                         
+                             resp_list = resp_list,
+                             test_type = "position",
+                             display_size = display_size,
+                             sep = sep))
+trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+trials_prim_practice_p.to_pickle(save_directory + os.sep + "trials_prim_prac_p.pkl")
 
 # 1. Primitive blocks
 # generate trials twice with n_exposure/2 and each test display type,

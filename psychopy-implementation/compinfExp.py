@@ -81,7 +81,7 @@ def setCue(key, mode = "visual"):
     return cue
 
 
-def tMapcue(trial, mode = "visual", with_background = False):
+def tMapcue(trial, mode = "random", with_background = False):
     assert mode in ["visual", "textual", "random"],\
         "Chosen cue mode not implemented."
     if with_background:
@@ -133,7 +133,6 @@ def tEmpty(trial, IRClock):
 
 def tCount(trial):
     rect.pos = center_pos
-    rect.lineColor = [0, 0.5, 0]
     rect.size = center_size
     rect.draw()
     rect.size = normal_size
@@ -449,7 +448,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
     return trials_prim_cue
 
 
-def PracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
+def CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
     mean_acc = 0.0
     while mean_acc < min_acc:
         df = trials_prim_cue[i:i+i_step].copy()
@@ -472,7 +471,7 @@ def PracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
     return i
     
         
-def GenericBlock(trial_df):
+def GenericBlock(trial_df, mode = "random"):
     # create the trial handler
     trials = data.TrialHandler(
         trial_df.to_dict('records'), 1, method='sequential')
@@ -482,7 +481,7 @@ def GenericBlock(trial_df):
         tFixation()
         
         # 2. Map Cue
-        tMapcue(trial)
+        tMapcue(trial, mode = mode)
         
         # 3. Display Family
         IRClock = tDisplay(trial)
@@ -523,8 +522,13 @@ with open(stim_dir + os.sep + 'instructions_en.pkl', 'rb') as handle:
 # load triallists and adapt setup to their parameters
 trials_prim_cue = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim_cue.pkl"))
+trials_prim_prac_c = pd.read_pickle(
+    os.path.join(trial_list_dir, "trials_prim_prac_c.pkl"))
+trials_prim_prac_p = pd.read_pickle(
+    os.path.join(trial_list_dir, "trials_prim_prac_p.pkl"))
 trials_prim = pd.read_pickle(
     os.path.join(trial_list_dir, "trials_prim.pkl"))
+
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
@@ -737,16 +741,21 @@ Instructions(part_key = 'Intermezzo1',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard6']]])
 i = 1
-i = PracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 2)
+i = CuePracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 6)
 
 # Pre-Practice: Learn visual cues and test memory performance    
 Instructions(part_key = 'NowVisual')
 learnDuration = LearnCues(mode = "visual")
 Instructions(part_key = 'Intermezzo2')
-i = PracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
+i = CuePracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
+
+# Pre-Practice: Position
+Instructions(part_key = 'NowPosition')
+GenericBlock(trials_prim_prac_c, mode = "random")                                      #TODO Loop
+
 
 # Block: Primitives
-GenericBlock(trials_prim)
+GenericBlock(trials_prim, mode = "random")
 
 dataFile.close()
 
