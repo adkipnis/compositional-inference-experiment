@@ -577,8 +577,10 @@ fixation = visual.GratingStim(
     size = 0.2)
 
 # create textual cues
-tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
-tcue_list = np.random.permutation(tcue_list)
+with open(trial_list_dir + os.sep + 'mappinglists.pkl', 'rb') as handle:
+    mappinglists = pickle.load(handle)
+    
+tcue_list = mappinglists['tcue']
 assert len(tcue_list) == len(map_names)
 spellname_dict = dict(zip(tcue_list, map_names))
 tcue_dict = {}
@@ -592,7 +594,7 @@ for i in range(len(map_names)):
 
 # create visual cues
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
-vcue_list = np.random.permutation(vcue_list)
+vcue_list = mappinglists['vcue']
 assert len(vcue_list) >= len(map_names)
 vcue_dict = {}
 for i in range(len(map_names)):
@@ -604,8 +606,7 @@ for i in range(len(map_names)):
                                                 interpolate = True)})
     
 # create stimuli
-stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
-stim_list = np.random.permutation(stim_list)
+stim_list = mappinglists['stim']
 assert len(stim_list) >= n_cats
 stim_dict = {}
 for i in range(n_cats):

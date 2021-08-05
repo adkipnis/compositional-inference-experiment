@@ -13,7 +13,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 plt.close("all")
-save_directory = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/trial-lists/"
+main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+os.chdir(main_dir)
+stim_dir = os.path.join(main_dir, "stimuli")
+trial_list_dir = os.path.join(main_dir, "trial-lists")
+
 #=============================================================================
 # Helper Functions
 
@@ -501,7 +505,7 @@ for j in range(8):
     df_list.append(gen_cue_trials(cue_list_prim, stimuli,
                                      display_size = 6, sep='-'))
 trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
-trials_prim_cue.to_pickle(save_directory + os.sep + "trials_prim_cue.pkl")
+trials_prim_cue.to_pickle(trial_list_dir + os.sep + "trials_prim_cue.pkl")
 
 # Count
 df_list = []
@@ -514,7 +518,7 @@ for j in range(8):
                              display_size = display_size,
                              sep = sep))
 trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim_practice_c.to_pickle(save_directory + os.sep + "trials_prim_prac_c.pkl")
+trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + "trials_prim_prac_c.pkl")
 
 # Position
 df_list = []
@@ -527,7 +531,7 @@ for j in range(8):
                              display_size = display_size,
                              sep = sep))
 trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim_practice_p.to_pickle(save_directory + os.sep + "trials_prim_prac_p.pkl")
+trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + "trials_prim_prac_p.pkl")
 
 # 1. Primitive blocks
 # generate trials twice with n_exposure/2 and each test display type,
@@ -544,7 +548,7 @@ for j in range(2):
                              display_size = display_size,
                              sep = sep))
 trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim.to_pickle(save_directory + os.sep + "trials_prim.pkl")
+trials_prim.to_pickle(trial_list_dir + os.sep + "trials_prim.pkl")
 # plt.figure()
 # trials_prim["correct_resp"].plot.hist(alpha=0.5)
 # trials_prim["trans_ub"].plot.hist(alpha=0.5)
@@ -596,3 +600,16 @@ for j in range(2):
                              sep = sep))
 trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
 
+# Mappings between cues and stimuli
+import glob
+import pickle
+tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
+tcue_list = np.random.permutation(tcue_list)
+vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
+vcue_list = np.random.permutation(vcue_list)
+stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
+stim_list = np.random.permutation(stim_list)
+fname = trial_list_dir + os.sep + "mappinglists.pkl"
+data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
+with open(fname, "wb") as f:
+    pickle.dump(data, f)
