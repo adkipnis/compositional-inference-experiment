@@ -81,7 +81,7 @@ def setCue(key, mode = "visual"):
     return cue
 
 
-def tMapcue(trial, mode = "random", with_background = False):
+def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):
     assert mode in ["visual", "textual", "random"],\
         "Chosen cue mode not implemented."
     if with_background:
@@ -91,10 +91,10 @@ def tMapcue(trial, mode = "random", with_background = False):
     cue = setCue(trial.map[0], mode = mode)
     cue.draw()
     win.flip()
-    core.wait(0.5)
+    core.wait(duration)
 
 
-def tDisplay(trial):
+def tDisplay(trial, duration = 1):
     # draw rectangles
     rect.size = normal_size
     for pos in rect_pos:
@@ -108,7 +108,7 @@ def tDisplay(trial):
         stim.draw()
     win.flip()
     IRClock = core.Clock()
-    core.wait(1) 
+    core.wait(duration) 
     return(IRClock)
 
 
@@ -215,7 +215,7 @@ def iTransmutableObjects(*args):
     win.flip()
 
 
-def iSpellExample(*displays):
+def iSpellExample(*displays, show_output = True):
     # Input Display
     for i in range(2):
         rect_pos = circularGridPositions(center_pos = [0, 0],
@@ -238,17 +238,18 @@ def iSpellExample(*displays):
             win.flip()
             core.wait(1)
     
-    # Output Display
-    rect_pos = circularGridPositions(center_pos = [0, 0],
-                                 set_size = len(displays[1]), radius = 8)
-    for j in range(len(displays[1])):
-        rect.pos = rect_pos[j]
-        rect.draw()
-        stim = stim_dict[displays[1][j]]
-        stim.pos = rect_pos[j]
-        stim.draw()
-    win.flip()
-    core.wait(1)
+    if show_output:
+        # Output Display
+        rect_pos = circularGridPositions(center_pos = [0, 0],
+                                     set_size = len(displays[1]), radius = 8)
+        for j in range(len(displays[1])):
+            rect.pos = rect_pos[j]
+            rect.draw()
+            stim = stim_dict[displays[1][j]]
+            stim.pos = rect_pos[j]
+            stim.draw()
+        win.flip()
+        core.wait(1)
  
 
 def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
@@ -415,6 +416,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 else:
                     rect.lineColor = [1, 0, 0]
                 rect.draw()
+                rect.lineColor = [-0.6, -0.6, -0.6]
                 resp = stim_dict[trial.resp_options[testResp]]
                 resp.pos = cuepractice_pos[testResp]
                 resp.draw()
@@ -429,8 +431,9 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 for i in range(1 + j):
                     corResp = trial.correct_resp[i]
                     rect.pos = cuepractice_pos[corResp]
-                    rect.lineColor = [0, 0, 1]
+                    rect.fillColor = [0, 0, 1]
                     rect.draw()
+                    rect.fillColor = [0.7, 0.7, 0.7]
                     resp = stim_dict[trial.resp_options[corResp]]
                     resp.pos = cuepractice_pos[corResp]
                     resp.draw()
@@ -469,46 +472,88 @@ def CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
     return i
+            
     
-        
-def GenericBlock(trial_df, mode = "random"):
+def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
+                 durations = [0.5, 1, 0.3, 0.5], test = True, feedback = False):
     # create the trial handler
+    if i_step is None:  
+        i_step = len(trial_df)
+    df = trial_df[i:i+i_step].copy()
     trials = data.TrialHandler(
-        trial_df.to_dict('records'), 1, method='sequential')
+        df.to_dict('records'), 1, method='sequential')
 
     for trial in trials:
         # 1. Fixation
         tFixation()
         
         # 2. Map Cue
-        tMapcue(trial, mode = mode)
+        tMapcue(trial, mode = mode, duration = durations[0])
         
         # 3. Display Family
-        IRClock = tDisplay(trial)
+        IRClock = tDisplay(trial, duration = durations[1])
         
-        # 4. Transformation Display
-        intermediateRT = tEmpty(trial, IRClock)
-        trials.addData('intermediateRT', intermediateRT)
+        if test:
+            # 4. Transformation Display
+            intermediateRT = tEmpty(trial, IRClock)
+            trials.addData('intermediateRT', intermediateRT)
         
-        # 5. Empty Display
-        win.flip()
-        core.wait(0.3)
-        
-        # 6. Test Display
-        TestClock = core.Clock()
-        if trial.test_type == 'count':
-            tCount(trial)   
-        elif trial.test_type == 'position':
-            tPosition(trial)
-        rect.size = normal_size
-        win.flip()
-        
-        # get test response
-        testRT, testResp = tTestresponse(TestClock, resp_keys)
-        trials.addData('testRT', testRT)
-        trials.addData('testResp', testResp)
-        dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
-        core.wait(0.5)
+            # 5. Empty Display
+            win.flip()
+            core.wait(durations[2])
+            
+            # 6. Test Display
+            TestClock = core.Clock()
+            
+            for inc in range(1 + feedback*2): 
+                if trial.test_type == 'count':
+                    tCount(trial)   
+                elif trial.test_type == 'position':
+                    tPosition(trial)
+                rect.size = normal_size
+                if inc == 0:
+                    win.flip()
+                    continue
+                
+                # 8. get test response
+                if inc == 1:
+                    testRT, testResp = tTestresponse(TestClock, resp_keys)
+                    
+                # 9. Feedback                                                       # TODO: relocate to tCount etc.
+                # immedeate
+                if feedback:
+                    rect.pos = resp_pos[testResp]
+                    if trial.correct_resp == testResp:
+                        rect.lineColor = [0, 1, 0]
+                    else:
+                        rect.lineColor = [1, 0, 0]
+                    rect.draw()
+                    rect.lineColor = [-0.6, -0.6, -0.6]
+                    resp = stim_dict[trial.resp_options[testResp]]
+                    resp.pos = resp_pos[testResp]
+                    resp.draw()
+                    if inc == 1:
+                        win.flip()
+                        continue
+                    
+                    # correct position 
+                    if trial.correct_resp != testResp:
+                        corResp = trial.correct_resp
+                        rect.pos = resp_pos[corResp]
+                        rect.fillColor = [0, 0, 1]
+                        rect.draw()
+                        rect.fillColor = [0.7, 0.7, 0.7]
+                        resp = stim_dict[trial.resp_options[corResp]]
+                        resp.pos = resp_pos[corResp]
+                        resp.draw()
+                        core.wait(1)
+                        if inc == 2:
+                            win.flip()
+                
+            trials.addData('testRT', testRT)
+            trials.addData('testResp', testResp)
+            dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
+        core.wait(durations[3])
     trials.saveAsPickle(fileName)
     
 #=============================================================================
@@ -662,9 +707,8 @@ magicBooks = visual.ImageStim(
     units = 'pix',
     size = [640, 575], interpolate = True)
 
-keyBoard6 = visual.ImageStim(
-    win, image = glob.glob(stim_dir + os.sep + "keyBoard6.png")[0],
-    size = [40, 20], interpolate = True)
+
+
 
 #=============================================================================
 # Run Experiment
@@ -711,6 +755,10 @@ logging.console.setLevel(logging.WARNING)
 # and some handy clocks to keep track of time
 globalClock = core.Clock()
 
+##############################################################################
+# Introduction Session
+##############################################################################
+# TODO: if GPU demands are too high: Generate all text stimuli before the experiment and just load them
 # Navigation
 Instructions(part_key = 'Navigation',
              special_displays = [iSingleImage,
@@ -737,12 +785,12 @@ Instructions(part_key = 'Intro',
                      )
 
 # Pre-Practice: Learn textual cues and test memory performance
-learnDuration = LearnCues(mode = "textual")                                     # TODO: Save Data with Time Stamp
+learnDuration = LearnCues(mode = "textual")                                     
 Instructions(part_key = 'Intermezzo1',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard6']]])
 i = 1
-i = CuePracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 6)
+i = CuePracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 6)         # TODO: Save practice Data?
 
 # Pre-Practice: Learn visual cues and test memory performance    
 Instructions(part_key = 'NowVisual')
@@ -751,9 +799,35 @@ Instructions(part_key = 'Intermezzo2')
 i = CuePracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
 
 # Pre-Practice: Position
-Instructions(part_key = 'NowPosition')
-GenericBlock(trials_prim_prac_c, mode = "random")                                      #TODO Loop
+Instructions(part_key = 'NowPosition1',
+             special_displays = [iSingleImage], 
+             args = [[magicWand]])
+GenericBlock(trials_prim_prac_p, i = 0, i_step = 2,
+             mode = "random", durations = [1, 3, 0.6, 0.5], test = False)       # TODO: Loop with Accuracy
+Instructions(part_key = 'NowPosition2',
+             special_displays = [iSingleImage], 
+             args = [[keyboard_dict['keyBoard4']]])
+GenericBlock(trials_prim_prac_p, i = 0, i_step = 2,
+             mode = "random", durations = [1, 3, 0.6, 2], test = True,
+             feedback = True)
+Instructions(part_key = 'NowPosition3')
+GenericBlock(trials_prim_prac_p, i = 2, i_step = 32,
+             mode = "random", test = True, feedback = True)
 
+# Pre-Practice: Counting
+Instructions(part_key = 'NowCount1')
+GenericBlock(trials_prim_prac_c, i = 0, i_step = 2,
+             mode = "random", durations = [1, 3, 0.6, 2], test = True,
+             feedback = True)
+Instructions(part_key = 'NowPosition3')
+GenericBlock(trials_prim_prac_c, i = 2, i_step = 32,
+             mode = "random", test = True, feedback = True)
+
+
+##############################################################################
+# Testing Session
+##############################################################################
+Instructions(part_key = 'StartTesting')                                         # TODO
 
 # Block: Primitives
 GenericBlock(trials_prim, mode = "random")
