@@ -379,7 +379,7 @@ def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
             finished = True  
     return page, finished 
     
-# Blocks ----------------------------------------------------------------------
+# Blocks and Loops-------------------------------------------------------------
 
 def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
                  font = "Times New Roman", fontcolor = [-0.9, -0.9, -0.9]):
@@ -536,29 +536,6 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
     trials_prim_cue['emp_resp'] = testRespSuperList
     trials_prim_cue['resp_RT'] = testRTSuperList
     return trials_prim_cue
-
-
-def CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 1, i_step = 30):
-    mean_acc = 0.0
-    while mean_acc < min_acc:
-        df = trials_prim_cue[i:i+i_step].copy()
-        df = PracticeCues(df, mode = mode)                                     # TODO: Save Data with Time Stamp
-        errors = (df.correct_resp == df.emp_resp).to_list()
-        mean_acc = np.mean(list(map(int, errors))) # convert to integers
-        
-        accPrompt = visual.TextStim(
-            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
-                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
-        
-        # repeat or wrap up
-        i += i_step    
-        if mean_acc < min_acc:
-            feedbacktype = 'Feedback0' 
-        else: 
-            feedbacktype = 'Feedback1'  
-        Instructions(part_key = feedbacktype,
-                 special_displays = [iSingleImage], args = [[accPrompt]])            
-    return i
             
     
 def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
@@ -569,7 +546,9 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
     df = trial_df[i:i+i_step].copy()
     trials = data.TrialHandler(
         df.to_dict('records'), 1, method='sequential')
-
+    intermediateRTList = []
+    testRespList = []
+    testRTList = []
     for trial in trials:
         # 1. Fixation
         tFixation()
@@ -595,13 +574,67 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
             elif trial.test_type == 'position':
                 testRT, testResp = tPosition(trial, feedback = feedback)
                 
-            # 7. Save data    
-            trials.addData('testRT', testRT)
-            trials.addData('testResp', testResp)
-            dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
+            # 7. Save data
+            intermediateRTList.append(intermediateRT)
+            testRespList.append(testResp)
+            testRTList.append(testRT)
+            # trials.addData('testRT', testRT)
+            # trials.addData('testResp', testResp)
+            # dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
         core.wait(durations[3])
-    trials.saveAsPickle(fileName)
-    
+        
+    # append trial list with collected data 
+    df['inter_RT'] = intermediateRTList
+    df['emp_resp'] = testRespList
+    df['resp_RT'] = testRTList
+    return df
+
+
+def CuePracticeLoop(min_acc = 0.9, mode = "random", i = 1, i_step = 30):
+    mean_acc = 0.0
+    while mean_acc < min_acc:
+        df = trials_prim_cue[i:i+i_step].copy()
+        df = PracticeCues(df, mode = mode)                                     # TODO: Save Data with Time Stamp
+        errors = (df.correct_resp == df.emp_resp).to_list()
+        mean_acc = np.mean(list(map(int, errors))) # convert to integers
+        
+        accPrompt = visual.TextStim(
+            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
+                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
+        
+        # repeat or wrap up
+        i += i_step    
+        if mean_acc < min_acc:
+            feedbacktype = 'Feedback0' 
+        else: 
+            feedbacktype = 'Feedback1'  
+        Instructions(part_key = feedbacktype,
+                 special_displays = [iSingleImage], args = [[accPrompt]])            
+    return i
+
+
+def TestPracticeLoop(trial_df, min_acc = 0.9, mode = "random", i = 1, i_step = 30,
+                     durations = [0.5, 1, 0.3, 0.5], test = True, feedback = False):
+    mean_acc = 0.0
+    while mean_acc < min_acc:
+        df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
+                 durations = durations, test = test, feedback = feedback)
+        errors = (df.correct_resp == df.emp_resp).to_list()
+        mean_acc = np.mean(list(map(int, errors))) # convert to integers
+        
+        accPrompt = visual.TextStim(
+            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
+                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
+        
+        # repeat or wrap up
+        i += i_step    
+        if mean_acc < min_acc:
+            feedbacktype = 'Feedback0' 
+        else: 
+            feedbacktype = 'Feedback1'  
+        Instructions(part_key = feedbacktype,
+                 special_displays = [iSingleImage], args = [[accPrompt]])            
+    return i    
 #=============================================================================
 # Prepare Experiment
 #=============================================================================
@@ -835,39 +868,39 @@ learnDuration = LearnCues(mode = "textual")
 Instructions(part_key = 'Intermezzo1',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard6']]])
-i = 1
-i = CuePracticeLoop(min_acc = 0.9, mode = "textual", i = i, i_step = 6)         # TODO: Save practice Data?
+CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 0, i_step = 6)            # TODO: Save practice Data
 
 # Pre-Practice: Learn visual cues and test memory performance    
 Instructions(part_key = 'NowVisual')
 learnDuration = LearnCues(mode = "visual")
 Instructions(part_key = 'Intermezzo2')
-i = CuePracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
+CuePracticeLoop(min_acc = 0.9, mode = "visual", i = 0, i_step = 2)
 
 # Pre-Practice: Position
 Instructions(part_key = 'NowPosition1',
              special_displays = [iSingleImage], 
              args = [[magicWand]])
 GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
-             mode = "random", durations = [1, 3, 0.5, 0], test = False)         # TODO: Loop with Accuracy
+             mode = "random", durations = [1, 3, 0.6, 0], test = False)         
 Instructions(part_key = 'NowPosition2',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard4']]])
-GenericBlock(trials_prim_prac_p, i = 0, i_step = 2,
-             mode = "random", durations = [1, 3, 0.6, 2], test = True,
-             feedback = True)
+i = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = 0,
+                 i_step = 2, durations = [1, 3, 0.6, 2], test = True,
+                 feedback = True)
 Instructions(part_key = 'NowPosition3')
-GenericBlock(trials_prim_prac_p, i = 2, i_step = 32,
-             mode = "random", test = True, feedback = True)
+TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = i,
+                 i_step = 30, test = True, feedback = True)
+
 
 # Pre-Practice: Counting
 Instructions(part_key = 'NowCount1')
-GenericBlock(trials_prim_prac_c, i = 0, i_step = 2,
-             mode = "random", durations = [1, 3, 0.6, 2], test = True,
-             feedback = True)
+i = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = 0,
+                 i_step = 2, durations = [1, 3, 0.6, 2], test = True,
+                 feedback = True)
 Instructions(part_key = 'NowPosition3')
-GenericBlock(trials_prim_prac_c, i = 2, i_step = 32,
-             mode = "random", test = True, feedback = True)
+TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = i,
+                 i_step = 30, test = True, feedback = True)
 
 
 ##############################################################################

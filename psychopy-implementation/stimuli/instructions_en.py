@@ -135,7 +135,8 @@ NowPosition2 = ["Here is what you do:",
                     "on the marked square after the transformation.",
                 "Use the following keys for this choice:",
                 0,
-                "We will do 3 slow trials first."]
+                "We will do 3 slow trials first.",
+                "Ready?"]
 NowPosition3 = ["Next, you will do normal paced trials.",
                 "Ready?"]
 
@@ -146,10 +147,11 @@ NowCount1 = ["Some magic students tend to cheat on the test above.",
             "...there are two test displays (both equally likely to appear):",
             "The previous one was based on object positions. The next will be based "\
                 "on the object count.",
-            "After transforming the objects (1-3), you will now see an object category",
+            "After transforming the objects (steps 1-3), you will now see an object category",
             "(4) From the options below, choose how often "\
                     "this object appears in the scene after the transformation.",
-            "We will do 3 slow trials first."] 
+            "We will do 3 slow trials first.",
+            "Ready?"] 
 
     
 # Store as Dictionary
