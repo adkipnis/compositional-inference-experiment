@@ -131,44 +131,129 @@ def tEmpty(trial, IRClock):
     return(intermediateRT)
    
 
-def tCount(trial):
-    rect.pos = center_pos
-    rect.size = center_size
-    rect.draw()
-    rect.size = normal_size
-    rect.lineColor = [-0.6, -0.6, -0.6]
-    stim = stim_dict[trial.target]
-    stim.pos = center_pos
-    stim.size = center_size
-    stim.draw()
-    stim.size = normal_size
-    for i in range(len(resp_pos)):
-        rect.pos = resp_pos[i]
+def tCount(trial, feedback = False):
+    TestClock = core.Clock()
+    for inc in range(1 + feedback*2):
+        rect.pos = center_pos
+        rect.size = center_size
         rect.draw()
-        resp = count_dict[str(i)]
-        resp.pos = resp_pos[i]
-        resp.draw()
-
-
-def tPosition(trial):
-    # position cues
-    for i in range(len(rect_pos)):
-        rect.pos = rect_pos[i]
-        if trial.target == i:
-            rect.lineColor = [0, 0.5, 0]
-            qm.pos = rect_pos[i]
-        rect.draw()
+        rect.size = normal_size
         rect.lineColor = [-0.6, -0.6, -0.6]
-    qm.draw()
-            
-    # response options
-    for i in range(len(resp_pos)):
-        rect.pos = resp_pos[i]
-        rect.draw()
-        resp = stim_dict[trial.resp_options[i]]
-        resp.pos = resp_pos[i]
-        resp.draw()
+        stim = stim_dict[trial.target]
+        stim.pos = center_pos
+        stim.size = center_size
+        stim.draw()
+        stim.size = normal_size
+        for i in range(len(resp_pos)):
+            rect.pos = resp_pos[i]
+            rect.draw()
+            resp = count_dict[str(i)]
+            resp.pos = resp_pos[i]
+            resp.draw()
+        
+        # First cycle: Display stimuli
+        if inc == 0:
+            win.flip()
+            continue
+        
+        # Second cycle: Get test response
+        if inc == 1:
+            testRT, testResp = tTestresponse(TestClock, resp_keys)
+        
+        # Third cycle: Feedback                                                     
+        # immedeate feedback
+        if feedback:
+            rect.pos = resp_pos[testResp]
+            if trial.correct_resp == testResp:
+                rect.lineColor = [0, 1, 0]
+            else:
+                rect.lineColor = [1, 0, 0]
+            rect.draw()
+            rect.lineColor = [-0.6, -0.6, -0.6]
+            resp = count_dict[str(testResp)]
+            resp.pos = resp_pos[testResp]
+            resp.draw()
+            if inc == 1:
+                win.flip()
+                continue
+        
+        # correct solution 
+        if trial.correct_resp != testResp:
+            corResp = trial.correct_resp
+            rect.pos = resp_pos[corResp]
+            rect.fillColor = [0, 0, 1]
+            rect.draw()
+            rect.fillColor = [0.7, 0.7, 0.7]
+            resp = count_dict[str(corResp)]
+            resp.pos = resp_pos[corResp]
+            resp.draw()
+            core.wait(1)
+            if inc == 2:
+                win.flip()        
+    return testRT, testResp
 
+def tPosition(trial, feedback = False):
+    TestClock = core.Clock()
+    for inc in range(1 + feedback*2):
+        # position cues
+        for i in range(len(rect_pos)):
+            rect.pos = rect_pos[i]
+            if trial.target == i:
+                # rect.lineColor = [0, 0.5, 0]
+                qm.pos = rect_pos[i]
+            rect.draw()
+            rect.lineColor = [-0.6, -0.6, -0.6]
+        qm.draw()
+        
+        # response options
+        for i in range(len(resp_pos)):
+            rect.pos = resp_pos[i]
+            rect.draw()
+            resp = stim_dict[trial.resp_options[i]]
+            resp.pos = resp_pos[i]
+            resp.draw()
+        
+        # First cycle: Display stimuli
+        if inc == 0:
+            win.flip()
+            continue
+        
+        # Second cycle: Get test response
+        if inc == 1:
+            testRT, testResp = tTestresponse(TestClock, resp_keys)
+        
+        # Third cycle: Feedback                                                     
+        # immedeate feedback
+        if feedback:
+            rect.pos = resp_pos[testResp]
+            if trial.correct_resp == testResp:
+                rect.lineColor = [0, 1, 0]
+            else:
+                rect.lineColor = [1, 0, 0]
+            rect.draw()
+            rect.lineColor = [-0.6, -0.6, -0.6]
+            resp = stim_dict[trial.resp_options[testResp]]
+            resp.pos = resp_pos[testResp]
+            resp.draw()
+            if inc == 1:
+                win.flip()
+                continue
+        
+        # correct solution 
+        if trial.correct_resp != testResp:
+            corResp = trial.correct_resp
+            rect.pos = resp_pos[corResp]
+            rect.fillColor = [0, 0, 1]
+            rect.draw()
+            rect.fillColor = [0.7, 0.7, 0.7]
+            resp = stim_dict[trial.resp_options[corResp]]
+            resp.pos = resp_pos[corResp]
+            resp.draw()
+            core.wait(1)
+            if inc == 2:
+                win.flip()
+    return testRT, testResp
+            
 
 def tTestresponse(TestClock, respKeys, return_numeric = True,
                   max_wait = np.inf):
@@ -190,6 +275,7 @@ def tTestresponse(TestClock, respKeys, return_numeric = True,
                     core.quit()  # abort experiment
             event.clearEvents()      
     return(testRT, testResp)
+
 
 def iSingleImage(*args):
     for arg in args:
@@ -306,6 +392,7 @@ def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
     finished = False
     Part = instructions[part_key]
     page = 0
+    win.flip()
     while not finished:
         page_content = Part[page][0]
         proceed_key = Part[page][1]
@@ -503,53 +590,12 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
             core.wait(durations[2])
             
             # 6. Test Display
-            TestClock = core.Clock()
-            
-            for inc in range(1 + feedback*2): 
-                if trial.test_type == 'count':
-                    tCount(trial)   
-                elif trial.test_type == 'position':
-                    tPosition(trial)
-                rect.size = normal_size
-                if inc == 0:
-                    win.flip()
-                    continue
+            if trial.test_type == 'count':
+                testRT, testResp = tCount(trial, feedback = feedback)
+            elif trial.test_type == 'position':
+                testRT, testResp = tPosition(trial, feedback = feedback)
                 
-                # 8. get test response
-                if inc == 1:
-                    testRT, testResp = tTestresponse(TestClock, resp_keys)
-                    
-                # 9. Feedback                                                       # TODO: relocate to tCount etc.
-                # immedeate
-                if feedback:
-                    rect.pos = resp_pos[testResp]
-                    if trial.correct_resp == testResp:
-                        rect.lineColor = [0, 1, 0]
-                    else:
-                        rect.lineColor = [1, 0, 0]
-                    rect.draw()
-                    rect.lineColor = [-0.6, -0.6, -0.6]
-                    resp = stim_dict[trial.resp_options[testResp]]
-                    resp.pos = resp_pos[testResp]
-                    resp.draw()
-                    if inc == 1:
-                        win.flip()
-                        continue
-                    
-                    # correct position 
-                    if trial.correct_resp != testResp:
-                        corResp = trial.correct_resp
-                        rect.pos = resp_pos[corResp]
-                        rect.fillColor = [0, 0, 1]
-                        rect.draw()
-                        rect.fillColor = [0.7, 0.7, 0.7]
-                        resp = stim_dict[trial.resp_options[corResp]]
-                        resp.pos = resp_pos[corResp]
-                        resp.draw()
-                        core.wait(1)
-                        if inc == 2:
-                            win.flip()
-                
+            # 7. Save data    
             trials.addData('testRT', testRT)
             trials.addData('testResp', testResp)
             dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
@@ -802,8 +848,8 @@ i = CuePracticeLoop(min_acc = 0.9, mode = "visual", i = i, i_step = 2)
 Instructions(part_key = 'NowPosition1',
              special_displays = [iSingleImage], 
              args = [[magicWand]])
-GenericBlock(trials_prim_prac_p, i = 0, i_step = 2,
-             mode = "random", durations = [1, 3, 0.6, 0.5], test = False)       # TODO: Loop with Accuracy
+GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
+             mode = "random", durations = [1, 3, 0.5, 0], test = False)         # TODO: Loop with Accuracy
 Instructions(part_key = 'NowPosition2',
              special_displays = [iSingleImage], 
              args = [[keyboard_dict['keyBoard4']]])

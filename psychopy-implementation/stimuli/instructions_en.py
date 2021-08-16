@@ -122,12 +122,13 @@ NowPosition1 = [0,
                "You will now practice applying these spells to groups of objects.",
                "Earlier, you saw what effect transformation spells had.",
                "For the following trials, you will first see the spell cue "\
-                   "and then the objects you need to transform using it."]
+                   "and then the objects you need to transform using it.",
+               "It will look like this:"]
 
 NowPosition2 = ["Here is what you do:",
                 "(1) Memorize the presented objects.",
                 "(2) After they disappear, transform the objects in your mind.",
-                "When you are done: (3) Press the spacebar.",
+                "When you are done in your mind: (3) Press the spacebar.",
                 "You will see all the squares on which the objects stood, "\
                     "one of them will be marked.",
                 "(4) From the options below, choose the object that would be "\
