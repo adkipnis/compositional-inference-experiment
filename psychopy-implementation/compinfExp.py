@@ -138,7 +138,7 @@ def tCount(trial, feedback = False):
         rect.size = center_size
         rect.draw()
         rect.size = normal_size
-        rect.lineColor = [-0.6, -0.6, -0.6]
+        rect.lineColor = color_dict["dark_grey"]
         stim = stim_dict[trial.target]
         stim.pos = center_pos
         stim.size = center_size
@@ -165,11 +165,11 @@ def tCount(trial, feedback = False):
         if feedback:
             rect.pos = resp_pos[testResp]
             if trial.correct_resp == testResp:
-                rect.lineColor = [0, 1, 0]
+                rect.lineColor = color_dict["green"]
             else:
-                rect.lineColor = [1, 0, 0]
+                rect.lineColor = color_dict["red"]
             rect.draw()
-            rect.lineColor = [-0.6, -0.6, -0.6]
+            rect.lineColor = color_dict["dark_grey"]
             resp = count_dict[str(testResp)]
             resp.pos = resp_pos[testResp]
             resp.draw()
@@ -181,9 +181,9 @@ def tCount(trial, feedback = False):
         if trial.correct_resp != testResp:
             corResp = trial.correct_resp
             rect.pos = resp_pos[corResp]
-            rect.fillColor = [0, 0, 1]
+            rect.fillColor = color_dict["blue"]
             rect.draw()
-            rect.fillColor = [0.7, 0.7, 0.7]
+            rect.fillColor = color_dict["light_grey"]
             resp = count_dict[str(corResp)]
             resp.pos = resp_pos[corResp]
             resp.draw()
@@ -199,10 +199,9 @@ def tPosition(trial, feedback = False):
         for i in range(len(rect_pos)):
             rect.pos = rect_pos[i]
             if trial.target == i:
-                # rect.lineColor = [0, 0.5, 0]
                 qm.pos = rect_pos[i]
             rect.draw()
-            rect.lineColor = [-0.6, -0.6, -0.6]
+            rect.lineColor = color_dict["dark_grey"]
         qm.draw()
         
         # response options
@@ -227,11 +226,11 @@ def tPosition(trial, feedback = False):
         if feedback:
             rect.pos = resp_pos[testResp]
             if trial.correct_resp == testResp:
-                rect.lineColor = [0, 1, 0]
+                rect.lineColor = color_dict["green"]
             else:
-                rect.lineColor = [1, 0, 0]
+                rect.lineColor = color_dict["red"]
             rect.draw()
-            rect.lineColor = [-0.6, -0.6, -0.6]
+            rect.lineColor = color_dict["dark_grey"]
             resp = stim_dict[trial.resp_options[testResp]]
             resp.pos = resp_pos[testResp]
             resp.draw()
@@ -243,9 +242,9 @@ def tPosition(trial, feedback = False):
         if trial.correct_resp != testResp:
             corResp = trial.correct_resp
             rect.pos = resp_pos[corResp]
-            rect.fillColor = [0, 0, 1]
+            rect.fillColor = color_dict["blue"]
             rect.draw()
-            rect.fillColor = [0.7, 0.7, 0.7]
+            rect.fillColor = color_dict["light_grey"]
             resp = stim_dict[trial.resp_options[corResp]]
             resp.pos = resp_pos[corResp]
             resp.draw()
@@ -479,7 +478,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 continue
             
             # 2. Response options
-            rect.lineColor = [-0.6, -0.6, -0.6]
+            rect.lineColor = color_dict["dark_grey"]
             for i in range(len(cuepractice_pos)):
                 rect.pos = cuepractice_pos[i]
                 rect.draw()
@@ -500,11 +499,11 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 testResp = testRespList[i]
                 rect.pos = cuepractice_pos[testResp]
                 if trial.correct_resp[i] == testResp:
-                    rect.lineColor = [0, 1, 0]
+                    rect.lineColor = color_dict["green"]
                 else:
-                    rect.lineColor = [1, 0, 0]
+                    rect.lineColor = color_dict["red"]
                 rect.draw()
-                rect.lineColor = [-0.6, -0.6, -0.6]
+                rect.lineColor = color_dict["dark_grey"]
                 resp = stim_dict[trial.resp_options[testResp]]
                 resp.pos = cuepractice_pos[testResp]
                 resp.draw()
@@ -519,9 +518,9 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 for i in range(1 + j):
                     corResp = trial.correct_resp[i]
                     rect.pos = cuepractice_pos[corResp]
-                    rect.fillColor = [0, 0, 1]
+                    rect.fillColor = color_dict["blue"]
                     rect.draw()
-                    rect.fillColor = [0.7, 0.7, 0.7]
+                    rect.fillColor = color_dict["light_grey"]
                     resp = stim_dict[trial.resp_options[corResp]]
                     resp.pos = cuepractice_pos[corResp]
                     resp.draw()
@@ -592,17 +591,22 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
     return df
 
 
-def CuePracticeLoop(min_acc = 0.9, mode = "random", i = 1, i_step = 30):
+def CuePracticeLoop(trials_prim_cue, 
+                    min_acc = 0.9, mode = "random", i = 1, i_step = 30):
     mean_acc = 0.0
+    df_list = []
     while mean_acc < min_acc:
         df = trials_prim_cue[i:i+i_step].copy()
-        df = PracticeCues(df, mode = mode)                                     # TODO: Save Data with Time Stamp
+        df_list.append(PracticeCues(df, mode = mode))                                     # TODO: Save Data with Time Stamp
         errors = (df.correct_resp == df.emp_resp).to_list()
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
         accPrompt = visual.TextStim(
-            win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5, wrapWidth = 30,
-                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
+            win, text = str(np.round(mean_acc * 100)) +"%",
+            height = 2.5,
+            wrapWidth = 30,
+            font = "Times New Roman",
+            color = color_dict["black"])
         
         # repeat or wrap up
         i += i_step    
@@ -612,7 +616,8 @@ def CuePracticeLoop(min_acc = 0.9, mode = "random", i = 1, i_step = 30):
             feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
-    return i
+    df_out = pd.concat(df_list)
+    return i, df_out
 
 
 def TestPracticeLoop(trial_df, 
@@ -628,7 +633,7 @@ def TestPracticeLoop(trial_df,
         
         accPrompt = visual.TextStim(
             win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5, wrapWidth = 30,
-                font = "Times New Roman", color = [-0.9, -0.9, -0.9])
+                font = "Times New Roman", color = color_dict["black"])
         
         # repeat or wrap up
         i += i_step    
@@ -657,7 +662,7 @@ win = visual.Window(
 # Store info about the experiment session
 psychopyVersion = "2021.1.4"
 expName = "compositionalInference"
-expInfo = {"participant": "00", "session": "01"}
+expInfo = {"participant": "01", "session": "01"}
 expInfo["dateStr"] = data.getDateStr()  # add the current time
 expInfo["psychopyVersion"] = psychopyVersion
 expInfo["frameRate"] = win.getActualFrameRate()
@@ -669,17 +674,16 @@ else:
 # Dialogue Box
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
 if dlg.OK:
-    toFile("data" + os.sep + "participantParams_" + expInfo["participant"] + \
-           ".pickle", expInfo)
+    toFile("data" + os.sep + expInfo["participant"] + "_participantParams.pkl", expInfo)
 else:
     core.quit()  # the user hit cancel so exit
 
 # Save data to this file later
 fileName = main_dir + os.sep + u"data/%s_%s_%s" %(expInfo["participant"],
                                                   expName, expInfo["dateStr"])
-# Log file for detail verbose info
-logFile = logging.LogFile(fileName + ".log", level = logging.EXP)
-logging.console.setLevel(logging.WARNING) 
+# # Log file for detail verbose info
+# logFile = logging.LogFile(fileName + ".log", level = logging.EXP)
+# logging.console.setLevel(logging.WARNING) 
 
 # Load instructions
 with open(stim_dir + os.sep + "instructions_en.pkl", "rb") as handle:
@@ -687,26 +691,31 @@ with open(stim_dir + os.sep + "instructions_en.pkl", "rb") as handle:
 
 # Load triallists and adapt setup to their parameters
 trials_prim_cue = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_cue_" + expInfo["participant"] + \
-           ".pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_cue.pkl"))
 trials_prim_prac_c = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_prac_c_" + expInfo["participant"] + \
-           ".pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_c.pkl"))
 trials_prim_prac_p = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_prac_p_" + expInfo["participant"] + \
-           ".pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_p.pkl"))
 trials_prim = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_" + expInfo["participant"] + \
-           ".pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim.pkl"))
     
-with open(trial_list_dir + os.sep + "mappinglists_" + expInfo["participant"] + \
-          ".pkl", "rb") as handle:
+with open(trial_list_dir + os.sep + expInfo["participant"] + "_mappinglists.pkl", "rb") as handle:
     mappinglists = pickle.load(handle)
     
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
 map_names = np.unique(trials_prim.map.to_list())
+
+# set colors
+color_dict = {"light_grey": [0.7, 0.7, 0.7],
+              "mid_grey": [0, 0, 0],
+              "dark_grey": [-0.6, -0.6, -0.6],
+              "black": [-0.9, -0.9, -0.9],
+              "red": [1, 0, 0],
+              "green": [0, 1, 0],
+              "blue": [0, 0, 1]
+              }
 
 # set positions 
 resp_keys = np.array(["d", "f", "j", "k"])
@@ -733,8 +742,8 @@ rect = visual.Rect(
     units = "deg",
     width = 6,
     height = 6,
-    fillColor = [0.7, 0.7, 0.7],
-    lineColor = [-0.6, -0.6, -0.6])
+    fillColor = color_dict["light_grey"],
+    lineColor = color_dict["dark_grey"])
 
 fixation = visual.GratingStim(
     win, color = -0.9,
@@ -755,7 +764,7 @@ for i in range(len(map_names)):
                                                text = tcue_list[i],
                                                pos = center_pos,
                                                height = 4,
-                                               color= [-0.9, -0.9, -0.9])})
+                                               color = color_dict["black"])})
 
 # Visual cues
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
@@ -787,7 +796,7 @@ for i in range(n_resp):
     count_dict.update({str(i):visual.TextStim(win,
                                              text = str(i),
                                              height = 4,
-                                             color= [-0.9, -0.9, -0.9])})
+                                             color= color_dict["black"])})
     
 # Keyboard prompts
 keyboard_dict = {}
@@ -804,7 +813,7 @@ for i in range(len(keyboard_list)):
 qm = visual.TextStim(win,
                      text = "?",
                      height = 4,
-                     color = [-0.9, -0.9, -0.9])  
+                     color = color_dict["black"])  
     
 nextPrompt = visual.TextStim(
     win, text = "Press Spacebar to go back \nor press the Enter key to"\
@@ -812,7 +821,7 @@ nextPrompt = visual.TextStim(
     height = 1.5,
     wrapWidth = 30,
     font = "mono",
-    color = [0, 0, 0]) 
+    color = color_dict["mid_grey"]) 
 
 leftArrow = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "leftArrow.png")[0],
@@ -841,7 +850,7 @@ Instructions(part_key = "Navigation",
              args = [[keyboard_dict["keyBoardArrows"]],
                      [keyboard_dict["keyBoardEsc"]]],
              font = "mono",
-             fontcolor = [0, 0, 0])
+             fontcolor = color_dict["mid_grey"])
 
 # Introduction
 Instructions(part_key = "Intro",
@@ -864,8 +873,8 @@ learnDuration = LearnCues(mode = "textual")
 Instructions(part_key = "Intermezzo1",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard6"]]])
-CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 0, 
-                i_step = 2
+i, df_out = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "textual", i = 0, 
+                i_step = 1
                 )
        
 
@@ -873,7 +882,7 @@ CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 0,
 Instructions(part_key = "NowVisual")
 learnDuration = LearnCues(mode = "visual")
 Instructions(part_key = "Intermezzo2")
-CuePracticeLoop(min_acc = 0.9, mode = "visual", i = 0, 
+CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "visual", i = 0, 
                 i_step = 2
                 )
 
