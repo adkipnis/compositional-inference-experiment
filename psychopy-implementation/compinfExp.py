@@ -897,7 +897,7 @@ df_out_v = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "visual",
 
 # Save cue memory data
 pd.concat([df_out_t, df_out_v]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "cue_memory.pkl") 
+    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Test-Type: Position
@@ -909,7 +909,7 @@ GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
 Instructions(part_key = "NowPosition2",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
-df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "textual", 
+df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", 
                             i_step = 2, durations = [1, 3, 0.6, 2], 
                             feedback = True)
 Instructions(part_key = "NowPosition3")
@@ -924,6 +924,9 @@ Instructions(part_key = "NowPosition3")
 TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", 
                  i = len(df_out_c), i_step = 30, feedback = True)
 
+# Save test type data
+pd.concat([df_out_p, df_out_c]).reset_index(drop=True).to_pickle(
+    data_dir + os.sep + expInfo["participant"] + "_" + "testType.pkl") 
 # ----------------------------------------------------------------------------
 # Practice: Primitive
 # Instructions(part_key = "StartTesting")                                        # TODO
