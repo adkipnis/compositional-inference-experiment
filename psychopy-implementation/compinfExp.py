@@ -89,11 +89,11 @@ def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):
         rect.pos = center_pos
         rect.size = center_size
         rect.draw()           
-    cue, _ = setCue(trial.map[0], mode = mode)
+    cue, cue_type = setCue(trial.map[0], mode = mode)
     cue.draw()
     win.flip()
     core.wait(duration)
-
+    return cue_type
 
 def tDisplay(trial, duration = 1):
     # draw rectangles
@@ -543,7 +543,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
     return trials_prim_cue
             
     
-def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
+def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
                  durations = [0.5, 1, 0.3, 0.5], test = True, feedback = False):
     # create the trial handler
     if i_step is None:  
@@ -554,12 +554,14 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
     intermediateRTList = []
     testRespList = []
     testRTList = []
+    cueTypeList = []
+    
     for trial in trials:
         # 1. Fixation
         tFixation()
         
         # 2. Map Cue
-        tMapcue(trial, mode = mode, duration = durations[0])
+        cue_type = tMapcue(trial, mode = mode, duration = durations[0])
         
         # 3. Display Family
         IRClock = tDisplay(trial, duration = durations[1])
@@ -583,13 +585,12 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
             intermediateRTList.append(intermediateRT)
             testRespList.append(testResp)
             testRTList.append(testRT)
-            # trials.addData("testRT", testRT)
-            # trials.addData("testResp", testResp)
-            # dataFile.write("%.4f,%.4f,%i\n" %(intermediateRT, testRT, testResp))
+            cueTypeList.append(cue_type)
         core.wait(durations[3])
         
     # append trial list with collected data 
     if test:
+        df["cue_type"] = cueTypeList
         df["inter_RT"] = intermediateRTList
         df["emp_resp"] = testRespList
         df["resp_RT"] = testRTList
@@ -626,13 +627,15 @@ def CuePracticeLoop(trials_prim_cue,
 
 
 def TestPracticeLoop(trial_df, 
-                     min_acc = 0.9, mode = "random", i = 1, i_step = 30,
+                     min_acc = 0.9, mode = "random", i = 0, i_step = 30,
                      durations = [0.5, 1, 0.3, 0.5], 
                      test = True, feedback = False):
     mean_acc = 0.0
+    df_list = []
     while mean_acc < min_acc:
         df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
                  durations = durations, test = test, feedback = feedback)
+        df_list.append(df)
         errors = (df.correct_resp == df.emp_resp).to_list()
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
@@ -648,7 +651,8 @@ def TestPracticeLoop(trial_df,
             feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
-    return i    
+    df_out = pd.concat(df_list)
+    return df_out    
 
 
 #=============================================================================
@@ -905,22 +909,20 @@ GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
 Instructions(part_key = "NowPosition2",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
-i = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
-                 i_step = 2, durations = [1, 3, 0.6, 2], test = True,
-                 feedback = True)
+df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "textual", 
+                            i_step = 2, durations = [1, 3, 0.6, 2], 
+                            feedback = True)
 Instructions(part_key = "NowPosition3")
-TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = i,
-                 i_step = 30, test = True, feedback = True)
-
+df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
+                            i = len(df_out_p), feedback = True)
 
 # Test-Type: Counting
 Instructions(part_key = "NowCount1")
-i = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random",
-                 i_step = 2, durations = [1, 3, 0.6, 2], test = True,
-                 feedback = True)
+df_out_c = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random",
+                 i_step = 2, durations = [1, 3, 0.6, 2],  feedback = True)
 Instructions(part_key = "NowPosition3")
-TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = i,
-                 i_step = 30, test = True, feedback = True)
+TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", 
+                 i = len(df_out_c), i_step = 30, feedback = True)
 
 # ----------------------------------------------------------------------------
 # Practice: Primitive
