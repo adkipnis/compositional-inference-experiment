@@ -122,10 +122,10 @@ def tEmpty(trial, IRClock):
     while intermediateResp == None:
         allKeys = event.waitKeys()
         for thisKey in allKeys:
-            if thisKey == 'space': 
+            if thisKey == "space": 
                 intermediateRT = IRClock.getTime()
                 intermediateResp = 1
-            elif thisKey in ['escape']:
+            elif thisKey in ["escape"]:
                 core.quit()  # abort experiment
         event.clearEvents()
     return(intermediateRT)
@@ -271,7 +271,7 @@ def tTestresponse(TestClock, respKeys, return_numeric = True,
                         testResp = np.where(respKeys == thisKey)[0][0]
                     else:
                         testResp = thisKey
-                elif thisKey in ['escape']:
+                elif thisKey in ["escape"]:
                     core.quit()  # abort experiment
             event.clearEvents()      
     return(testRT, testResp)
@@ -289,7 +289,7 @@ def iSingleImage(*args):
 def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
     category_pos = rectangularGrindPositions(
-        center_pos = [0, 0], h_dist = 10, dim = [2, 3])                     # TODO: make dim dependent on len(categories)
+        center_pos = [0, 0], h_dist = 10, dim = [2, 3])                         # TODO: make dim dependent on len(categories)
 
     # draw categories
     for i in range(len(categories)):
@@ -339,49 +339,49 @@ def iSpellExample(*displays, show_output = True):
  
 
 def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
-              proceed_key = '/k', wait_s = 3):
+              proceed_key = "/k", wait_s = 3):
     
-    assert proceed_key in ['/k', '/t', '/e'], "Unkown proceed key"
+    assert proceed_key in ["/k", "/t", "/e"], "Unkown proceed key"
     finished = False
     testResp = None
     TestClock = core.Clock()
     
     # get response or wait or something in between
-    if proceed_key == '/k': #keypress
-        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+    if proceed_key == "/k": #keypress
+        _, testResp = tTestresponse(TestClock, ["left", "right", "space"],
                                     return_numeric = False)
-    elif proceed_key == '/t': #time
+    elif proceed_key == "/t": #time
         core.wait(wait_s)
-        testResp = 'right'
-    elif proceed_key == '/e': #either
-        _, testResp = tTestresponse(TestClock, ['left', 'right', 'space'],
+        testResp = "right"
+    elif proceed_key == "/e": #either
+        _, testResp = tTestresponse(TestClock, ["left", "right", "space"],
                                     return_numeric = False,
                                     max_wait = wait_s)
         if testResp is None:
-            testResp = 'right'
+            testResp = "right"
             
     # Proceed accordingly    
-    if testResp == 'right':
+    if testResp == "right":
         if page < max_page-1:
             page +=1
         elif continue_after_last_page:
             finished = True
-    elif testResp == 'left' and page > 0:
+    elif testResp == "left" and page > 0:
         page -= 1
-    elif testResp == 'space':
+    elif testResp == "space":
         nextPrompt.draw()
         win.flip()
-        _, contResp = tTestresponse(TestClock, ['return', 'space'],
+        _, contResp = tTestresponse(TestClock, ["return", "space"],
                                     return_numeric = False)
-        if contResp == 'space':
+        if contResp == "space":
             finished = False
-        elif  contResp == 'return':
+        elif  contResp == "return":
             finished = True  
     return page, finished 
     
 # Blocks and Loops-------------------------------------------------------------
 
-def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
+def Instructions(part_key = "Intro", special_displays = list(), args = list(),
                  font = "Times New Roman", fontcolor = [-0.9, -0.9, -0.9]):
     assert len(special_displays) == len(args),\
         "Number of special displays must match the number of args"
@@ -416,6 +416,7 @@ def Instructions(part_key = 'Intro', special_displays = list(), args = list(),
               
 def LearnCues(center_pos = [0, -6], mode = "visual"):
     # Initialize parameters
+    win.flip()
     LearnClock = core.Clock()
     finished = False
     page = 0
@@ -425,7 +426,7 @@ def LearnCues(center_pos = [0, -6], mode = "visual"):
     while not finished:
         # Draw map cue
         map_name = map_names[page]
-        categories = map_name.split('-')
+        categories = map_name.split("-")
         cue = setCue(map_name, mode = mode)
         cue.draw()
         
@@ -451,7 +452,7 @@ def LearnCues(center_pos = [0, -6], mode = "visual"):
 def PracticeCues(trials_prim_cue, mode = "visual"):
     # create the trial handler
     PracticeCueTrials = data.TrialHandler(
-        trials_prim_cue.to_dict('records'), 1, method='sequential')
+        trials_prim_cue.to_dict("records"), 1, method="sequential")
     testRespSuperList = []
     testRTSuperList = []
     
@@ -533,8 +534,8 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 testRespSuperList.append(testRespList)
                 win.flip()
                 core.wait(2)
-    trials_prim_cue['emp_resp'] = testRespSuperList
-    trials_prim_cue['resp_RT'] = testRTSuperList
+    trials_prim_cue["emp_resp"] = testRespSuperList
+    trials_prim_cue["resp_RT"] = testRTSuperList
     return trials_prim_cue
             
     
@@ -545,7 +546,7 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
         i_step = len(trial_df)
     df = trial_df[i:i+i_step].copy()
     trials = data.TrialHandler(
-        df.to_dict('records'), 1, method='sequential')
+        df.to_dict("records"), 1, method="sequential")
     intermediateRTList = []
     testRespList = []
     testRTList = []
@@ -562,31 +563,32 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
         if test:
             # 4. Transformation Display
             intermediateRT = tEmpty(trial, IRClock)
-            trials.addData('intermediateRT', intermediateRT)
+            trials.addData("intermediateRT", intermediateRT)
         
             # 5. Empty Display
             win.flip()
             core.wait(durations[2])
             
             # 6. Test Display
-            if trial.test_type == 'count':
+            if trial.test_type == "count":
                 testRT, testResp = tCount(trial, feedback = feedback)
-            elif trial.test_type == 'position':
+            elif trial.test_type == "position":
                 testRT, testResp = tPosition(trial, feedback = feedback)
                 
             # 7. Save data
             intermediateRTList.append(intermediateRT)
             testRespList.append(testResp)
             testRTList.append(testRT)
-            # trials.addData('testRT', testRT)
-            # trials.addData('testResp', testResp)
-            # dataFile.write('%.4f,%.4f,%i\n' %(intermediateRT, testRT, testResp))
+            # trials.addData("testRT", testRT)
+            # trials.addData("testResp", testResp)
+            # dataFile.write("%.4f,%.4f,%i\n" %(intermediateRT, testRT, testResp))
         core.wait(durations[3])
         
     # append trial list with collected data 
-    df['inter_RT'] = intermediateRTList
-    df['emp_resp'] = testRespList
-    df['resp_RT'] = testRTList
+    if test:
+        df["inter_RT"] = intermediateRTList
+        df["emp_resp"] = testRespList
+        df["resp_RT"] = testRTList
     return df
 
 
@@ -599,22 +601,24 @@ def CuePracticeLoop(min_acc = 0.9, mode = "random", i = 1, i_step = 30):
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
         accPrompt = visual.TextStim(
-            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
+            win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5, wrapWidth = 30,
                 font = "Times New Roman", color = [-0.9, -0.9, -0.9])
         
         # repeat or wrap up
         i += i_step    
         if mean_acc < min_acc:
-            feedbacktype = 'Feedback0' 
+            feedbacktype = "Feedback0" 
         else: 
-            feedbacktype = 'Feedback1'  
+            feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
     return i
 
 
-def TestPracticeLoop(trial_df, min_acc = 0.9, mode = "random", i = 1, i_step = 30,
-                     durations = [0.5, 1, 0.3, 0.5], test = True, feedback = False):
+def TestPracticeLoop(trial_df, 
+                     min_acc = 0.9, mode = "random", i = 1, i_step = 30,
+                     durations = [0.5, 1, 0.3, 0.5], 
+                     test = True, feedback = False):
     mean_acc = 0.0
     while mean_acc < min_acc:
         df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
@@ -623,46 +627,90 @@ def TestPracticeLoop(trial_df, min_acc = 0.9, mode = "random", i = 1, i_step = 3
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
         accPrompt = visual.TextStim(
-            win, text = str(mean_acc * 100) +"%", height = 2.5, wrapWidth = 30,
+            win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5, wrapWidth = 30,
                 font = "Times New Roman", color = [-0.9, -0.9, -0.9])
         
         # repeat or wrap up
         i += i_step    
         if mean_acc < min_acc:
-            feedbacktype = 'Feedback0' 
+            feedbacktype = "Feedback0" 
         else: 
-            feedbacktype = 'Feedback1'  
+            feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
     return i    
+
+
 #=============================================================================
 # Prepare Experiment
 #=============================================================================
+# Create main window
+win = visual.Window(
+    [1920, 1080],
+    # [800, 600],
+    fullscr = False,
+    color = [0.85, 0.85, 0.85],
+    screen = 1,
+    monitor = "testMonitor",
+    units = "deg")
 
-# load instructions
-with open(stim_dir + os.sep + 'instructions_en.pkl', 'rb') as handle:
+# Store info about the experiment session
+psychopyVersion = "2021.1.4"
+expName = "compositionalInference"
+expInfo = {"participant": "00", "session": "01"}
+expInfo["dateStr"] = data.getDateStr()  # add the current time
+expInfo["psychopyVersion"] = psychopyVersion
+expInfo["frameRate"] = win.getActualFrameRate()
+if expInfo["frameRate"] != None:
+    frameDur = 1.0 / round(expInfo["frameRate"])
+else:
+    frameDur = 1.0 / 60.0  # could not measure, so guess
+
+# Dialogue Box
+dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
+if dlg.OK:
+    toFile("data" + os.sep + "participantParams_" + expInfo["participant"] + \
+           ".pickle", expInfo)
+else:
+    core.quit()  # the user hit cancel so exit
+
+# Save data to this file later
+fileName = main_dir + os.sep + u"data/%s_%s_%s" %(expInfo["participant"],
+                                                  expName, expInfo["dateStr"])
+# Log file for detail verbose info
+logFile = logging.LogFile(fileName + ".log", level = logging.EXP)
+logging.console.setLevel(logging.WARNING) 
+
+# Load instructions
+with open(stim_dir + os.sep + "instructions_en.pkl", "rb") as handle:
     instructions = pickle.load(handle)
 
-# load triallists and adapt setup to their parameters
+# Load triallists and adapt setup to their parameters
 trials_prim_cue = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_cue.pkl"))
+    os.path.join(trial_list_dir, "trials_prim_cue_" + expInfo["participant"] + \
+           ".pkl"))
 trials_prim_prac_c = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_prac_c.pkl"))
+    os.path.join(trial_list_dir, "trials_prim_prac_c_" + expInfo["participant"] + \
+           ".pkl"))
 trials_prim_prac_p = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim_prac_p.pkl"))
+    os.path.join(trial_list_dir, "trials_prim_prac_p_" + expInfo["participant"] + \
+           ".pkl"))
 trials_prim = pd.read_pickle(
-    os.path.join(trial_list_dir, "trials_prim.pkl"))
-
+    os.path.join(trial_list_dir, "trials_prim_" + expInfo["participant"] + \
+           ".pkl"))
+    
+with open(trial_list_dir + os.sep + "mappinglists_" + expInfo["participant"] + \
+          ".pkl", "rb") as handle:
+    mappinglists = pickle.load(handle)
+    
 set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
 map_names = np.unique(trials_prim.map.to_list())
 
 # set positions 
-resp_keys = np.array(['d', 'f', 'j', 'k'])
-resp_keys_wide = np.array(['s', 'd', 'f', 'j', 'k', 'l'])
-# dict_keys_to_resp_wide = dict(
-#     zip(resp_keys_wide, range(len(resp_keys_wide))))
+resp_keys = np.array(["d", "f", "j", "k"])
+resp_keys_wide = np.array(["s", "d", "f", "j", "k", "l"])
 center_pos = [0, 5]
 center_size = [8, 8]
 cue_size = [9, 9]
@@ -675,15 +723,10 @@ resp_pos = rectangularGrindPositions(center_pos = [0, -10],
 cuepractice_pos = rectangularGrindPositions(center_pos = [0, -8],
                                             h_dist = 8, dim = (1, 6))
 
-# create window
-win = visual.Window(
-    [1920, 1080],
-    # [800, 600],
-    fullscr = False,
-    color = [0.85, 0.85, 0.85],
-    screen = 1,
-    monitor = 'testMonitor',
-    units = 'deg')
+
+#=============================================================================
+# Prepare Visual Objects
+#=============================================================================
 
 rect = visual.Rect(
     win = win,
@@ -695,19 +738,17 @@ rect = visual.Rect(
 
 fixation = visual.GratingStim(
     win, color = -0.9,
-    colorSpace = 'rgb',
+    colorSpace = "rgb",
     pos = center_pos,
-    mask = 'circle',
+    mask = "circle",
     size = 0.2)
 
-# create textual cues
-with open(trial_list_dir + os.sep + 'mappinglists.pkl', 'rb') as handle:
-    mappinglists = pickle.load(handle)
-    
-tcue_list = mappinglists['tcue']
+# Textual cues  
+tcue_list = mappinglists["tcue"]
 assert len(tcue_list) == len(map_names)
 spellname_dict = dict(zip(tcue_list, map_names))
 tcue_dict = {}
+
 for i in range(len(map_names)):
     cue_name = map_names[i]
     tcue_dict.update({cue_name:visual.TextStim(win,
@@ -716,9 +757,9 @@ for i in range(len(map_names)):
                                                height = 4,
                                                color= [-0.9, -0.9, -0.9])})
 
-# create visual cues
+# Visual cues
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
-vcue_list = mappinglists['vcue']
+vcue_list = mappinglists["vcue"]
 assert len(vcue_list) >= len(map_names)
 vcue_dict = {}
 for i in range(len(map_names)):
@@ -729,8 +770,8 @@ for i in range(len(map_names)):
                                                 size = cue_size,
                                                 interpolate = True)})
     
-# create stimuli
-stim_list = mappinglists['stim']
+# Stimuli
+stim_list = mappinglists["stim"]
 assert len(stim_list) >= n_cats
 stim_dict = {}
 for i in range(n_cats):
@@ -740,7 +781,7 @@ for i in range(n_cats):
                                                  size = normal_size,
                                                  interpolate = True)})
 
-# create count responses
+# Count responses
 count_dict = {}
 for i in range(n_resp):
     count_dict.update({str(i):visual.TextStim(win,
@@ -748,18 +789,18 @@ for i in range(n_resp):
                                              height = 4,
                                              color= [-0.9, -0.9, -0.9])})
     
-# create keyboard prompts
+# Keyboard prompts
 keyboard_dict = {}
 keyboard_list = glob.glob(stim_dir + os.sep + "keyBoard*.png")
 for i in range(len(keyboard_list)):
     key_name = os.path.basename(
-        os.path.normpath(keyboard_list[i])).split('.')[0]
+        os.path.normpath(keyboard_list[i])).split(".")[0]
     keyboard_dict.update({key_name: visual.ImageStim(win,
                                                 image = keyboard_list[i],
                                                 size = [40, 20],
                                                 interpolate = True)})
     
-# misc. stimuli    
+# Misc. Stimuli    
 qm = visual.TextStim(win,
                      text = "?",
                      height = 4,
@@ -783,72 +824,27 @@ magicWand = visual.ImageStim(
 
 magicBooks = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "magicBooks.png")[0],
-    units = 'pix',
+    units = "pix",
     size = [640, 575], interpolate = True)
 
-
-
-
-#=============================================================================
-# Run Experiment
-#=============================================================================
-
-# Store info about the experiment session
-psychopyVersion = '2021.1.4'
-expName = 'compositionalInference'
-expInfo = {'participant': '', 'session': '01'}
-expInfo['dateStr'] = data.getDateStr()  # add the current time
-expInfo['psychopyVersion'] = psychopyVersion
-expInfo['frameRate'] = win.getActualFrameRate()
-# if expInfo['frameRate'] != None:
-#     frameDur = 1.0 / round(expInfo['frameRate'])
-# else:
-#     frameDur = 1.0 / 60.0  # could not measure, so guess
-
-# Dialogue Box
-# dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
-# if dlg.OK:
-#     toFile('participantParams.pickle', expInfo)
-# else:
-#     core.quit()  # the user hit cancel so exit
-
-# Text file to save data
-fileName = main_dir + os.sep + u'data/%s_%s_%s' %(expInfo['participant'],
-                                                  expName, expInfo['dateStr'])
-dataFile = open(fileName + '.csv', 'w')
-dataFile.write('intermediateRT, testRT, testResp\n')
-
-# ExperimentHandler
-# thisExp = data.ExperimentHandler(
-#     name = expName, version='', extraInfo = expInfo, runtimeInfo = None,
-#     originPath = os.path.abspath(__file__),
-#     savePickle = True, saveWideText = True,
-#     dataFileName = fileName)
-
-# Log file for detail verbose info
-logFile = logging.LogFile(fileName + '.log', level = logging.EXP)
-logging.console.setLevel(logging.WARNING) 
-# this outputs to the screen, not a file
-
-
-# and some handy clocks to keep track of time
-globalClock = core.Clock()
 
 ##############################################################################
 # Introduction Session
 ##############################################################################
-# TODO: if GPU demands are too high: Generate all text stimuli before the experiment and just load them
+# Global clock
+globalClock = core.Clock()
+
 # Navigation
-Instructions(part_key = 'Navigation',
+Instructions(part_key = "Navigation",
              special_displays = [iSingleImage,
                                  iSingleImage], 
-             args = [[keyboard_dict['keyBoardArrows']],
-                     [keyboard_dict['keyBoardEsc']]],
+             args = [[keyboard_dict["keyBoardArrows"]],
+                     [keyboard_dict["keyBoardEsc"]]],
              font = "mono",
              fontcolor = [0, 0, 0])
 
 # Introduction
-Instructions(part_key = 'Intro',
+Instructions(part_key = "Intro",
              special_displays = [iSingleImage,
                                  iTransmutableObjects,
                                  iSpellExample,
@@ -856,61 +852,64 @@ Instructions(part_key = 'Intro',
                                  iSingleImage], 
              args = [[magicBooks],
                      [None],
-                     [['A', 'B', 'C', 'C', 'E', 'C'],
-                      ['A', 'E', 'C', 'C', 'E', 'C']],
-                     [['B', 'A', 'C', 'B', 'B', 'D'],
-                      ['E', 'A', 'C', 'E', 'E', 'D']],
-                     [keyboard_dict['keyBoardSpacebar']]]
+                     [["A", "B", "C", "C", "E", "C"],
+                      ["A", "E", "C", "C", "E", "C"]],
+                     [["B", "A", "C", "B", "B", "D"],
+                      ["E", "A", "C", "E", "E", "D"]],
+                     [keyboard_dict["keyBoardSpacebar"]]]
                      )
 
 # Pre-Practice: Learn textual cues and test memory performance
 learnDuration = LearnCues(mode = "textual")                                     
-Instructions(part_key = 'Intermezzo1',
+Instructions(part_key = "Intermezzo1",
              special_displays = [iSingleImage], 
-             args = [[keyboard_dict['keyBoard6']]])
-CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 0, i_step = 6)            # TODO: Save practice Data
+             args = [[keyboard_dict["keyBoard6"]]])
+CuePracticeLoop(min_acc = 0.9, mode = "textual", i = 0, 
+                i_step = 2
+                )
+       
 
 # Pre-Practice: Learn visual cues and test memory performance    
-Instructions(part_key = 'NowVisual')
+Instructions(part_key = "NowVisual")
 learnDuration = LearnCues(mode = "visual")
-Instructions(part_key = 'Intermezzo2')
-CuePracticeLoop(min_acc = 0.9, mode = "visual", i = 0, i_step = 2)
+Instructions(part_key = "Intermezzo2")
+CuePracticeLoop(min_acc = 0.9, mode = "visual", i = 0, 
+                i_step = 2
+                )
 
 # Pre-Practice: Position
-Instructions(part_key = 'NowPosition1',
+Instructions(part_key = "NowPosition1",
              special_displays = [iSingleImage], 
              args = [[magicWand]])
 GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
              mode = "random", durations = [1, 3, 0.6, 0], test = False)         
-Instructions(part_key = 'NowPosition2',
+Instructions(part_key = "NowPosition2",
              special_displays = [iSingleImage], 
-             args = [[keyboard_dict['keyBoard4']]])
+             args = [[keyboard_dict["keyBoard4"]]])
 i = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = 0,
                  i_step = 2, durations = [1, 3, 0.6, 2], test = True,
                  feedback = True)
-Instructions(part_key = 'NowPosition3')
+Instructions(part_key = "NowPosition3")
 TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = i,
                  i_step = 30, test = True, feedback = True)
 
 
 # Pre-Practice: Counting
-Instructions(part_key = 'NowCount1')
+Instructions(part_key = "NowCount1")
 i = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = 0,
                  i_step = 2, durations = [1, 3, 0.6, 2], test = True,
                  feedback = True)
-Instructions(part_key = 'NowPosition3')
+Instructions(part_key = "NowPosition3")
 TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = i,
                  i_step = 30, test = True, feedback = True)
 
 
-##############################################################################
-# Testing Session
-##############################################################################
-Instructions(part_key = 'StartTesting')                                         # TODO
+# ##############################################################################
+# # Testing Session
+# ##############################################################################
+# Instructions(part_key = "StartTesting")                                        # TODO
 
-# Block: Primitives
-GenericBlock(trials_prim, mode = "random")
+# # Block: Primitives
+# GenericBlock(trials_prim, mode = "random")
 
-dataFile.close()
-
-win.close()
+# win.close()
