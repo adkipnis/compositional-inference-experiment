@@ -6,6 +6,8 @@ Created on Thu Feb 11 18:07:53 2021
 @author: alex
 """
 import os
+import glob
+import pickle
 import string
 from itertools import product 
 from itertools import combinations
@@ -292,7 +294,7 @@ def draw_position_target(stimuli, resp, display_out,
 
 
 def gen_trial_dict(stimuli, general_map, resp,
-                   resp_list = None, test_type = "count",               #response options TODO
+                   resp_list = None, test_type = "count", trial_type = "generic",
                    p = None, display_size = 5, max_duplicates = 3, sep = '-'):
     ''' takes a set of stimuli, a general map and a fixed correct response,
         then generates a dict containing adequate input, output displays,
@@ -342,7 +344,8 @@ def gen_trial_dict(stimuli, general_map, resp,
     else:
         _, past_transforms_sparse = apply_map(display_in, compiled_map,
                                                sep = sep)     
-    output_dict = {"input_disp" : display_in,
+    output_dict = {"trial_type" : trial_type,
+                   "input_disp" : display_in,
                    "map" : general_map,
                    "output_disp": display_out,
                    "test_type": test_type,
@@ -358,7 +361,9 @@ def gen_trial_dict(stimuli, general_map, resp,
 
 def gen_trials(stimuli, map_list,
                resp_list = list(range(4)),
-               test_type = "count", display_size = 6, sep='-'):
+               test_type = "count",
+               trial_type = "generic",
+               display_size = 6, sep='-'):
     ''' takes a list of maps and generates a datafreame (input display, map,
         output display, target, correct response)'''     
     if test_type == "count":
@@ -376,6 +381,7 @@ def gen_trials(stimuli, map_list,
     for i in range(num_trials):
         trial_dict = gen_trial_dict(stimuli, map_list[i], resp_sequence[i],
                                     test_type = test_type,
+                                    trial_type = trial_type,
                                     resp_list = resp_list,
                                     p = target_urn/sum(target_urn),
                                     display_size = display_size, sep = sep)
@@ -385,7 +391,7 @@ def gen_trials(stimuli, map_list,
         #     raise Exception("Target urn contains more targets than expected") 
         trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
     df = pd.concat(trials, ignore_index=True)
-    return df[["input_disp", "map", "output_disp", "test_type", "target",
+    return df[["trial_type", "input_disp", "map", "output_disp", "test_type", "target",
                "resp_options", "correct_resp", "trans_ub", "trans_lb",
                "map_type", "arg_set"]]    
 
@@ -417,7 +423,8 @@ def gen_cue_trials(map_list, stimuli,
         resp_options = np.random.permutation(stimuli)
         correct_resp = correct_cue_trial_resp(general_map[0], resp_options,
                                               sep = sep)
-        trial_dict = {"map" : general_map,
+        trial_dict = {"trial_type": "cue_memory",
+                      "map" : general_map,
                       "resp_options": resp_options,
                       "correct_resp": correct_resp}
         trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
@@ -495,64 +502,80 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 
 
 # ============================================================================
-# Displays, Trials & Blocks
+# Generate Blocks
 
-# 0. Practice blocks
-# Cues
-df_list = []
-for j in range(8):
-    cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
-    df_list.append(gen_cue_trials(cue_list_prim, stimuli,
-                                     display_size = 6, sep='-'))
-trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
-trials_prim_cue.to_pickle(trial_list_dir + os.sep + "trials_prim_cue.pkl")
+n_participants = 1
+tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
+vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
+stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
 
-# Count
-df_list = []
-for j in range(8):
-    map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
-    df_list.append(gen_trials(stimuli,
-                             map_list_prim,                         
-                             resp_list = resp_list,
-                             test_type = "count",
-                             display_size = display_size,
-                             sep = sep))
-trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + "trials_prim_prac_c.pkl")
-
-# Position
-df_list = []
-for j in range(8):
-    map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
-    df_list.append(gen_trials(stimuli,
-                             map_list_prim,                         
-                             resp_list = resp_list,
-                             test_type = "position",
-                             display_size = display_size,
-                             sep = sep))
-trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + "trials_prim_prac_p.pkl")
-
-# 1. Primitive blocks
-# generate trials twice with n_exposure/2 and each test display type,
-# then randomly permute both generated lists
-test_types = ["count", "position"]
-df_list = []
-for j in range(2):
-    map_list_prim = np.random.permutation(np.repeat(selection_prim, np.ceil(n_exposure/2),
-                                            axis = 0))
-    df_list.append(gen_trials(stimuli,
-                             map_list_prim,                         
-                             resp_list = resp_list,
-                             test_type = test_types[j],
-                             display_size = display_size,
-                             sep = sep))
-trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-trials_prim.to_pickle(trial_list_dir + os.sep + "trials_prim.pkl")
-# plt.figure()
-# trials_prim["correct_resp"].plot.hist(alpha=0.5)
-# trials_prim["trans_ub"].plot.hist(alpha=0.5)
-# trials_prim["target"].value_counts().plot(kind='bar')
+for i in range(1, n_participants+1):
+    # Mappings between cues and stimuli
+    tcue_list = np.random.permutation(tcue_list)
+    vcue_list = np.random.permutation(vcue_list)
+    stim_list = np.random.permutation(stim_list)
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "mappinglists.pkl"
+    data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
+    with open(fname, "wb") as f:
+        pickle.dump(data, f)
+    # 0. Practice blocks
+    # Cue Memory
+    df_list = []
+    for j in range(8):
+        cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+        df_list.append(gen_cue_trials(cue_list_prim, stimuli,
+                                         display_size = 6, sep='-'))
+    trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
+    trials_prim_cue.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue.pkl")
+    
+    # Test Practice: Count
+    df_list = []
+    for j in range(8):
+        map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+        df_list.append(gen_trials(stimuli,
+                                 map_list_prim,                         
+                                 resp_list = resp_list,
+                                 trial_type = "test_practice",
+                                 test_type = "count",
+                                 display_size = display_size,
+                                 sep = sep))
+    trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+    trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_c.pkl")
+    
+    # Test Practice: Position
+    df_list = []
+    for j in range(8):
+        map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+        df_list.append(gen_trials(stimuli,
+                                 map_list_prim,                         
+                                 resp_list = resp_list,
+                                 trial_type = "test_practice",
+                                 test_type = "position",
+                                 display_size = display_size,
+                                 sep = sep))
+    trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+    trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_p.pkl")
+    
+    # 1. Primitive blocks
+    # generate trials twice with n_exposure/2 and each test display type,
+    # then randomly permute both generated lists
+    test_types = ["count", "position"]
+    df_list = []
+    for j in range(2):
+        map_list_prim = np.random.permutation(np.repeat(selection_prim, np.ceil(n_exposure/2),
+                                                axis = 0))
+        df_list.append(gen_trials(stimuli,
+                                 map_list_prim,                         
+                                 resp_list = resp_list,
+                                 test_type = test_types[j],
+                                 display_size = display_size,
+                                 sep = sep))
+    trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+    trials_prim.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim.pkl")
+    # plt.figure()
+    # trials_prim["correct_resp"].plot.hist(alpha=0.5)
+    # trials_prim["trans_ub"].plot.hist(alpha=0.5)
+    # trials_prim["target"].value_counts().plot(kind='bar')
 
 
 # 2. Compositional blocks
@@ -600,16 +623,3 @@ for j in range(2):
                              sep = sep))
 trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
 
-# Mappings between cues and stimuli
-import glob
-import pickle
-tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
-tcue_list = np.random.permutation(tcue_list)
-vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
-vcue_list = np.random.permutation(vcue_list)
-stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
-stim_list = np.random.permutation(stim_list)
-fname = trial_list_dir + os.sep + "mappinglists.pkl"
-data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
-with open(fname, "wb") as f:
-    pickle.dump(data, f)
