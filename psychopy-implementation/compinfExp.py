@@ -21,6 +21,7 @@ main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Expe
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
+data_dir = os.path.join(main_dir, "data")
 
 #=============================================================================
 # Helper Functions
@@ -68,17 +69,17 @@ def tFixation():
     win.flip()
     core.wait(0.3)
 
-def setCue(key, mode = "visual"):
+def setCue(key, mode = "random"):
+    if mode == "random":
+        if np.random.randint(0, 2) == 1:
+            mode = "textual"
+        else:
+            mode = "visual"
     if mode == "visual":
         cue = vcue_dict[key]
     elif mode == "textual":
         cue = tcue_dict[key]
-    elif mode == "random":
-        if np.random.randint(0, 2) == 1:
-            cue = vcue_dict[key]
-        else:
-            cue = tcue_dict[key]
-    return cue
+    return cue, mode
 
 
 def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):
@@ -88,7 +89,7 @@ def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):
         rect.pos = center_pos
         rect.size = center_size
         rect.draw()           
-    cue = setCue(trial.map[0], mode = mode)
+    cue, _ = setCue(trial.map[0], mode = mode)
     cue.draw()
     win.flip()
     core.wait(duration)
@@ -413,7 +414,7 @@ def Instructions(part_key = "Intro", special_displays = list(), args = list(),
                                    wait_s = proceed_wait)
         
               
-def LearnCues(center_pos = [0, -6], mode = "visual"):
+def LearnCues(center_pos = [0, -6], mode = "random"):
     # Initialize parameters
     win.flip()
     LearnClock = core.Clock()
@@ -426,7 +427,7 @@ def LearnCues(center_pos = [0, -6], mode = "visual"):
         # Draw map cue
         map_name = map_names[page]
         categories = map_name.split("-")
-        cue = setCue(map_name, mode = mode)
+        cue, _ = setCue(map_name, mode = mode)
         cue.draw()
         
         # Draw corresponding explicit map
@@ -454,12 +455,16 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
         trials_prim_cue.to_dict("records"), 1, method="sequential")
     testRespSuperList = []
     testRTSuperList = []
+    cueTypeList = []
     
     for trial in PracticeCueTrials:
         num_cr = len(trial.correct_resp)
         testRespList = []
         testRTList = []
         j = 0
+        cue, cue_type = setCue(trial.map[0], mode = mode)
+        cueTypeList.append(cue_type)
+        
         # Incrementally display stuff
         for inc in range(3 + 2 * num_cr): 
         
@@ -470,7 +475,6 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 continue
             
             # 1. Map Cue
-            cue = setCue(trial.map[0], mode = mode)
             cue.draw()
             if inc == 1:
                 win.flip()
@@ -535,6 +539,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                 core.wait(2)
     trials_prim_cue["emp_resp"] = testRespSuperList
     trials_prim_cue["resp_RT"] = testRTSuperList
+    trials_prim_cue["cue_type"] = cueTypeList
     return trials_prim_cue
             
     
@@ -592,12 +597,12 @@ def GenericBlock(trial_df, mode = "random", i = 1, i_step = None,
 
 
 def CuePracticeLoop(trials_prim_cue, 
-                    min_acc = 0.9, mode = "random", i = 1, i_step = 30):
+                    min_acc = 0.9, mode = "random", i = 0, i_step = 30):
     mean_acc = 0.0
     df_list = []
     while mean_acc < min_acc:
         df = trials_prim_cue[i:i+i_step].copy()
-        df_list.append(PracticeCues(df, mode = mode))                                     # TODO: Save Data with Time Stamp
+        df_list.append(PracticeCues(df, mode = mode))
         errors = (df.correct_resp == df.emp_resp).to_list()
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
@@ -617,7 +622,7 @@ def CuePracticeLoop(trials_prim_cue,
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
     df_out = pd.concat(df_list)
-    return i, df_out
+    return df_out
 
 
 def TestPracticeLoop(trial_df, 
@@ -674,7 +679,7 @@ else:
 # Dialogue Box
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
 if dlg.OK:
-    toFile("data" + os.sep + expInfo["participant"] + "_participantParams.pkl", expInfo)
+    toFile(data_dir + os.sep + expInfo["participant"] + "_participantParams.pkl", expInfo)
 else:
     core.quit()  # the user hit cancel so exit
 
@@ -868,25 +873,30 @@ Instructions(part_key = "Intro",
                      [keyboard_dict["keyBoardSpacebar"]]]
                      )
 
-# Pre-Practice: Learn textual cues and test memory performance
+# ----------------------------------------------------------------------------
+# Cue Memory: Textual
 learnDuration = LearnCues(mode = "textual")                                     
 Instructions(part_key = "Intermezzo1",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard6"]]])
-i, df_out = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "textual", i = 0, 
+df_out_t = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "textual", 
                 i_step = 1
-                )
-       
+                )   
 
-# Pre-Practice: Learn visual cues and test memory performance    
+# Cue Memory: Visual
 Instructions(part_key = "NowVisual")
 learnDuration = LearnCues(mode = "visual")
 Instructions(part_key = "Intermezzo2")
-CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "visual", i = 0, 
-                i_step = 2
+df_out_v = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "visual", 
+                i = len(df_out_t), i_step = 1
                 )
 
-# Pre-Practice: Position
+# Save cue memory data
+pd.concat([df_out_t, df_out_v]).reset_index(drop=True).to_pickle(
+    data_dir + os.sep + expInfo["participant"] + "_" + "cue_memory.pkl") 
+
+# ----------------------------------------------------------------------------
+# Test-Type: Position
 Instructions(part_key = "NowPosition1",
              special_displays = [iSingleImage], 
              args = [[magicWand]])
@@ -895,7 +905,7 @@ GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
 Instructions(part_key = "NowPosition2",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
-i = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = 0,
+i = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
                  i_step = 2, durations = [1, 3, 0.6, 2], test = True,
                  feedback = True)
 Instructions(part_key = "NowPosition3")
@@ -903,22 +913,20 @@ TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", i = i,
                  i_step = 30, test = True, feedback = True)
 
 
-# Pre-Practice: Counting
+# Test-Type: Counting
 Instructions(part_key = "NowCount1")
-i = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = 0,
+i = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random",
                  i_step = 2, durations = [1, 3, 0.6, 2], test = True,
                  feedback = True)
 Instructions(part_key = "NowPosition3")
 TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", i = i,
                  i_step = 30, test = True, feedback = True)
 
-
-# ##############################################################################
-# # Testing Session
-# ##############################################################################
+# ----------------------------------------------------------------------------
+# Practice: Primitive
 # Instructions(part_key = "StartTesting")                                        # TODO
-
-# # Block: Primitives
 # GenericBlock(trials_prim, mode = "random")
+
+# Practice: Binary
 
 # win.close()
