@@ -211,6 +211,17 @@ Primitives = [0,
               # "Also, you will not get immediate feedback during your examination.",
               "To ensure that you achieve your study goals, you practice this scenario now.",
               "Ready?"]
+
+# Binary Trials
+Binaries = ["Well done!",
+            "You are almost finished.",
+            "Just as a teaser for the next session: Cues for different spells"\
+                " can be combined to produce new spells.",
+            "Essentially, the final result is as if you apply the first spell...",
+            "... take the intermediate result and then apply the second spell on it.",
+            "You will do some exmaples of these 'binary' spells.",
+            "This time there is no minimum score.",
+            "Ready?"]
     
 # Store as Dictionary
 instructions ={  
@@ -233,6 +244,7 @@ instructions ={
   "countSecond": AddProceedKey2All(countSecond, '/k'),
   "Faster": AddProceedKey2All(Faster, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
+  "Binaries": AddProceedKey2All(Binaries, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:

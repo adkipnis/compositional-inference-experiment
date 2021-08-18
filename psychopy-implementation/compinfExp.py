@@ -81,7 +81,7 @@ def setCue(key, mode = "random"):
     return cue, mode
 
 
-def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):
+def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):  #TODO: flexible for multiple cues
     assert mode in ["visual", "textual", "random"],\
         "Chosen cue mode not implemented."
     if with_background:
@@ -723,6 +723,9 @@ trials_prim_prac_p = pd.read_pickle(
 trials_prim = pd.read_pickle(
     os.path.join(trial_list_dir, expInfo["participant"] +
                  "_trials_prim.pkl"))
+trials_bin = pd.read_pickle(
+    os.path.join(trial_list_dir, expInfo["participant"] +
+                 "_trials_bin.pkl"))
     
 with open(trial_list_dir + os.sep + expInfo["participant"] +
           "_mappinglists.pkl", "rb") as handle:
@@ -991,5 +994,9 @@ df_out_5 = TestPracticeLoop(trials_prim,
                             min_acc = 0.8,
                             feedback = True)
 # Practice: Binary
-
+Instructions(part_key = "Binaries")
+df_out_6 = GenericBlock(trials_bin,
+                        i_step = 10,
+                        durations = [1, 3, 0.6, 1, 0.7],
+                        feedback = True)
 # win.close()
