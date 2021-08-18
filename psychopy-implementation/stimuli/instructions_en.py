@@ -134,47 +134,74 @@ Feedback1 = ["In this training run, your score was:",
              "This is good, you are confident to make the next step..."]
 
 
-
     
-# Positional Test
-NowPosition1 = [0,
-               "It is time for some field practice.",
-               "You now know the spell names and symbols that prompt you to "\
-                   "cast a spell.",
-               "You will now practice applying these spells to groups of objects.",
-               "Earlier, you saw what effect transformation spells had.",
-               "For the following trials, you will first see the spell cue "\
-                   "and then the objects you need to transform using it.",
-               "It will look like this:"]
+# Learn Test Types
+TestTypes = [0,
+             "It is time for some field practice.",
+             "You now know the spell names and symbols that prompt you to "\
+                 "cast a spell.",
+           "You will now practice applying these spells to groups of objects.",
+           "Earlier, you saw what effect transformation spells had.",
+           "For the following trials, you will first see the spell cue "\
+               "and then the objects you need to transform using it.",
+           "It will look like this:"]
 
-NowPosition2 = ["Here is what you do:",
-                "(1) Memorize the presented objects.",
-                "(2) After they disappear, transform the objects in your mind.",
-                "When you are done in your mind: (3) Press the spacebar.",
-                "You will see all the squares on which the objects stood, "\
-                    "one of them will be marked.",
-                "(4) From the options below, choose the object that would be "\
-                    "on the marked square after the transformation.",
-                "Use the following keys for this choice:",
-                0,
-                "We will do 3 slow trials first.",
-                "Ready?"]
+positionFirst = ["Here is what you do:",
+                    "(1) Memorize the presented objects.",
+                    "(2) After they disappear, transform the objects in your mind.",
+                    "When you are done with transforming: (3) Press the spacebar.",
+                    "You will see all the squares on which the objects stood, "\
+                        "one of them will be marked.",
+                    "(4) From the options below, choose the object that would be "\
+                            "on the marked square after the transformation.",
+                    "Use the following keys for this choice:",
+                    0,
+                    "We will do 3 slow trials first.",
+                    "Ready?"]
+
+countFirst = ["Here is what you do:",
+                 "(1) Memorize the presented objects.",
+                 "(2) After they disappear, transform the objects in your mind.",
+                 "When you are done with transforming: (3) Press the spacebar.",
+                 "You will now see an object category.",
+                 "(4) From the options below, choose how often "\
+                      "this object appears in the scene after the transformation.",
+                 "Use the following keys for this choice:",
+                  0,
+                 "We will do 3 slow trials first.",
+                 "Ready?"]
+    
 Faster = ["Next, you will do normal paced trials.",
                 "Ready?"]
 
-# Counting Test
-NowCount = ["Some magic students tend to cheat on the test above.",
-            "In order to make sure that you transform the objects in your mind "\
-                "first and only then answer a test question...",
-            "...there are two test displays (both equally likely to appear):",
-            "The previous one was based on object positions. The next will be based "\
-                "on the object count.",
-            "After transforming the objects (steps 1-3), you will now see an object category",
-            "(4) From the options below, choose how often "\
-                    "this object appears in the scene after the transformation.",
-            "We will do 3 slow trials first.",
-            "Ready?"] 
 
+countSecond = ["Some magic students tend to cheat on the test above.",
+               "In order to make sure that you transform the objects in your mind "\
+                   "first and only then answer a test question...",
+              "...there are two test displays (both equally likely to appear):",
+              "The previous one was based on object positions. The next will be based "\
+                  "on the object count.",
+              "After transforming the objects (steps 1-3), you will now see an object category",
+              "(4) From the options below, choose how often "\
+                  "this object appears in the scene after the transformation.",
+              "We will do 3 slow trials first.",
+              "Ready?"] 
+
+positionSecond = ["Some magic students tend to cheat on the test above.",
+                  "In order to make sure that you transform the objects in your mind "\
+                      "first and only then answer a test question...",
+                  "...there are two test displays (both equally likely to appear):",
+                  "The previous one was based on object positions. The next will be based "\
+                      "on the object count.",
+                  "After transforming the objects (steps 1-3)...", 
+                  "you will see all the squares on which the objects stood. "\
+                      "One of them will be marked.",
+                  "(4) From the options below, choose the object that would be "\
+                      "on the marked square after the transformation.",
+                  "We will do 3 slow trials first.",
+                  "Ready?"] 
+
+    
 # Primitive Trials
 Primitives = [0,
               "You are now well prepared "]
@@ -193,10 +220,12 @@ instructions ={
   "textualSecond": AddProceedKey2All(textualSecond, '/k'),
   "visualFirst": AddProceedKey2All(visualFirst, '/k'),
   "visualSecond": AddProceedKey2All(visualSecond, '/k'),
-  "NowPosition1": AddProceedKey2All(NowPosition1, '/k'),
-  "NowPosition2": AddProceedKey2All(NowPosition2, '/k'),
+  "TestTypes": AddProceedKey2All(TestTypes, '/k'),
+  "positionFirst": AddProceedKey2All(positionFirst, '/k'),
+  "positionSecond": AddProceedKey2All(positionSecond, '/k'),
+  "countFirst": AddProceedKey2All(countFirst, '/k'),
+  "countSecond": AddProceedKey2All(countSecond, '/k'),
   "Faster": AddProceedKey2All(Faster, '/k'),
-  "NowCount": AddProceedKey2All(NowCount, '/k')
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:

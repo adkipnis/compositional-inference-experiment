@@ -910,7 +910,7 @@ learnDuration = LearnCues(mode = first_modality)
 Instructions(part_key = "Intermezzo1",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard6"]]])
-df_out_t = CuePracticeLoop(trials_prim_cue, 
+df_out_1 = CuePracticeLoop(trials_prim_cue, 
                            mode = first_modality, 
                            i_step = 1
                            )   
@@ -919,43 +919,55 @@ df_out_t = CuePracticeLoop(trials_prim_cue,
 Instructions(part_key = second_modality + "Second")
 learnDuration = LearnCues(mode = second_modality)
 Instructions(part_key = "Intermezzo2")
-df_out_v = CuePracticeLoop(trials_prim_cue, 
+df_out_2 = CuePracticeLoop(trials_prim_cue, 
                            mode = second_modality, 
-                           i = len(df_out_t),
+                           i = len(df_out_1),
                            i_step = 1
                            )
 
 # Save cue memory data
-pd.concat([df_out_t, df_out_v]).reset_index(drop=True).to_pickle(
+pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
     data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
+# Balance out which test type is learned first
+if int(expInfo["participant"]) % 2 == 0:
+    first_test = "count"
+    trials_test_1 = trials_prim_prac_c.copy()
+    second_test = "position"
+    trials_test_2 = trials_prim_prac_p.copy()
+else:
+    first_test = "position"
+    trials_test_1 = trials_prim_prac_p.copy()
+    second_test = "count"
+    trials_test_2 = trials_prim_prac_c.copy()
+    
 # Test-Type: Position
-Instructions(part_key = "NowPosition1",
+Instructions(part_key = "TestTypes",
              special_displays = [iSingleImage], 
              args = [[magicWand]])
 GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
              mode = "random", durations = [1, 3, 0.6, 0], test = False)         
-Instructions(part_key = "NowPosition2",
+Instructions(part_key = first_test + "First",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
-df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", 
+df_out_3 = TestPracticeLoop(trials_test_1, min_acc = 0.9, mode = "random", 
                             i_step = 2, durations = [1, 3, 0.6, 2], 
                             feedback = True)
 Instructions(part_key = "Faster")
-df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
-                            i = len(df_out_p), feedback = True)
+df_out_3 = TestPracticeLoop(trials_test_1, min_acc = 0.9, mode = "random",
+                            i = len(df_out_3), feedback = True)
 
 # Test-Type: Counting
-Instructions(part_key = "NowCount1")
-df_out_c = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random",
+Instructions(part_key = second_test + "Second")
+df_out_4 = TestPracticeLoop(trials_test_2, min_acc = 0.9, mode = "random",
                  i_step = 2, durations = [1, 3, 0.6, 2],  feedback = True)
 Instructions(part_key = "Faster")
-TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", 
-                 i = len(df_out_c), i_step = 30, feedback = True)
+df_out_4 = TestPracticeLoop(trials_test_2, min_acc = 0.9, mode = "random", 
+                            i = len(df_out_4), feedback = True)
 
 # Save test type data
-pd.concat([df_out_p, df_out_c]).reset_index(drop=True).to_pickle(
+pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
     data_dir + os.sep + expInfo["participant"] + "_" + "testType.pkl") 
 
 # ----------------------------------------------------------------------------
