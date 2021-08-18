@@ -6,8 +6,7 @@ Created on Wed Jun 30 18:57:59 2021
 @author: alex
 """
 import os
-import pickle  
-import numpy as np
+import pickle
 import pandas as pd
 
 stim_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +18,7 @@ def AddProceedKey(instruction_list, proceed_key, indices, wait_s = 3):
     assert len(instruction_list_new) >= len(indices),\
         "mismatch between number of instructions and provided indices"
     for idx in indices:
-        if type(instruction_list[idx]) is list:                                  # this allows prespecifying meta info per instruction
+        if type(instruction_list[idx]) is list:                                # this allows prespecifying meta info per instruction
             assert len(instruction_list[idx]) == 3, \
                 "prespecified meta-info has wrong dimensions"
         else:
@@ -140,11 +139,11 @@ TestTypes = [0,
              "It is time for some field practice.",
              "You now know the spell names and symbols that prompt you to "\
                  "cast a spell.",
-           "You will now practice applying these spells to groups of objects.",
-           "Earlier, you saw what effect transformation spells had.",
-           "For the following trials, you will first see the spell cue "\
-               "and then the objects you need to transform using it.",
-           "It will look like this:"]
+             "You will now practice applying these spells to groups of objects.",
+             "Earlier, you saw what effect transformation spells had.",
+             "For the following trials, you will first see the spell cue "\
+                 "and then the objects you need to transform using it.",
+             "It will look like this:"]
 
 positionFirst = ["Here is what you do:",
                     "(1) Memorize the presented objects.",
@@ -204,7 +203,14 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
     
 # Primitive Trials
 Primitives = [0,
-              "You are now well prepared "]
+              "You are now well prepared for Alteration magic.",
+              "In your examination during the next session, you will encounter tasks"\
+                  " which are very similar to the previous ones.",
+              "One important difference: You will not know"\
+                  " which of the two tests comes at the end of any trial.",
+              # "Also, you will not get immediate feedback during your examination.",
+              "To ensure that you achieve your study goals, you practice this scenario now.",
+              "Ready?"]
     
 # Store as Dictionary
 instructions ={  
@@ -226,6 +232,7 @@ instructions ={
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
   "Faster": AddProceedKey2All(Faster, '/k'),
+  "Primitives": AddProceedKey2All(Primitives, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:

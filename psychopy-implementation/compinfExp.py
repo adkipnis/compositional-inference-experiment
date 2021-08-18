@@ -133,7 +133,7 @@ def tEmpty(trial, IRClock):
 
 def tCount(trial, feedback = False):
     TestClock = core.Clock()
-    for inc in range(1 + feedback*2):
+    for inc in range(2 + feedback*1):
         rect.pos = center_pos
         rect.size = center_size
         rect.draw()
@@ -177,24 +177,24 @@ def tCount(trial, feedback = False):
                 win.flip()
                 continue
         
-        # correct solution 
-        if trial.correct_resp != testResp:
-            corResp = trial.correct_resp
-            rect.pos = resp_pos[corResp]
-            rect.fillColor = color_dict["blue"]
-            rect.draw()
-            rect.fillColor = color_dict["light_grey"]
-            resp = count_dict[str(corResp)]
-            resp.pos = resp_pos[corResp]
-            resp.draw()
-            core.wait(1)
-            if inc == 2:
-                win.flip()        
+            # correct solution 
+            if trial.correct_resp != testResp:
+                corResp = trial.correct_resp
+                rect.pos = resp_pos[corResp]
+                rect.fillColor = color_dict["blue"]
+                rect.draw()
+                rect.fillColor = color_dict["light_grey"]
+                resp = count_dict[str(corResp)]
+                resp.pos = resp_pos[corResp]
+                resp.draw()
+                core.wait(1)
+                if inc == 2:
+                    win.flip()        
     return testRT, testResp
 
 def tPosition(trial, feedback = False):
     TestClock = core.Clock()
-    for inc in range(1 + feedback*2):
+    for inc in range(2 + feedback*1):
         # position cues
         for i in range(len(rect_pos)):
             rect.pos = rect_pos[i]
@@ -239,18 +239,18 @@ def tPosition(trial, feedback = False):
                 continue
         
         # correct solution 
-        if trial.correct_resp != testResp:
-            corResp = trial.correct_resp
-            rect.pos = resp_pos[corResp]
-            rect.fillColor = color_dict["blue"]
-            rect.draw()
-            rect.fillColor = color_dict["light_grey"]
-            resp = stim_dict[trial.resp_options[corResp]]
-            resp.pos = resp_pos[corResp]
-            resp.draw()
-            core.wait(1)
-            if inc == 2:
-                win.flip()
+            if trial.correct_resp != testResp:
+                corResp = trial.correct_resp
+                rect.pos = resp_pos[corResp]
+                rect.fillColor = color_dict["blue"]
+                rect.draw()
+                rect.fillColor = color_dict["light_grey"]
+                resp = stim_dict[trial.resp_options[corResp]]
+                resp.pos = resp_pos[corResp]
+                resp.draw()
+                core.wait(1)
+                if inc == 2:
+                    win.flip()
     return testRT, testResp
             
 
@@ -548,7 +548,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
             
     
 def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
-                 durations = [0.5, 1, 0.3, 0.5], test = True, feedback = False):
+                 durations = [0.5, 1, 0.3, 1, 0.7], test = True, feedback = False):
     # create the trial handler
     if i_step is None:  
         i_step = len(trial_df)
@@ -561,6 +561,9 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
     cueTypeList = []
     
     for trial in trials:
+        # 0. Clear display
+        win.flip()
+        
         # 1. Fixation
         tFixation()
         
@@ -590,7 +593,10 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
             testRespList.append(testResp)
             testRTList.append(testRT)
             cueTypeList.append(cue_type)
-        core.wait(durations[3])
+            core.wait(durations[3])
+        win.flip()
+        win.flip()
+        core.wait(durations[4])
         
     # append trial list with collected data 
     if test:
@@ -632,7 +638,7 @@ def CuePracticeLoop(trials_prim_cue,
 
 def TestPracticeLoop(trial_df, 
                      min_acc = 0.9, mode = "random", i = 0, i_step = 30,
-                     durations = [0.5, 1, 0.3, 0.5], 
+                     durations = [0.5, 1, 0.3, 1, 0.7], 
                      test = True, feedback = False):
     mean_acc = 0.0
     df_list = []
@@ -946,25 +952,30 @@ else:
 Instructions(part_key = "TestTypes",
              special_displays = [iSingleImage], 
              args = [[magicWand]])
-GenericBlock(trials_prim_prac_p, i = 0, i_step = 1,
-             mode = "random", durations = [1, 3, 0.6, 0], test = False)         
+GenericBlock(trials_prim_prac_p,
+             i_step = 1,
+             durations = [1, 3, 0.6, 0, 0],
+             test = False)         
 Instructions(part_key = first_test + "First",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
-df_out_3 = TestPracticeLoop(trials_test_1, min_acc = 0.9, mode = "random", 
-                            i_step = 2, durations = [1, 3, 0.6, 2], 
+df_out_3 = TestPracticeLoop(trials_test_1,
+                            i_step = 2,
+                            durations = [1, 3, 0.6, 1, 0.7], 
                             feedback = True)
 Instructions(part_key = "Faster")
-df_out_3 = TestPracticeLoop(trials_test_1, min_acc = 0.9, mode = "random",
-                            i = len(df_out_3), feedback = True)
+df_out_3 = TestPracticeLoop(trials_test_1,
+                            i = len(df_out_3),
+                            feedback = True)
 
 # Test-Type: Counting
 Instructions(part_key = second_test + "Second")
-df_out_4 = TestPracticeLoop(trials_test_2, min_acc = 0.9, mode = "random",
-                 i_step = 2, durations = [1, 3, 0.6, 2],  feedback = True)
+df_out_4 = TestPracticeLoop(trials_test_2, 
+                 i_step = 2, durations = [1, 3, 0.6, 1, 0.7],  feedback = True)
 Instructions(part_key = "Faster")
-df_out_4 = TestPracticeLoop(trials_test_2, min_acc = 0.9, mode = "random", 
-                            i = len(df_out_4), feedback = True)
+df_out_4 = TestPracticeLoop(trials_test_2, 
+                            i = len(df_out_4),
+                            feedback = True)
 
 # Save test type data
 pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
@@ -972,9 +983,13 @@ pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
 
 # ----------------------------------------------------------------------------
 # Practice: Primitive
-Instructions(part_key = "Primitive")
+Instructions(part_key = "Primitives",
+             special_displays = [iSingleImage], 
+             args = [[magicWand]])
 # GenericBlock(trials_prim, mode = "random")
-
+df_out_5 = TestPracticeLoop(trials_prim,
+                            min_acc = 0.8,
+                            feedback = True)
 # Practice: Binary
 
 # win.close()
