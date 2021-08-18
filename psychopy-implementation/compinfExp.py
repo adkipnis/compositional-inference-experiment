@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 from psychopy import core, visual, gui, data, event, logging
 from psychopy.tools.filetools import toFile
-from psychopy.hardware import keyboard
 
 # set directories
 # main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -288,8 +287,13 @@ def iSingleImage(*args):
 
 def iTransmutableObjects(*args):
     categories = list(stim_dict.keys())
+    if len(categories) > 4:
+        dim = [2, np.ceil(len(categories)/2)]
+    else:
+        dim = [1, len(categories)]
+        
     category_pos = rectangularGrindPositions(
-        center_pos = [0, 0], h_dist = 10, dim = [2, 3])                         # TODO: make dim dependent on len(categories)
+        center_pos = [0, 0], h_dist = 10, dim = dim)
 
     # draw categories
     for i in range(len(categories)):
@@ -640,8 +644,9 @@ def TestPracticeLoop(trial_df,
         mean_acc = np.mean(list(map(int, errors))) # convert to integers
         
         accPrompt = visual.TextStim(
-            win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5, wrapWidth = 30,
-                font = "Times New Roman", color = color_dict["black"])
+            win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5,
+            wrapWidth = 30, font = "Times New Roman",
+            color = color_dict["black"])
         
         # repeat or wrap up
         i += i_step    
@@ -683,7 +688,8 @@ else:
 # Dialogue Box
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys = False, title = expName)
 if dlg.OK:
-    toFile(data_dir + os.sep + expInfo["participant"] + "_participantParams.pkl", expInfo)
+    toFile(data_dir + os.sep + expInfo["participant"] +
+           "_participantParams.pkl", expInfo)
 else:
     core.quit()  # the user hit cancel so exit
 
@@ -700,15 +706,20 @@ with open(stim_dir + os.sep + "instructions_en.pkl", "rb") as handle:
 
 # Load triallists and adapt setup to their parameters
 trials_prim_cue = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_cue.pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] +
+                 "_trials_prim_cue.pkl"))
 trials_prim_prac_c = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_c.pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] +
+                 "_trials_prim_prac_c.pkl"))
 trials_prim_prac_p = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_p.pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] +
+                 "_trials_prim_prac_p.pkl"))
 trials_prim = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim.pkl"))
+    os.path.join(trial_list_dir, expInfo["participant"] +
+                 "_trials_prim.pkl"))
     
-with open(trial_list_dir + os.sep + expInfo["participant"] + "_mappinglists.pkl", "rb") as handle:
+with open(trial_list_dir + os.sep + expInfo["participant"] +
+          "_mappinglists.pkl", "rb") as handle:
     mappinglists = pickle.load(handle)
     
 set_size = len(trials_prim.input_disp[0])
@@ -840,6 +851,11 @@ magicWand = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "magicWand.png")[0],
     size = normal_size, interpolate = True)
 
+philbertine = visual.ImageStim(
+    win, image = glob.glob(stim_dir + os.sep + "philbertine.png")[0],
+    units = "pix",
+    size = [400, 400], interpolate = True)
+
 magicBooks = visual.ImageStim(
     win, image = glob.glob(stim_dir + os.sep + "magicBooks.png")[0],
     units = "pix",
@@ -864,36 +880,50 @@ Instructions(part_key = "Navigation",
 # Introduction
 Instructions(part_key = "Intro",
              special_displays = [iSingleImage,
+                                 iSingleImage,
                                  iTransmutableObjects,
                                  iSpellExample,
-                                 iSpellExample,
-                                 iSingleImage], 
+                                 iSpellExample], 
              args = [[magicBooks],
+                     [philbertine],
                      [None],
                      [["A", "B", "C", "C", "E", "C"],
                       ["A", "E", "C", "C", "E", "C"]],
                      [["B", "A", "C", "B", "B", "D"],
-                      ["E", "A", "C", "E", "E", "D"]],
-                     [keyboard_dict["keyBoardSpacebar"]]]
+                      ["E", "A", "C", "E", "E", "D"]]]
                      )
 
 # ----------------------------------------------------------------------------
-# Cue Memory: Textual
-learnDuration = LearnCues(mode = "textual")                                     
+# Balance out which cue modality is learned first
+if int(expInfo["participant"]) % 2 == 0:
+    first_modality = "visual"
+    second_modality = "textual"
+else:
+    first_modality = "textual"
+    second_modality = "visual"
+    
+# Cue Memory: First modality
+Instructions(part_key = first_modality + "First",
+             special_displays = [iSingleImage], 
+             args = [[keyboard_dict["keyBoardSpacebar"]]])
+learnDuration = LearnCues(mode = first_modality)                                     
 Instructions(part_key = "Intermezzo1",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard6"]]])
-df_out_t = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "textual", 
-                i_step = 1
-                )   
+df_out_t = CuePracticeLoop(trials_prim_cue, 
+                           mode = first_modality, 
+                           i_step = 1
+                           )   
 
-# Cue Memory: Visual
-Instructions(part_key = "NowVisual")
-learnDuration = LearnCues(mode = "visual")
+# Cue Memory: Second modality
+Instructions(part_key = second_modality + "Second")
+learnDuration = LearnCues(mode = second_modality)
 Instructions(part_key = "Intermezzo2")
-df_out_v = CuePracticeLoop(trials_prim_cue, min_acc = 0.9, mode = "visual", 
-                i = len(df_out_t), i_step = 1
-                )
+df_out_v = CuePracticeLoop(trials_prim_cue, 
+                           mode = second_modality, 
+                           i = len(df_out_t),
+                           i_step = 1
+                           )
 
 # Save cue memory data
 pd.concat([df_out_t, df_out_v]).reset_index(drop=True).to_pickle(
@@ -912,7 +942,7 @@ Instructions(part_key = "NowPosition2",
 df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random", 
                             i_step = 2, durations = [1, 3, 0.6, 2], 
                             feedback = True)
-Instructions(part_key = "NowPosition3")
+Instructions(part_key = "Faster")
 df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
                             i = len(df_out_p), feedback = True)
 
@@ -920,16 +950,17 @@ df_out_p = TestPracticeLoop(trials_prim_prac_p, min_acc = 0.9, mode = "random",
 Instructions(part_key = "NowCount1")
 df_out_c = TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random",
                  i_step = 2, durations = [1, 3, 0.6, 2],  feedback = True)
-Instructions(part_key = "NowPosition3")
+Instructions(part_key = "Faster")
 TestPracticeLoop(trials_prim_prac_c, min_acc = 0.9, mode = "random", 
                  i = len(df_out_c), i_step = 30, feedback = True)
 
 # Save test type data
 pd.concat([df_out_p, df_out_c]).reset_index(drop=True).to_pickle(
     data_dir + os.sep + expInfo["participant"] + "_" + "testType.pkl") 
+
 # ----------------------------------------------------------------------------
 # Practice: Primitive
-# Instructions(part_key = "StartTesting")                                        # TODO
+Instructions(part_key = "Primitive")
 # GenericBlock(trials_prim, mode = "random")
 
 # Practice: Binary

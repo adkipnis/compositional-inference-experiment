@@ -54,33 +54,45 @@ Navigation = [["For the following displays, you can navigate back and forth"\
               ]
 
 # Story Introduction 
-Intro = ["You are a mage apprentice, preparing for your Alteration classes.",
+Intro = ["You are a magic novice, preparing for your Alteration studies.",
+         "As you may know, Alteration spells change the world around you.",
          "Luckily, you own a copy of the famous book series"\
-             " 'Principles of Alteration Magic', written by Philbertine.",
+             " 'Principles of Alteration Magic'...",
          0,
-         "The introductory chapter lists the following beginner objects:",
+         "... famously written by Philbertine:",
          1,
-         "With the correct spell, each of them can be transformed into another!",
-         "Here you see an example of such an alteration spell:",
+         "The introductory chapter lists the following beginner objects:",
          2,
+         "With the correct spell, each beginner object can be transformed into "\
+             "another beginner object!",
+         "Here you see an example of such an alteration spell:",
+         3,
          "Note, that these spells have an area effect: If you cast it,"\
              " all susceptible objects will be transformed.",
-         3,
-         "Each spell has a specific name. Philbertine provides a cheat-sheet"\
-             " of the " + str(nMaps) + " beginner spells.",
-         "You decide to spend a couple of minutes to study them.",
-         "When you are done with studying, you may press the spacebar:",
-         4,
-         "Ready?"
-    ]
+         4]
     
 
-# Text Cues
+
+# Learn Cues
+textualFirst = ["Each spell has a specific name. Philbertine provides a"\
+                   " cheat-sheet for the " + str(nMaps) + " beginner spells.",
+                   "You decide to spend a couple of minutes to study them.",
+                   "When you are done with studying, you may press the spacebar:",
+                   0,
+                   "Ready?"]   
+    
+visualFirst = ["Each spell has a specific symbol. Philbertine provides a"\
+                  " cheat-sheet for the " + str(nMaps) + " beginner spells.",
+                  "You decide to spend a couple of minutes to study them.",
+                  "When you are done with studying, you may press the spacebar:",
+                  0,
+                  "Ready?"]    
+    
 Intermezzo1 = ["Now that you have committed these spells to your memory, you"\
                    " want to make sure you remember them correctly.",
                "In her wise anticipation, Philbertine provides you with a"\
                    " magical practice board.",
-               "You will first see the spell name. Then you need to select the"\
+               "You will first see the spell. Then you need to select the"\
                    " two corresponding objects:",
                "(1) The object which is susceptible to the spell, and (2) the"\
                    " object into which it is transformed.",
@@ -89,6 +101,29 @@ Intermezzo1 = ["Now that you have committed these spells to your memory, you"\
                "These keys will correspond to your options from left to right.",
                "Ready?"]
 
+visualSecond = ["You have now learned the names of the basic spells.",
+                   "However, Filbertine writes of the 'Duality' of spells:",
+                   "Each spell has a specific name and symbol.",
+                   "You need to be able to cast a spell after seeing its symbol,",
+                   "so you decide to spend a couple more minutes to study these...",
+                   "When you are done with studying, you may press the spacebar.",
+                   "Ready?"]
+
+textualSecond = ["You have now learned the symbols of the basic spells.",
+                    "However, Filbertine writes of the 'Duality' of spells:",
+                    "Each spell has a specific name and symbol.",
+                    "You need to be able to cast a spell after seeing its name,",
+                    "so you decide to spend a couple more minutes to study these...",
+                    "When you are done with studying, you may press the spacebar.",
+                    "Ready?"]
+    
+Intermezzo2 = ["Now that you have also learned all relevant spell symbols, you"\
+                   " want to make sure you remember them correctly.",
+               "Again, Philbertine provides you with a magical practice board.",
+               "The instructions are completely analogous to the previous"\
+                   " practice board.",
+               "Ready?"]
+    
 # Practice accuracy too bad, repeat:
 Feedback0 = ["In this training run, your score was:",
              0,
@@ -98,21 +133,8 @@ Feedback1 = ["In this training run, your score was:",
              0, 
              "This is good, you are confident to make the next step..."]
 
-# Visual Cues
-NowVisual = ["You have now learned the names of the basic spells.",
-             "However, Filbertine writes of the 'Duality' of spells:",
-             "Each spell has a specific name and symbol.",
-             "You need to be able to cast a spell after seeing its symbol,",
-             "So you decide to spend a couple more minutes to study these...",
-             "When you are done with studying, you may press the spacebar.",
-             "Ready?"]
-    
-Intermezzo2 = ["Now that you have also learned all relevant spell symbols, you"\
-                   " want to make sure you remember them correctly.",
-               "Again, Philbertine provides you with a magical practice board.",
-               "The instructions are completely analogous to the previous"\
-                   " practice board.",
-               "Ready?"]
+
+
     
 # Positional Test
 NowPosition1 = [0,
@@ -137,11 +159,11 @@ NowPosition2 = ["Here is what you do:",
                 0,
                 "We will do 3 slow trials first.",
                 "Ready?"]
-NowPosition3 = ["Next, you will do normal paced trials.",
+Faster = ["Next, you will do normal paced trials.",
                 "Ready?"]
 
 # Counting Test
-NowCount1 = ["Some magic students tend to cheat on the test above.",
+NowCount = ["Some magic students tend to cheat on the test above.",
             "In order to make sure that you transform the objects in your mind "\
                 "first and only then answer a test question...",
             "...there are two test displays (both equally likely to appear):",
@@ -153,6 +175,9 @@ NowCount1 = ["Some magic students tend to cheat on the test above.",
             "We will do 3 slow trials first.",
             "Ready?"] 
 
+# Primitive Trials
+Primitives = [0,
+              "You are now well prepared "]
     
 # Store as Dictionary
 instructions ={  
@@ -164,11 +189,14 @@ instructions ={
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/e', wait_s = 2),
   "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
-  "NowVisual": AddProceedKey2All(NowVisual, '/k'),
+  "textualFirst": AddProceedKey2All(textualFirst, '/k'),
+  "textualSecond": AddProceedKey2All(textualSecond, '/k'),
+  "visualFirst": AddProceedKey2All(visualFirst, '/k'),
+  "visualSecond": AddProceedKey2All(visualSecond, '/k'),
   "NowPosition1": AddProceedKey2All(NowPosition1, '/k'),
   "NowPosition2": AddProceedKey2All(NowPosition2, '/k'),
-  "NowPosition3": AddProceedKey2All(NowPosition3, '/k'),
-  "NowCount1": AddProceedKey2All(NowCount1, '/k')
+  "Faster": AddProceedKey2All(Faster, '/k'),
+  "NowCount": AddProceedKey2All(NowCount, '/k')
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
