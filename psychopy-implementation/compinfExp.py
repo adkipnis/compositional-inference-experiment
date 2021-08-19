@@ -69,30 +69,37 @@ def tFixation():
     core.wait(0.3)
 
 def setCue(key, mode = "random"):
+    # opt: randomize mode
     if mode == "random":
         if np.random.randint(0, 2) == 1:
             mode = "textual"
         else:
             mode = "visual"
+    # draw from resp. dict
     if mode == "visual":
-        cue = vcue_dict[key]
+        cue = vcue_dict.copy()[key]
     elif mode == "textual":
-        cue = tcue_dict[key]
+        cue = tcue_dict.copy()[key]
     return cue, mode
 
-
-def tMapcue(trial, mode = "random", with_background = False, duration = 0.5):  #TODO: flexible for multiple cues
+def tMapcue(trial, mode = "random", 
+            # with_background = False,  # would need flexible background 
+            duration = 0.5): 
     assert mode in ["visual", "textual", "random"],\
         "Chosen cue mode not implemented."
-    if with_background:
-        rect.pos = center_pos
-        rect.size = center_size
-        rect.draw()           
-    cue, cue_type = setCue(trial.map[0], mode = mode)
-    cue.draw()
+    # if with_background:
+    #     rect.pos = center_pos
+    #     rect.size = center_size
+    #     rect.draw()
+    n_cues = len(trial.map)    
+    for i in range(n_cues):
+        cue, mode = setCue(trial.map[i], mode = mode)
+        if n_cues > 1: # move first cue up and the third cue down 6 degrees
+            cue.pos = [sum(x) for x in zip(center_pos, [0, (1-i)*6])] 
+        cue.draw()
     win.flip()
     core.wait(duration)
-    return cue_type
+    return mode
 
 def tDisplay(trial, duration = 1):
     # draw rectangles
@@ -103,7 +110,7 @@ def tDisplay(trial, duration = 1):
     
     # draw stimuli
     for i in range(set_size):
-        stim = stim_dict[trial.input_disp[i]]
+        stim = stim_dict.copy()[trial.input_disp[i]]
         stim.pos = rect_pos[i]
         stim.draw()
     win.flip()
@@ -139,7 +146,7 @@ def tCount(trial, feedback = False):
         rect.draw()
         rect.size = normal_size
         rect.lineColor = color_dict["dark_grey"]
-        stim = stim_dict[trial.target]
+        stim = stim_dict.copy()[trial.target]
         stim.pos = center_pos
         stim.size = center_size
         stim.draw()
@@ -208,7 +215,7 @@ def tPosition(trial, feedback = False):
         for i in range(len(resp_pos)):
             rect.pos = resp_pos[i]
             rect.draw()
-            resp = stim_dict[trial.resp_options[i]]
+            resp = stim_dict.copy()[trial.resp_options[i]]
             resp.pos = resp_pos[i]
             resp.draw()
         
@@ -231,7 +238,7 @@ def tPosition(trial, feedback = False):
                 rect.lineColor = color_dict["red"]
             rect.draw()
             rect.lineColor = color_dict["dark_grey"]
-            resp = stim_dict[trial.resp_options[testResp]]
+            resp = stim_dict.copy()[trial.resp_options[testResp]]
             resp.pos = resp_pos[testResp]
             resp.draw()
             if inc == 1:
@@ -245,7 +252,7 @@ def tPosition(trial, feedback = False):
                 rect.fillColor = color_dict["blue"]
                 rect.draw()
                 rect.fillColor = color_dict["light_grey"]
-                resp = stim_dict[trial.resp_options[corResp]]
+                resp = stim_dict.copy()[trial.resp_options[corResp]]
                 resp.pos = resp_pos[corResp]
                 resp.draw()
                 core.wait(1)
@@ -299,7 +306,7 @@ def iTransmutableObjects(*args):
     for i in range(len(categories)):
         rect.pos = category_pos[i]
         rect.draw()
-        stim = stim_dict[categories[i]]
+        stim = stim_dict.copy()[categories[i]]
         stim.pos = category_pos[i]
         stim.draw()
     win.flip()
@@ -313,7 +320,7 @@ def iSpellExample(*displays, show_output = True):
         for j in range(len(displays[0])):
             rect.pos = rect_pos[j]
             rect.draw()
-            stim = stim_dict[displays[0][j]]
+            stim = stim_dict.copy()[displays[0][j]]
             stim.pos = rect_pos[j]
             stim.draw()
         if i == 0:
@@ -335,7 +342,7 @@ def iSpellExample(*displays, show_output = True):
         for j in range(len(displays[1])):
             rect.pos = rect_pos[j]
             rect.draw()
-            stim = stim_dict[displays[1][j]]
+            stim = stim_dict.copy()[displays[1][j]]
             stim.pos = rect_pos[j]
             stim.draw()
         win.flip()
@@ -438,7 +445,7 @@ def LearnCues(center_pos = [0, -6], mode = "random"):
         for i in range(len(categories)):
             rect.pos = category_pos[i]
             rect.draw()
-            cat = stim_dict[categories[i]]
+            cat = stim_dict.copy()[categories[i]]
             cat.pos = category_pos[i]
             cat.draw()
         leftArrow.pos = center_pos
@@ -490,7 +497,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
             for i in range(len(cuepractice_pos)):
                 rect.pos = cuepractice_pos[i]
                 rect.draw()
-                resp = stim_dict[trial.resp_options[i]]
+                resp = stim_dict.copy()[trial.resp_options[i]]
                 resp.pos = cuepractice_pos[i]
                 resp.draw()
             if inc == 2:
@@ -512,7 +519,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                     rect.lineColor = color_dict["red"]
                 rect.draw()
                 rect.lineColor = color_dict["dark_grey"]
-                resp = stim_dict[trial.resp_options[testResp]]
+                resp = stim_dict.copy()[trial.resp_options[testResp]]
                 resp.pos = cuepractice_pos[testResp]
                 resp.draw()
             
@@ -529,7 +536,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
                     rect.fillColor = color_dict["blue"]
                     rect.draw()
                     rect.fillColor = color_dict["light_grey"]
-                    resp = stim_dict[trial.resp_options[corResp]]
+                    resp = stim_dict.copy()[trial.resp_options[corResp]]
                     resp.pos = cuepractice_pos[corResp]
                     resp.draw()
             if inc in list(range(3 + num_cr, 3 + 2 * num_cr - 1)):
@@ -751,7 +758,7 @@ resp_keys = np.array(["d", "f", "j", "k"])
 resp_keys_wide = np.array(["s", "d", "f", "j", "k", "l"])
 center_pos = [0, 5]
 center_size = [8, 8]
-cue_size = [9, 9]
+vcue_size = [7, 7]
 normal_size = [5, 5]
 # rect_pos = rectangularGrindPositions(center_pos, h_dist = 10, dim = (2, 3))
 rect_pos = circularGridPositions(center_pos = center_pos,
@@ -805,7 +812,7 @@ for i in range(len(map_names)):
     vcue_dict.update({cue_name:visual.ImageStim(win,
                                                 image = vcue_list[i],
                                                 pos = center_pos,
-                                                size = cue_size,
+                                                size = vcue_size,
                                                 interpolate = True)})
     
 # Stimuli
@@ -997,6 +1004,7 @@ df_out_5 = TestPracticeLoop(trials_prim,
 Instructions(part_key = "Binaries")
 df_out_6 = GenericBlock(trials_bin,
                         i_step = 10,
-                        durations = [1, 3, 0.6, 1, 0.7],
+                        durations = [2, 3, 0.6, 1, 0.7],
                         feedback = True)
-# win.close()
+Instructions(part_key = "Bye")
+win.close()

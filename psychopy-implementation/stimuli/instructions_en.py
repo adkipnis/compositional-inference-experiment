@@ -222,6 +222,11 @@ Binaries = ["Well done!",
             "You will do some exmaples of these 'binary' spells.",
             "This time there is no minimum score.",
             "Ready?"]
+
+# Bye
+Bye = ["Congrats!",
+       "You are done with your Alteration studies for today.",
+       "See you in your next session!"]
     
 # Store as Dictionary
 instructions ={  
@@ -245,6 +250,7 @@ instructions ={
   "Faster": AddProceedKey2All(Faster, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),
+  "Bye": AddProceedKey2All(Bye, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
