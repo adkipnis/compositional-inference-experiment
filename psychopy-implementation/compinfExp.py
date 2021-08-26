@@ -18,6 +18,8 @@ main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
+if not os.path.exists(trial_list_dir):
+    exec(open("generate_trial_lists.py").read())
 data_dir = os.path.join(main_dir, "data")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
