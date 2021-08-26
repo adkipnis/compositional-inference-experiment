@@ -5,17 +5,14 @@ Created on Thu Feb 11 18:07:53 2021
 
 @author: alex
 """
-import os
-import glob
-import pickle
-import string
+import os, glob, pickle, string
 from itertools import product 
 from itertools import combinations
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 plt.close("all")
-main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
@@ -504,7 +501,7 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 # ============================================================================
 # Generate Blocks
 
-n_participants = 1
+n_participants = 2
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
@@ -518,6 +515,7 @@ for i in range(1, n_participants+1):
     data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
     with open(fname, "wb") as f:
         pickle.dump(data, f)
+        
     # 0. Practice blocks
     # Cue Memory
     df_list = []
@@ -578,22 +576,23 @@ for i in range(1, n_participants+1):
     # trials_prim["target"].value_counts().plot(kind='bar')
 
 
-# 2. Compositional blocks
-df_list = []
-for j in range(2):
-    map_list_binary = np.random.permutation(np.repeat(
-        selection_binary, np.ceil(n_exposure/4), axis = 0))
-    df_list.append(gen_trials(stimuli,
-                             map_list_binary,                         
-                             resp_list = resp_list,
-                             test_type = test_types[j],
-                             display_size = display_size,
-                             sep = sep))
-trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-
-# trials_binary["correct_resp"].plot.hist(alpha=0.5)
-# trials_binary["trans_ub"].plot.hist(alpha=0.5)
-# trials_binary["target"].value_counts().plot(kind='bar')
+    # 2. Compositional blocks
+    df_list = []
+    for j in range(2):
+        map_list_binary = np.random.permutation(np.repeat(
+            selection_binary, np.ceil(n_exposure/4), axis = 0))
+        df_list.append(gen_trials(stimuli,
+                                 map_list_binary,                         
+                                 resp_list = resp_list,
+                                 test_type = test_types[j],
+                                 display_size = display_size,
+                                 sep = sep))
+    trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+    trials_binary.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin.pkl")
+    
+    # trials_binary["correct_resp"].plot.hist(alpha=0.5)
+    # trials_binary["trans_ub"].plot.hist(alpha=0.5)
+    # trials_binary["target"].value_counts().plot(kind='bar')
 
 
 # 3. Conjugate blocks
