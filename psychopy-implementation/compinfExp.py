@@ -14,13 +14,13 @@ from psychopy import core, visual, gui, data, event, logging
 from psychopy.tools.filetools import toFile
 
 # set directories
-# main_dir = os.path.dirname(os.path.abspath(__file__))
-# main_dir = r"C:\Users\Alex\Desktop\Hub\psychopy-implementation"
-main_dir = "/home/alex/Documents/12. Semester - MPI/Compositional Inference Experiment/compositional-inference/psychopy-implementation/"
+main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 data_dir = os.path.join(main_dir, "data")
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
 #=============================================================================
 # Helper Functions
