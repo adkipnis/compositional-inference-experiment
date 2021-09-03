@@ -617,7 +617,7 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
 
 
 def CuePracticeLoop(trials_prim_cue, 
-                    min_acc = 0.9, mode = "random", i = 0, i_step = 30):
+                    min_acc = 0.85, mode = "random", i = 0, i_step = 30):
     mean_acc = 0.0
     df_list = []
     while mean_acc < min_acc:
@@ -680,11 +680,12 @@ def TestPracticeLoop(trial_df,
 #=============================================================================
 # Create main window
 win = visual.Window(
-    [1920, 1080],
+    [2560, 1440],
+    # [1920, 1080],
     # [800, 600],
     fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 1,
+    screen = 0,
     monitor = "testMonitor",
     units = "deg")
 
@@ -886,66 +887,66 @@ magicBooks = visual.ImageStim(
 # Global clock
 globalClock = core.Clock()
 
-# Navigation
-Instructions(part_key = "Navigation",
-             special_displays = [iSingleImage,
-                                 iSingleImage], 
-             args = [[keyboard_dict["keyBoardArrows"]],
-                     [keyboard_dict["keyBoardEsc"]]],
-             font = "mono",
-             fontcolor = color_dict["mid_grey"])
+# # Navigation
+# Instructions(part_key = "Navigation",
+#              special_displays = [iSingleImage,
+#                                  iSingleImage], 
+#              args = [[keyboard_dict["keyBoardArrows"]],
+#                      [keyboard_dict["keyBoardEsc"]]],
+#              font = "mono",
+#              fontcolor = color_dict["mid_grey"])
 
-# Introduction
-Instructions(part_key = "Intro",
-             special_displays = [iSingleImage,
-                                 iSingleImage,
-                                 iTransmutableObjects,
-                                 iSpellExample,
-                                 iSpellExample], 
-             args = [[magicBooks],
-                     [philbertine],
-                     [None],
-                     [["A", "B", "C", "C", "E", "C"],
-                      ["A", "E", "C", "C", "E", "C"]],
-                     [["B", "A", "C", "B", "B", "D"],
-                      ["E", "A", "C", "E", "E", "D"]]]
-                     )
+# # Introduction
+# Instructions(part_key = "Intro",
+#              special_displays = [iSingleImage,
+#                                  iSingleImage,
+#                                  iTransmutableObjects,
+#                                  iSpellExample,
+#                                  iSpellExample], 
+#              args = [[magicBooks],
+#                      [philbertine],
+#                      [None],
+#                      [["A", "B", "C", "C", "E", "C"],
+#                       ["A", "E", "C", "C", "E", "C"]],
+#                      [["B", "A", "C", "B", "B", "D"],
+#                       ["E", "A", "C", "E", "E", "D"]]]
+#                      )
 
 # ----------------------------------------------------------------------------
-# Balance out which cue modality is learned first
-if int(expInfo["participant"]) % 2 == 0:
-    first_modality = "visual"
-    second_modality = "textual"
-else:
-    first_modality = "textual"
-    second_modality = "visual"
+# # Balance out which cue modality is learned first
+# if int(expInfo["participant"]) % 2 == 0:
+#     first_modality = "visual"
+#     second_modality = "textual"
+# else:
+#     first_modality = "textual"
+#     second_modality = "visual"
     
-# Cue Memory: First modality
-Instructions(part_key = first_modality + "First",
-             special_displays = [iSingleImage], 
-             args = [[keyboard_dict["keyBoardSpacebar"]]])
-learnDuration = LearnCues(mode = first_modality)                                     
-Instructions(part_key = "Intermezzo1",
-             special_displays = [iSingleImage], 
-             args = [[keyboard_dict["keyBoard6"]]])
-df_out_1 = CuePracticeLoop(trials_prim_cue, 
-                           mode = first_modality, 
-                           i_step = 1
-                           )   
+# # Cue Memory: First modality
+# Instructions(part_key = first_modality + "First",
+#              special_displays = [iSingleImage], 
+#              args = [[keyboard_dict["keyBoardSpacebar"]]])
+# learnDuration = LearnCues(mode = first_modality)                                     
+# Instructions(part_key = "Intermezzo1",
+#              special_displays = [iSingleImage], 
+#              args = [[keyboard_dict["keyBoard6"]]])
+# df_out_1 = CuePracticeLoop(trials_prim_cue, 
+#                            mode = first_modality, 
+#                            i_step = 20
+#                            )   
 
-# Cue Memory: Second modality
-Instructions(part_key = second_modality + "Second")
-learnDuration = LearnCues(mode = second_modality)
-Instructions(part_key = "Intermezzo2")
-df_out_2 = CuePracticeLoop(trials_prim_cue, 
-                           mode = second_modality, 
-                           i = len(df_out_1),
-                           i_step = 1
-                           )
+# # Cue Memory: Second modality
+# Instructions(part_key = second_modality + "Second")
+# learnDuration = LearnCues(mode = second_modality)
+# Instructions(part_key = "Intermezzo2")
+# df_out_2 = CuePracticeLoop(trials_prim_cue, 
+#                            mode = second_modality, 
+#                            i = len(df_out_1),
+#                            i_step = 20
+#                            )
 
-# Save cue memory data
-pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
+# # Save cue memory data
+# pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
@@ -972,7 +973,7 @@ Instructions(part_key = first_test + "First",
              special_displays = [iSingleImage], 
              args = [[keyboard_dict["keyBoard4"]]])
 df_out_3 = TestPracticeLoop(trials_test_1,
-                            i_step = 2,
+                            i_step = 3,
                             durations = [1, 3, 0.6, 1, 0.7], 
                             feedback = True)
 Instructions(part_key = "Faster")
