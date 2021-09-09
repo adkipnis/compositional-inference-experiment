@@ -58,7 +58,7 @@ def rectangularGrindPositions(center_pos = [0, 0],
 
 def circularGridPositions(center_pos = [0, 0], set_size = 6, radius = 10):
     angle = 2*np.pi/set_size
-    rect_pos = np.empty((set_size, 2), dtype=float)
+    rect_pos = np.empty((set_size, 2), dtype=float).copy()
     for i in range(set_size):
         rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
                        center_pos[1] + radius * np.cos(i * angle)]
@@ -680,12 +680,12 @@ def TestPracticeLoop(trial_df,
 #=============================================================================
 # Create main window
 win = visual.Window(
-    [2560, 1440],
-    # [1920, 1080],
+    # [2560, 1440],
+    [1920, 1080],
     # [800, 600],
     fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 0,
+    screen = 1,
     monitor = "testMonitor",
     units = "deg")
 

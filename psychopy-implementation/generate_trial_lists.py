@@ -451,7 +451,7 @@ def compile_down(general_map, map_type = None, display = None, sep = '-'):
 # Design parameters
 sep = '-'
 n_stim = 6 #>= 4, otherwise no parallelizable compositions
-display_size = 6
+display_size = 5
 min_type = 3 #minimal number of instances per composition type
 n_primitives = 6 
 n_exposure = 30 #per primitive per block
