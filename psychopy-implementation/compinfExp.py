@@ -105,7 +105,22 @@ def tMapcue(trial, mode = "random",
     core.wait(duration)
     return mode
 
-def tDisplay(trial, duration = 1):
+def getIR(IRClock):
+    # get intermediate response
+    intermediateResp = None
+    while intermediateResp == None:
+        allKeys = event.waitKeys()
+        for thisKey in allKeys:
+            if thisKey == "space": 
+                intermediateRT = IRClock.getTime()
+                intermediateResp = 1
+            elif thisKey in ["escape"]:
+                core.quit()  # abort experiment
+        event.clearEvents()
+    return intermediateRT
+        
+
+def tDisplay(trial, duration = 1, self_paced = False):
     # draw rectangles
     rect.size = normal_size
     for pos in rect_pos:
@@ -119,7 +134,10 @@ def tDisplay(trial, duration = 1):
         stim.draw()
     win.flip()
     IRClock = core.Clock()
-    core.wait(duration) 
+    if self_paced:
+        getIR(IRClock)
+    else:
+        core.wait(duration) 
     return(IRClock)
 
 
@@ -128,17 +146,7 @@ def tEmpty(trial, IRClock):
             rect.pos = pos
             rect.draw()
     win.flip()
-    # get intermediate response
-    intermediateResp = None
-    while intermediateResp == None:
-        allKeys = event.waitKeys()
-        for thisKey in allKeys:
-            if thisKey == "space": 
-                intermediateRT = IRClock.getTime()
-                intermediateResp = 1
-            elif thisKey in ["escape"]:
-                core.quit()  # abort experiment
-        event.clearEvents()
+    intermediateRT = getIR(IRClock)
     return(intermediateRT)
    
 
@@ -562,7 +570,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
     return trials_prim_cue
             
     
-def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
+def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = False,
                  durations = [0.5, 1, 0.3, 1, 0.7], test = True, feedback = False):
     # create the trial handler
     if i_step is None:  
@@ -582,11 +590,13 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None,
         # 1. Fixation
         tFixation()
         
-        # 2. Map Cue
-        cue_type = tMapcue(trial, mode = mode, duration = durations[0])
+        # 2. Display Family
+        IRClock = tDisplay(trial, duration = durations[1],
+                           self_paced = self_paced)
+        tFixation()
         
-        # 3. Display Family
-        IRClock = tDisplay(trial, duration = durations[1])
+        # 3. Map Cue
+        cue_type = tMapcue(trial, mode = mode, duration = durations[0])
         
         if test:
             # 4. Transformation Display
@@ -891,7 +901,7 @@ magicBooks = visual.ImageStim(
 # Introduction Session
 ##############################################################################
 # Global clock
-globalClock = core.Clock()
+# globalClock = core.Clock()
 
 # # Navigation
 # Instructions(part_key = "Navigation",
@@ -918,38 +928,38 @@ globalClock = core.Clock()
 #                       ["E", "A", "C", "E", "E", "D"]]]
 #                       )
 
-# ----------------------------------------------------------------------------
-# Balance out which cue modality is learned first
-if int(expInfo["participant"]) % 2 == 0:
-    first_modality = "visual"
-    second_modality = "textual"
-else:
-    first_modality = "textual"
-    second_modality = "visual"
+# # ----------------------------------------------------------------------------
+# # Balance out which cue modality is learned first
+# if int(expInfo["participant"]) % 2 == 0:
+#     first_modality = "visual"
+#     second_modality = "textual"
+# else:
+#     first_modality = "textual"
+#     second_modality = "visual"
     
-# Cue Memory
-Instructions(part_key = "learnCues",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoardSpacebar"]]])
-learnDuration = LearnCues(cue_center_pos = [0, 2], 
-                          modes = [first_modality, second_modality])                                     
-Instructions(part_key = "Intermezzo1",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoard6"]]])
-df_out_1 = CuePracticeLoop(trials_prim_cue, 
-                            mode = first_modality, 
-                            i_step = 20
-                            )   
-Instructions(part_key = "Intermezzo2")
-df_out_2 = CuePracticeLoop(trials_prim_cue, 
-                            mode = second_modality, 
-                            # i = len(df_out_1),
-                            i_step = 20
-                            )
+# # Cue Memory
+# Instructions(part_key = "learnCues",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoardSpacebar"]]])
+# learnDuration = LearnCues(cue_center_pos = [0, 2], 
+#                           modes = [first_modality, second_modality])                                     
+# Instructions(part_key = "Intermezzo1",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoard6"]]])
+# df_out_1 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = first_modality, 
+#                             i_step = 20
+#                             )   
+# Instructions(part_key = "Intermezzo2")
+# df_out_2 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = second_modality, 
+#                             # i = len(df_out_1),
+#                             i_step = 20
+#                             )
 
-# Save cue memory data
-pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
+# # Save cue memory data
+# pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
@@ -971,6 +981,7 @@ Instructions(part_key = "TestTypes",
 GenericBlock(trials_prim_prac_p,
              i_step = 1,
              durations = [1, 3, 0.6, 0, 0],
+             self_paced = True,
              test = False)         
 Instructions(part_key = first_test + "First",
              special_displays = [iSingleImage], 
