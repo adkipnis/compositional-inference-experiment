@@ -98,6 +98,8 @@ def tMapcue(trial, mode = "random",
         cue, mode = setCue(trial.map[i], mode = mode)
         if n_cues > 1: # move first cue up and the third cue down 6 degrees
             cue.pos = [sum(x) for x in zip(center_pos, [0, (1-i)*6])] 
+        else:
+            cue.pos = center_pos
         cue.draw()
     win.flip()
     core.wait(duration)
@@ -891,30 +893,30 @@ magicBooks = visual.ImageStim(
 # Global clock
 globalClock = core.Clock()
 
-# Navigation
-Instructions(part_key = "Navigation",
-              special_displays = [iSingleImage,
-                                  iSingleImage], 
-              args = [[keyboard_dict["keyBoardArrows"]],
-                      [keyboard_dict["keyBoardEsc"]]],
-              font = "mono",
-              fontcolor = color_dict["mid_grey"])
+# # Navigation
+# Instructions(part_key = "Navigation",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage], 
+#               args = [[keyboard_dict["keyBoardArrows"]],
+#                       [keyboard_dict["keyBoardEsc"]]],
+#               font = "mono",
+#               fontcolor = color_dict["mid_grey"])
 
-# Introduction
-Instructions(part_key = "Intro",
-              special_displays = [iSingleImage,
-                                  iSingleImage,
-                                  iTransmutableObjects,
-                                  iSpellExample,
-                                  iSpellExample], 
-              args = [[magicBooks],
-                      [philbertine],
-                      [None],
-                      [["A", "B", "C", "C", "E", "C"],
-                      ["A", "E", "C", "C", "E", "C"]],
-                      [["B", "A", "C", "B", "B", "D"],
-                      ["E", "A", "C", "E", "E", "D"]]]
-                      )
+# # Introduction
+# Instructions(part_key = "Intro",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage,
+#                                   iTransmutableObjects,
+#                                   iSpellExample,
+#                                   iSpellExample], 
+#               args = [[magicBooks],
+#                       [philbertine],
+#                       [None],
+#                       [["A", "B", "C", "C", "E", "C"],
+#                       ["A", "E", "C", "C", "E", "C"]],
+#                       [["B", "A", "C", "B", "B", "D"],
+#                       ["E", "A", "C", "E", "E", "D"]]]
+#                       )
 
 # ----------------------------------------------------------------------------
 # Balance out which cue modality is learned first
@@ -925,8 +927,8 @@ else:
     first_modality = "textual"
     second_modality = "visual"
     
-# Cue Memory: First modality
-Instructions(part_key = first_modality + "First",
+# Cue Memory
+Instructions(part_key = "learnCues",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoardSpacebar"]]])
 learnDuration = LearnCues(cue_center_pos = [0, 2], 
@@ -938,14 +940,10 @@ df_out_1 = CuePracticeLoop(trials_prim_cue,
                             mode = first_modality, 
                             i_step = 20
                             )   
-
-# Cue Memory: Second modality
-Instructions(part_key = second_modality + "Second")
-learnDuration = LearnCues(mode = second_modality)
 Instructions(part_key = "Intermezzo2")
 df_out_2 = CuePracticeLoop(trials_prim_cue, 
                             mode = second_modality, 
-                            i = len(df_out_1),
+                            # i = len(df_out_1),
                             i_step = 20
                             )
 
