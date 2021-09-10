@@ -696,12 +696,12 @@ def TestPracticeLoop(trial_df,
 #=============================================================================
 # Create main window
 win = visual.Window(
-    # [2560, 1440],
-    [1920, 1080],
+    [2560, 1440],
+    # [1920, 1080],
     # [800, 600],
     fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 1,
+    screen = 0,
     monitor = "testMonitor",
     units = "deg")
 
@@ -901,7 +901,7 @@ magicBooks = visual.ImageStim(
 # Introduction Session
 ##############################################################################
 # Global clock
-# globalClock = core.Clock()
+globalClock = core.Clock()
 
 # # Navigation
 # Instructions(part_key = "Navigation",
@@ -922,14 +922,14 @@ magicBooks = visual.ImageStim(
 #               args = [[magicBooks],
 #                       [philbertine],
 #                       [None],
-#                       [["A", "B", "C", "C", "E", "C"],
-#                       ["A", "E", "C", "C", "E", "C"]],
-#                       [["B", "A", "C", "B", "B", "D"],
-#                       ["E", "A", "C", "E", "E", "D"]]]
+#                       [["A", "B", "C", "C", "E"],
+#                       ["A", "E", "C", "C", "E"]],
+#                       [["B", "A", "B", "B", "C"],
+#                       ["E", "A", "E", "E", "C"]]]
 #                       )
 
-# # ----------------------------------------------------------------------------
-# # Balance out which cue modality is learned first
+# # # ----------------------------------------------------------------------------
+# # # Balance out which cue modality is learned first
 # if int(expInfo["participant"]) % 2 == 0:
 #     first_modality = "visual"
 #     second_modality = "textual"
@@ -981,7 +981,6 @@ Instructions(part_key = "TestTypes",
 GenericBlock(trials_prim_prac_p,
              i_step = 1,
              durations = [1, 3, 0.6, 0, 0],
-             self_paced = True,
              test = False)         
 Instructions(part_key = first_test + "First",
              special_displays = [iSingleImage], 
@@ -989,6 +988,7 @@ Instructions(part_key = first_test + "First",
 df_out_3 = TestPracticeLoop(trials_test_1,
                             i_step = 3,
                             durations = [1, 3, 0.6, 1, 0.7], 
+                            self_paced = True,
                             feedback = True)
 Instructions(part_key = "Faster")
 df_out_3 = TestPracticeLoop(trials_test_1,

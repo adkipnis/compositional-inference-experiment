@@ -146,11 +146,12 @@ TestTypes = [0,
 
 positionFirst = ["Here is what you do:",
                     "(1) Memorize the presented objects.",
-                    "(2) After they disappear, transform the objects in your mind.",
-                    "When you are done with transforming: (3) Press the spacebar.",
+                    "When you are done with memorizing: (2) Press the spacebar.",
+                    "You will then see a spell cue. (3) Apply it to the memorized display.",
+                    "When you are done with transforming: (4) Press the spacebar.",
                     "You will see all the squares on which the objects stood, "\
                         "one of them will be marked.",
-                    "(4) From the options below, choose the object that would be "\
+                    "(5) From the options below, choose the object that would be "\
                             "on the marked square after the transformation.",
                     "Use the following keys for this choice:",
                     0,
@@ -158,16 +159,17 @@ positionFirst = ["Here is what you do:",
                     "Ready?"]
 
 countFirst = ["Here is what you do:",
-                 "(1) Memorize the presented objects.",
-                 "(2) After they disappear, transform the objects in your mind.",
-                 "When you are done with transforming: (3) Press the spacebar.",
-                 "You will now see an object category.",
-                 "(4) From the options below, choose how often "\
+                  "(1) Memorize the presented objects.",
+                  "When you are done with memorizing: (2) Press the spacebar.",
+                  "You will then see a spell cue. (3) Apply it to the memorized display.",
+                  "When you are done with transforming: (4) Press the spacebar.",
+                  "You will now see an object category.",
+                  "(5) From the options below, choose how often "\
                       "this object appears in the scene after the transformation.",
-                 "Use the following keys for this choice:",
+                  "Use the following keys for this choice:",
                   0,
-                 "We will do 3 slow trials first.",
-                 "Ready?"]
+                  "We will do 3 slow trials first.",
+                  "Ready?"]
     
 Faster = ["Next, you will do normal paced trials.",
                 "Ready?"]
@@ -179,8 +181,8 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               "...there are two test displays (both equally likely to appear):",
               "The previous one was based on object positions. The next will be based "\
                   "on the object count.",
-              "After transforming the objects (steps 1-3), you will now see an object category",
-              "(4) From the options below, choose how often "\
+              "After transforming the objects (steps 1-4), you will now see an object category",
+              "(5) From the options below, choose how often "\
                   "this object appears in the scene after the transformation.",
               "We will do 3 slow trials first.",
               "Ready?"] 
@@ -191,10 +193,10 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "...there are two test displays (both equally likely to appear):",
                   "The previous one was based on object positions. The next will be based "\
                       "on the object count.",
-                  "After transforming the objects (steps 1-3)...", 
+                  "After transforming the objects (steps 1-4)...", 
                   "you will see all the squares on which the objects stood. "\
                       "One of them will be marked.",
-                  "(4) From the options below, choose the object that would be "\
+                  "(5) From the options below, choose the object that would be "\
                       "on the marked square after the transformation.",
                   "We will do 3 slow trials first.",
                   "Ready?"] 
