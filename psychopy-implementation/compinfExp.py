@@ -17,6 +17,8 @@ from psychopy.tools.filetools import toFile
 main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
+if not os.path.exists(stim_dir + os.sep + "instructions_en.pkl"):
+    exec(open(stim_dir + os.sep + "instructions_en.py").read())
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 if not os.path.exists(trial_list_dir):
     exec(open("generate_trial_lists.py").read())
@@ -664,12 +666,13 @@ def CuePracticeLoop(trials_prim_cue,
 def TestPracticeLoop(trial_df, 
                      min_acc = 0.9, mode = "random", i = 0, i_step = 30,
                      durations = [0.5, 1, 0.3, 1, 0.7], 
-                     test = True, feedback = False):
+                     test = True, feedback = False, self_paced = False):
     mean_acc = 0.0
     df_list = []
     while mean_acc < min_acc:
         df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
-                 durations = durations, test = test, feedback = feedback)
+                 durations = durations, test = test, feedback = feedback,
+                 self_paced = self_paced)
         df_list.append(df)
         errors = (df.correct_resp == df.emp_resp).to_list()
         mean_acc = np.mean(list(map(int, errors))) # convert to integers

@@ -9,7 +9,9 @@ import os
 import pickle
 import pandas as pd
 
-stim_dir = os.path.dirname(os.path.abspath(__file__))
+main_dir = os.path.dirname(os.path.abspath(__file__))
+stim_dir = main_dir + os.sep + "stimuli"
+os.chdir(stim_dir)
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
 nMaps = len(tcue_list)
 
