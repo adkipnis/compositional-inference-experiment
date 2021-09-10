@@ -6,7 +6,7 @@ Created on Fri Jun 18 12:00:24 2021
 @author: alex
 """
 
-import os, glob, pickle
+import os, glob, pickle, sys
 from string import ascii_uppercase
 import numpy as np
 import pandas as pd
@@ -17,10 +17,11 @@ from psychopy.tools.filetools import toFile
 main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
-exec(open(stim_dir + os.sep + "instructions_en.py").read())
+sys.path.insert(0, './stimuli')
+import instructions_en
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 if not os.path.exists(trial_list_dir):
-    exec(open("generate_trial_lists.py").read())
+    import generate_trial_lists
 data_dir = os.path.join(main_dir, "data")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -903,65 +904,65 @@ magicBooks = visual.ImageStim(
 # Introduction Session
 ##############################################################################
 # Global clock
-globalClock = core.Clock()
+# globalClock = core.Clock()
 
-# Navigation
-Instructions(part_key = "Navigation",
-              special_displays = [iSingleImage,
-                                  iSingleImage], 
-              args = [[keyboard_dict["keyBoardArrows"]],
-                      [keyboard_dict["keyBoardEsc"]]],
-              font = "mono",
-              fontcolor = color_dict["mid_grey"])
+# # Navigation
+# Instructions(part_key = "Navigation",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage], 
+#               args = [[keyboard_dict["keyBoardArrows"]],
+#                       [keyboard_dict["keyBoardEsc"]]],
+#               font = "mono",
+#               fontcolor = color_dict["mid_grey"])
 
-# Introduction
-Instructions(part_key = "Intro",
-              special_displays = [iSingleImage,
-                                  iSingleImage,
-                                  iTransmutableObjects,
-                                  iSpellExample,
-                                  iSpellExample], 
-              args = [[magicBooks],
-                      [philbertine],
-                      [None],
-                      [["A", "B", "C", "C", "E"],
-                      ["A", "E", "C", "C", "E"]],
-                      [["B", "A", "B", "B", "C"],
-                      ["E", "A", "E", "E", "C"]]]
-                      )
+# # Introduction
+# Instructions(part_key = "Intro",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage,
+#                                   iTransmutableObjects,
+#                                   iSpellExample,
+#                                   iSpellExample], 
+#               args = [[magicBooks],
+#                       [philbertine],
+#                       [None],
+#                       [["A", "B", "C", "C", "E"],
+#                       ["A", "E", "C", "C", "E"]],
+#                       [["B", "A", "B", "B", "C"],
+#                       ["E", "A", "E", "E", "C"]]]
+#                       )
 
 # # ----------------------------------------------------------------------------
 # # Balance out which cue modality is learned first
-if int(expInfo["participant"]) % 2 == 0:
-    first_modality = "visual"
-    second_modality = "textual"
-else:
-    first_modality = "textual"
-    second_modality = "visual"
+# if int(expInfo["participant"]) % 2 == 0:
+#     first_modality = "visual"
+#     second_modality = "textual"
+# else:
+#     first_modality = "textual"
+#     second_modality = "visual"
 
-# Cue Memory
-Instructions(part_key = "learnCues",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoardSpacebar"]]])
-learnDuration = LearnCues(cue_center_pos = [0, 2], 
-                          modes = [first_modality, second_modality])                                     
-Instructions(part_key = "Intermezzo1",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoard6"]]])
-df_out_1 = CuePracticeLoop(trials_prim_cue, 
-                            mode = first_modality, 
-                            i_step = 20
-                            )   
-Instructions(part_key = "Intermezzo2")
-df_out_2 = CuePracticeLoop(trials_prim_cue, 
-                            mode = second_modality, 
-                            # i = len(df_out_1),
-                            i_step = 20
-                            )
+# # Cue Memory
+# Instructions(part_key = "learnCues",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoardSpacebar"]]])
+# learnDuration = LearnCues(cue_center_pos = [0, 2], 
+#                           modes = [first_modality, second_modality])                                     
+# Instructions(part_key = "Intermezzo1",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoard6"]]])
+# df_out_1 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = first_modality, 
+#                             i_step = 20
+#                             )   
+# Instructions(part_key = "Intermezzo2")
+# df_out_2 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = second_modality, 
+#                             # i = len(df_out_1),
+#                             i_step = 20
+#                             )
 
-# Save cue memory data
-pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
+# # Save cue memory data
+# pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
