@@ -153,11 +153,10 @@ positionFirst = ["Here is what you do:",
                     "When you are done with transforming: (4) Press the spacebar.",
                     "You will see all the squares on which the objects stood, "\
                         "one of them will be marked.",
-                    "(5) From the options below, choose the object that would be "\
+                    "(5) From the (equally likely) options below, choose the object that would be "\
                             "on the marked square after the transformation.",
                     "Use the following keys for this choice:",
                     0,
-                    "We will do 3 slow trials first.",
                     "Ready?"]
 
 countFirst = ["Here is what you do:",
@@ -166,15 +165,14 @@ countFirst = ["Here is what you do:",
                   "You will then see a spell cue. (3) Apply it to the memorized display.",
                   "When you are done with transforming: (4) Press the spacebar.",
                   "You will now see an object category.",
-                  "(5) From the options below, choose how often "\
+                  "(5) From the (equally likely) options below, choose how often "\
                       "this object appears in the scene after the transformation.",
                   "Use the following keys for this choice:",
                   0,
-                  "We will do 3 slow trials first.",
                   "Ready?"]
     
-Faster = ["Next, you will do normal paced trials.",
-                "Ready?"]
+# Faster = ["Next, you will do normal paced trials.",
+#                 "Ready?"]
 
 
 countSecond = ["Some magic students tend to cheat on the test above.",
@@ -183,10 +181,9 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               "...there are two test displays (both equally likely to appear):",
               "The previous one was based on object positions. The next will be based "\
                   "on the object count.",
-              "After transforming the objects (steps 1-4), you will now see an object category",
-              "(5) From the options below, choose how often "\
+              "After memorizing and transforming the objects (steps 1-4), you will now see an object category",
+              "(5) From the (equally likely) options below, choose how often "\
                   "this object appears in the scene after the transformation.",
-              "We will do 3 slow trials first.",
               "Ready?"] 
 
 positionSecond = ["Some magic students tend to cheat on the test above.",
@@ -195,12 +192,11 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "...there are two test displays (both equally likely to appear):",
                   "The previous one was based on object positions. The next will be based "\
                       "on the object count.",
-                  "After transforming the objects (steps 1-4)...", 
+                  "After memorizing and transforming the objects (steps 1-4)...", 
                   "you will see all the squares on which the objects stood. "\
                       "One of them will be marked.",
-                  "(5) From the options below, choose the object that would be "\
+                  "(5) From the (equally likely) options below, choose the object that would be "\
                       "on the marked square after the transformation.",
-                  "We will do 3 slow trials first.",
                   "Ready?"] 
 
     
@@ -247,7 +243,6 @@ instructions ={
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
-  "Faster": AddProceedKey2All(Faster, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),
   "Bye": AddProceedKey2All(Bye, '/k'),

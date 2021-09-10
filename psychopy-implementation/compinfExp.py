@@ -17,8 +17,7 @@ from psychopy.tools.filetools import toFile
 main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
 stim_dir = os.path.join(main_dir, "stimuli")
-if not os.path.exists(stim_dir + os.sep + "instructions_en.pkl"):
-    exec(open(stim_dir + os.sep + "instructions_en.py").read())
+exec(open(stim_dir + os.sep + "instructions_en.py").read())
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 if not os.path.exists(trial_list_dir):
     exec(open("generate_trial_lists.py").read())
@@ -573,7 +572,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
             
     
 def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = False,
-                 durations = [0.5, 1, 0.3, 1, 0.7], test = True, feedback = False):
+                 durations = [1, 3, 0.6, 1, 0.7], test = True, feedback = False):
     # create the trial handler
     if i_step is None:  
         i_step = len(trial_df)
@@ -665,7 +664,7 @@ def CuePracticeLoop(trials_prim_cue,
 
 def TestPracticeLoop(trial_df, 
                      min_acc = 0.9, mode = "random", i = 0, i_step = 30,
-                     durations = [0.5, 1, 0.3, 1, 0.7], 
+                     durations = [1, 3, 0.6, 1, 0.7], 
                      test = True, feedback = False, self_paced = False):
     mean_acc = 0.0
     df_list = []
@@ -906,63 +905,63 @@ magicBooks = visual.ImageStim(
 # Global clock
 globalClock = core.Clock()
 
-# # Navigation
-# Instructions(part_key = "Navigation",
-#               special_displays = [iSingleImage,
-#                                   iSingleImage], 
-#               args = [[keyboard_dict["keyBoardArrows"]],
-#                       [keyboard_dict["keyBoardEsc"]]],
-#               font = "mono",
-#               fontcolor = color_dict["mid_grey"])
+# Navigation
+Instructions(part_key = "Navigation",
+              special_displays = [iSingleImage,
+                                  iSingleImage], 
+              args = [[keyboard_dict["keyBoardArrows"]],
+                      [keyboard_dict["keyBoardEsc"]]],
+              font = "mono",
+              fontcolor = color_dict["mid_grey"])
 
-# # Introduction
-# Instructions(part_key = "Intro",
-#               special_displays = [iSingleImage,
-#                                   iSingleImage,
-#                                   iTransmutableObjects,
-#                                   iSpellExample,
-#                                   iSpellExample], 
-#               args = [[magicBooks],
-#                       [philbertine],
-#                       [None],
-#                       [["A", "B", "C", "C", "E"],
-#                       ["A", "E", "C", "C", "E"]],
-#                       [["B", "A", "B", "B", "C"],
-#                       ["E", "A", "E", "E", "C"]]]
-#                       )
+# Introduction
+Instructions(part_key = "Intro",
+              special_displays = [iSingleImage,
+                                  iSingleImage,
+                                  iTransmutableObjects,
+                                  iSpellExample,
+                                  iSpellExample], 
+              args = [[magicBooks],
+                      [philbertine],
+                      [None],
+                      [["A", "B", "C", "C", "E"],
+                      ["A", "E", "C", "C", "E"]],
+                      [["B", "A", "B", "B", "C"],
+                      ["E", "A", "E", "E", "C"]]]
+                      )
 
-# # # ----------------------------------------------------------------------------
-# # # Balance out which cue modality is learned first
-# if int(expInfo["participant"]) % 2 == 0:
-#     first_modality = "visual"
-#     second_modality = "textual"
-# else:
-#     first_modality = "textual"
-#     second_modality = "visual"
-    
-# # Cue Memory
-# Instructions(part_key = "learnCues",
-#               special_displays = [iSingleImage], 
-#               args = [[keyboard_dict["keyBoardSpacebar"]]])
-# learnDuration = LearnCues(cue_center_pos = [0, 2], 
-#                           modes = [first_modality, second_modality])                                     
-# Instructions(part_key = "Intermezzo1",
-#               special_displays = [iSingleImage], 
-#               args = [[keyboard_dict["keyBoard6"]]])
-# df_out_1 = CuePracticeLoop(trials_prim_cue, 
-#                             mode = first_modality, 
-#                             i_step = 20
-#                             )   
-# Instructions(part_key = "Intermezzo2")
-# df_out_2 = CuePracticeLoop(trials_prim_cue, 
-#                             mode = second_modality, 
-#                             # i = len(df_out_1),
-#                             i_step = 20
-#                             )
+# # ----------------------------------------------------------------------------
+# # Balance out which cue modality is learned first
+if int(expInfo["participant"]) % 2 == 0:
+    first_modality = "visual"
+    second_modality = "textual"
+else:
+    first_modality = "textual"
+    second_modality = "visual"
 
-# # Save cue memory data
-# pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-#     data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
+# Cue Memory
+Instructions(part_key = "learnCues",
+              special_displays = [iSingleImage], 
+              args = [[keyboard_dict["keyBoardSpacebar"]]])
+learnDuration = LearnCues(cue_center_pos = [0, 2], 
+                          modes = [first_modality, second_modality])                                     
+Instructions(part_key = "Intermezzo1",
+              special_displays = [iSingleImage], 
+              args = [[keyboard_dict["keyBoard6"]]])
+df_out_1 = CuePracticeLoop(trials_prim_cue, 
+                            mode = first_modality, 
+                            i_step = 20
+                            )   
+Instructions(part_key = "Intermezzo2")
+df_out_2 = CuePracticeLoop(trials_prim_cue, 
+                            mode = second_modality, 
+                            # i = len(df_out_1),
+                            i_step = 20
+                            )
+
+# Save cue memory data
+pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
+    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
@@ -977,34 +976,27 @@ else:
     second_test = "count"
     trials_test_2 = trials_prim_prac_c.copy()
     
-# Test-Type: Position
+# First Test-Type
 Instructions(part_key = "TestTypes",
-             special_displays = [iSingleImage], 
-             args = [[magicWand]])
+              special_displays = [iSingleImage], 
+              args = [[magicWand]])
 GenericBlock(trials_prim_prac_p,
-             i_step = 1,
-             durations = [1, 3, 0.6, 0, 0],
-             test = False)         
+              i_step = 1,
+              durations = [1, 3, 0.6, 0, 0],
+              test = False)         
 Instructions(part_key = first_test + "First",
-             special_displays = [iSingleImage], 
-             args = [[keyboard_dict["keyBoard4"]]])
+              special_displays = [iSingleImage], 
+              args = [[keyboard_dict["keyBoard4"]]])
 df_out_3 = TestPracticeLoop(trials_test_1,
-                            i_step = 3,
-                            durations = [1, 3, 0.6, 1, 0.7], 
+                            i_step = 20,
                             self_paced = True,
                             feedback = True)
-Instructions(part_key = "Faster")
-df_out_3 = TestPracticeLoop(trials_test_1,
-                            i = len(df_out_3),
-                            feedback = True)
 
-# Test-Type: Counting
+# Second Test-Type
 Instructions(part_key = second_test + "Second")
-df_out_4 = TestPracticeLoop(trials_test_2, 
-                 i_step = 2, durations = [1, 3, 0.6, 1, 0.7],  feedback = True)
-Instructions(part_key = "Faster")
-df_out_4 = TestPracticeLoop(trials_test_2, 
-                            i = len(df_out_4),
+df_out_4 = TestPracticeLoop(trials_test_2,
+                            i_step = 20,
+                            self_paced = True,
                             feedback = True)
 
 # Save test type data
@@ -1014,17 +1006,20 @@ pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
 # ----------------------------------------------------------------------------
 # Practice: Primitive
 Instructions(part_key = "Primitives",
-             special_displays = [iSingleImage], 
-             args = [[magicWand]])
+              special_displays = [iSingleImage], 
+              args = [[magicWand]])
 # GenericBlock(trials_prim, mode = "random")
 df_out_5 = TestPracticeLoop(trials_prim,
                             min_acc = 0.8,
+                            self_paced = True,
                             feedback = True)
+
 # Practice: Binary
 Instructions(part_key = "Binaries")
 df_out_6 = GenericBlock(trials_bin,
                         i_step = 10,
                         durations = [2, 3, 0.6, 1, 0.7],
+                        self_paced = True,
                         feedback = True)
 Instructions(part_key = "Bye")
 win.close()
