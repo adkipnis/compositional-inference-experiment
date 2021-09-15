@@ -133,9 +133,9 @@ def gen_binary_compositions(T_unique, n_primitives = 5, min_type = 2,
                          "generic" : []
                          }
     
-    while len(binary_comps_dict["second-only"]) < min_type or \
-          len(binary_comps_dict["transitive"]) < min_type or \
-          len(binary_comps_dict["generic"]) < min_type or \
+    while len(binary_comps_dict["second-only"]) < 2 or \
+          len(binary_comps_dict["transitive"]) < 1 or \
+          len(binary_comps_dict["generic"]) < 1 or \
           sd > sd_max:
         T_selection = np.random.choice(T_unique,
                                        size = n_primitives,
@@ -161,6 +161,8 @@ def select_binary_compositions(binary_comps_dict):
     
     idx_so = list(combinations([i for i in range(len(maps_second_only))], 2))
     idx_t = list(combinations([i for i in range(len(maps_trans))], 2))
+    if idx_t == []:
+        idx_t = [0]
     idx_g = list(combinations([i for i in range(len(maps_generic))], 2))
     
     working_indices = []
@@ -169,22 +171,31 @@ def select_binary_compositions(binary_comps_dict):
         selection_second_only = maps_second_only[idx_1, :]
         prim_so_1, prim_so_2 = selection_second_only[0,0], selection_second_only[1,0]
         
-        if prim_so_1 != selection_second_only[1,1] and \
-            prim_so_2 != selection_second_only[0,1]:
+        # if prim_so_1 != selection_second_only[1,1] and \
+        #     prim_so_2 != selection_second_only[0,1]:
         
-            for idx_2 in idx_t:
-                for idx_3 in idx_g:
-                    selection_rest = np.concatenate((maps_trans[idx_2, :],
+        for idx_2 in idx_t:
+            for idx_3 in idx_g:
+                if idx_t == [0]:
+                    selection_rest = np.concatenate((maps_trans[idx_t],
                                                      maps_generic[idx_3, :]))
-                    count_1 = np.count_nonzero(selection_rest == prim_so_1)
-                    count_2 = np.count_nonzero(selection_rest == prim_so_2)
-                    
-                    if count_1 > 0 and count_2 == 0 or count_2 > 0 and count_1 == 0:
-                            working_indices.append([[idx_1, idx_2, idx_3],
-                                                    [count_1, count_2]])
+                else:
+                    selection_rest = np.concatenate((maps_trans[idx_2, :],
+                                                     maps_generic[idx_3, :]))    
+                count_1 = np.count_nonzero(selection_rest == prim_so_1)
+                count_2 = np.count_nonzero(selection_rest == prim_so_2)
+                
+                if count_1 > 0 and count_2 == 0 or count_2 > 0 and count_1 == 0:
+                        working_indices.append([[idx_1, idx_2, idx_3],
+                                                [count_1, count_2]])
     working_indices = np.array(working_indices) 
     best_idx = working_indices[np.argmax(working_indices[:,1])]
-    maps_selection = np.concatenate((maps_second_only[best_idx[0][0], :],
+    if idx_t == [0]:
+        maps_selection = np.concatenate((maps_second_only[best_idx[0][0], :],
+                                     np.array([maps_trans[best_idx[0][1]]]),
+                                     maps_generic[best_idx[0][2], :]))
+    else:
+        maps_selection = np.concatenate((maps_second_only[best_idx[0][0], :],
                                      maps_trans[best_idx[0][1], :],
                                      maps_generic[best_idx[0][2], :]))
     return maps_selection
@@ -452,8 +463,8 @@ def compile_down(general_map, map_type = None, display = None, sep = '-'):
 sep = '-'
 n_stim = 6 #>= 4, otherwise no parallelizable compositions
 display_size = 4
-min_type = 3 #minimal number of instances per composition type
-n_primitives = 6 
+n_primitives = 4 
+min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
 n_exposure = 30 #per primitive per block
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
@@ -471,11 +482,6 @@ selection_prim, comps_dict_binary = gen_binary_compositions(
 # Select binary maps such that the first primitive of only one second-only map
 # does not appear in other compositions
 selection_binary = select_binary_compositions(comps_dict_binary) 
-
-## Alternatively: just select the first two of each
-# selection_binary = np.concatenate([comps_dict_binary["second-only"][0:2],
-#                                    comps_dict_binary["transitive"][0:2],
-#                                    comps_dict_binary["generic"][0:2]])
 
 
 # Generate structural conjugates for the selected binary maps (second draft)
