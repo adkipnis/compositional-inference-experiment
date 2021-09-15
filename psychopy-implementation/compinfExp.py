@@ -16,12 +16,13 @@ from psychopy.tools.filetools import toFile
 # set directories
 main_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(main_dir)
-stim_dir = os.path.join(main_dir, "stimuli")
-sys.path.insert(0, './stimuli')
-import instructions_en
 trial_list_dir = os.path.join(main_dir, "trial-lists")
 if not os.path.exists(trial_list_dir):
     import generate_trial_lists
+stim_dir = os.path.join(main_dir, "stimuli")
+sys.path.insert(0, './stimuli')
+import instructions_en
+
 data_dir = os.path.join(main_dir, "data")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -812,7 +813,7 @@ fixation = visual.GratingStim(
 
 # Textual cues  
 tcue_list = mappinglists["tcue"]
-assert len(tcue_list) == len(map_names)
+assert len(tcue_list) >= len(map_names)
 spellname_dict = dict(zip(tcue_list, map_names))
 tcue_dict = {}
 
