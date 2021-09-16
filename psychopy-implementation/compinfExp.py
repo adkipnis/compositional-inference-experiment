@@ -479,7 +479,7 @@ def LearnCues(cue_center_pos = [0, 2], vert_dist = 7, modes = ["textual", "visua
     return learnDuration    
 
 
-def PracticeCues(trials_prim_cue, mode = "visual"):
+def PracticeCues(trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
     # create the trial handler
     PracticeCueTrials = data.TrialHandler(
         trials_prim_cue.to_dict("records"), 1, method="sequential")
@@ -493,6 +493,7 @@ def PracticeCues(trials_prim_cue, mode = "visual"):
         testRTList = []
         j = 0
         cue, cue_type = setCue(trial.map[0], mode = mode)
+        cue.pos = cue_pos
         cueTypeList.append(cue_type)
         
         # Incrementally display stuff
@@ -945,7 +946,7 @@ else:
 Instructions(part_key = "learnCues",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoardSpacebar"]]])
-learnDuration = LearnCues(cue_center_pos = [0, 2], 
+learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
                           modes = [first_modality, second_modality])                                     
 Instructions(part_key = "Intermezzo1",
               special_displays = [iSingleImage], 
@@ -955,9 +956,11 @@ df_out_1 = CuePracticeLoop(trials_prim_cue,
                             i_step = 20
                             )   
 Instructions(part_key = "Intermezzo2")
+learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
+                          modes = [first_modality, second_modality])  
 df_out_2 = CuePracticeLoop(trials_prim_cue, 
                             mode = second_modality, 
-                            # i = len(df_out_1),
+                            i = len(df_out_1),
                             i_step = 20
                             )
 

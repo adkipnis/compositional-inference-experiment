@@ -76,7 +76,9 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
 # Learn Cues
 learnCues = ["Each spell has a specific name and symbol. Philbertine provides a"\
                    " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-                   "You decide to spend a couple of minutes to study them.",
+                   "You decide to spend some time to study them really well.",
+                   "Specifically, you need to learn the exact name and symbol "\
+                       "which are associated with each respective spell.",
                    "When you are done with studying, you may press the spacebar:",
                    0,
                    "Ready?"]   
@@ -117,10 +119,12 @@ Intermezzo1 = ["Now that you have committed the spell cues to your memory, you"\
 #                     "When you are done with studying, you may press the spacebar.",
 #                     "Ready?"]
     
-Intermezzo2 = ["Next you see if you have learned the second type of spell cue"\
+Intermezzo2 = ["You have mastered the first spell cue type. Congrats!",
+               "Next, you will see if you have learned the second spell cue type"\
                     " correctly.",
-                "The next practice board is completely analogous to the previous"\
+                "The following practice board is completely analogous to the previous"\
                     " one.",
+                "Just as a refresher you get a second look at Philbertines cheet sheet before that.",
                 "Ready?"]
     
 # Practice accuracy too bad, repeat:
