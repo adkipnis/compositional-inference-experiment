@@ -713,7 +713,7 @@ win = visual.Window(
 # Store info about the experiment session
 psychopyVersion = "2021.1.4"
 expName = "compositionalInference"
-expInfo = {"participant": "01", "session": "01"}
+expInfo = {"participant": "01", "session": "b"}
 expInfo["dateStr"] = data.getDateStr()  # add the current time
 expInfo["psychopyVersion"] = psychopyVersion
 expInfo["frameRate"] = win.getActualFrameRate()
@@ -966,7 +966,8 @@ df_out_2 = CuePracticeLoop(trials_prim_cue,
 
 # Save cue memory data
 pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "cueMemory.pkl") 
+    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+    "_" +"cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
@@ -1006,7 +1007,8 @@ df_out_4 = TestPracticeLoop(trials_test_2,
 
 # Save test type data
 pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + "testType.pkl") 
+    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+    "_" + "testType.pkl") 
 
 # ----------------------------------------------------------------------------
 # Practice: Primitive
@@ -1026,5 +1028,10 @@ df_out_6 = GenericBlock(trials_bin,
                         durations = [2, 3, 0.6, 1, 0.7],
                         self_paced = True,
                         feedback = True)
+
+# Save generic data
+pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
+    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+    "_" + "generic.pkl") 
 Instructions(part_key = "Bye")
 win.close()
