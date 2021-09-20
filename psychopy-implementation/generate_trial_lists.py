@@ -6,8 +6,7 @@ Created on Thu Feb 11 18:07:53 2021
 @author: alex
 """
 import os, glob, pickle, string
-from itertools import product 
-from itertools import combinations
+from itertools import product, combinations, groupby
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
@@ -456,6 +455,16 @@ def compile_down(general_map, map_type = None, display = None, sep = '-'):
             compiled_map = general_map[0][0] + sep + general_map[1][2]
     return compiled_map 
 
+def select_sans_repeats(selection, n_repeats = 1):
+    same_len = False
+    while same_len is False:
+        list_attempt = np.random.permutation(
+            np.repeat(selection, n_repeats, axis = 0)
+            )
+        list_sans_repeats = np.array([k for k,g in groupby(list_attempt) if g!=0])
+        if len(list_attempt) == len(list_sans_repeats):
+            same_len = True
+    return list_sans_repeats
 # ============================================================================
 # Stimuli & Maps
 
@@ -465,7 +474,9 @@ n_stim = 6 #>= 4, otherwise no parallelizable compositions
 display_size = 4
 n_primitives = 4 
 min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
-n_exposure = 30 #per primitive per block
+n_exposure_cue = 5 # get tested on each cue n times
+n_exposure = 30 # use each primitive n times per block
+maxn_learn_blocks = 5
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
 
@@ -527,8 +538,8 @@ for i in range(1, n_participants+1):
     # 0. Practice blocks
     # Cue Memory
     df_list = []
-    for j in range(8):
-        cue_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    for j in range(maxn_learn_blocks):
+        cue_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
         df_list.append(gen_cue_trials(cue_list_prim, stimuli,
                                          display_size = 6, sep='-'))
     trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
@@ -536,8 +547,8 @@ for i in range(1, n_participants+1):
     
     # Test Practice: Count
     df_list = []
-    for j in range(8):
-        map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    for j in range(maxn_learn_blocks):
+        map_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
         df_list.append(gen_trials(stimuli,
                                  map_list_prim,                         
                                  resp_list = resp_list,
@@ -550,8 +561,8 @@ for i in range(1, n_participants+1):
     
     # Test Practice: Position
     df_list = []
-    for j in range(8):
-        map_list_prim = np.random.permutation(np.repeat(selection_prim, 5, axis = 0))
+    for j in range(maxn_learn_blocks):
+        map_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
         df_list.append(gen_trials(stimuli,
                                  map_list_prim,                         
                                  resp_list = resp_list,
@@ -568,8 +579,7 @@ for i in range(1, n_participants+1):
     test_types = ["count", "position"]
     df_list = []
     for j in range(2):
-        map_list_prim = np.random.permutation(np.repeat(selection_prim, np.ceil(n_exposure/2),
-                                                axis = 0))
+        map_list_prim = select_sans_repeats(selection_prim, n_repeats = np.ceil(n_exposure/2))
         df_list.append(gen_trials(stimuli,
                                  map_list_prim,                         
                                  resp_list = resp_list,
@@ -587,8 +597,7 @@ for i in range(1, n_participants+1):
     # 2. Compositional blocks
     df_list = []
     for j in range(2):
-        map_list_binary = np.random.permutation(np.repeat(
-            selection_binary, np.ceil(n_exposure/4), axis = 0))
+        map_list_binary = select_sans_repeats(selection_binary, n_repeats = np.ceil(n_exposure/4))
         df_list.append(gen_trials(stimuli,
                                  map_list_binary,                         
                                  resp_list = resp_list,
@@ -606,8 +615,7 @@ for i in range(1, n_participants+1):
 # 3. Conjugate blocks
 df_list = []
 for j in range(2):
-    map_list_binary_conj = np.random.permutation(np.repeat(
-        selection_binary_conj, np.ceil(n_exposure/4), axis = 0))
+    map_list_binary_conj = select_sans_repeats(selection_binary_conj, n_repeats = np.ceil(n_exposure/4))
     df_list.append(gen_trials(stimuli,
                              map_list_binary_conj,                         
                              resp_list = resp_list,
@@ -620,8 +628,7 @@ trials_binary_conj = pd.concat(df_list).sample(frac=1).reset_index(drop=True)
 # 4. Trinary blocks
 df_list = []
 for j in range(2):
-    map_list_trinary = np.random.permutation(
-        np.repeat(selection_trinary, np.ceil(n_exposure/2), axis = 0))
+    map_list_trinary = select_sans_repeats(selection_trinary, n_repeats = np.ceil(n_exposure/2))
     df_list.append(gen_trials(stimuli,
                              map_list_trinary,                         
                              resp_list = resp_list,
