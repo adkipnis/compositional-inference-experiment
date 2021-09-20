@@ -130,8 +130,8 @@ Intermezzo2 = ["You have mastered the first spell cue type. Congrats!",
 # Practice accuracy too bad, repeat:
 Feedback0 = ["In this training run, your score was:",
              0,
-             "You feel like you can do better, so you decide to train a"\
-                 " little more."]
+             "You feel like you can do better, so you decide to have another "\
+                 "look at the cheet sheet and then train a little more."]
 Feedback1 = ["In this training run, your score was:", 
              0, 
              "This is good, you are confident to make the next step..."]
@@ -238,7 +238,7 @@ instructions ={
   "Intro": AddProceedKey2All(Intro, '/k'),
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
-  "Feedback0": AddProceedKey2All(Feedback0, '/e', wait_s = 2),
+  "Feedback0": AddProceedKey2All(Feedback0, '/k'),
   "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
   "learnCues": AddProceedKey2All(learnCues, '/k'),
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),

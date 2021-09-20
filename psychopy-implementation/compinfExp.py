@@ -919,30 +919,30 @@ magicBooks = visual.ImageStim(
 # Global clock
 globalClock = core.Clock()
 
-# # Navigation
-# Instructions(part_key = "Navigation",
-#               special_displays = [iSingleImage,
-#                                   iSingleImage], 
-#               args = [[keyboard_dict["keyBoardArrows"]],
-#                       [keyboard_dict["keyBoardEsc"]]],
-#               font = "mono",
-#               fontcolor = color_dict["mid_grey"])
+# Navigation
+Instructions(part_key = "Navigation",
+              special_displays = [iSingleImage,
+                                  iSingleImage], 
+              args = [[keyboard_dict["keyBoardArrows"]],
+                      [keyboard_dict["keyBoardEsc"]]],
+              font = "mono",
+              fontcolor = color_dict["mid_grey"])
 
-# # Introduction
-# Instructions(part_key = "Intro",
-#               special_displays = [iSingleImage,
-#                                   iSingleImage,
-#                                   iTransmutableObjects,
-#                                   iSpellExample,
-#                                   iSpellExample], 
-#               args = [[magicBooks],
-#                       [philbertine],
-#                       [None],
-#                       [["A", "B", "C", "E"],
-#                       ["A", "E", "C", "E"]],
-#                       [["A", "B", "B", "E"],
-#                       ["A", "E", "E", "E"]]]
-#                       )
+# Introduction
+Instructions(part_key = "Intro",
+              special_displays = [iSingleImage,
+                                  iSingleImage,
+                                  iTransmutableObjects,
+                                  iSpellExample,
+                                  iSpellExample], 
+              args = [[magicBooks],
+                      [philbertine],
+                      [None],
+                      [["A", "B", "C", "E"],
+                      ["A", "E", "C", "E"]],
+                      [["A", "B", "B", "E"],
+                      ["A", "E", "E", "E"]]]
+                      )
 
 # ----------------------------------------------------------------------------
 # Balance out which cue modality is learned first
@@ -964,7 +964,7 @@ Instructions(part_key = "Intermezzo1",
               args = [[keyboard_dict["keyBoard6"]]])
 df_out_1 = CuePracticeLoop(trials_prim_cue, 
                             mode = first_modality, 
-                            i_step = 5
+                            # i_step = 5
                             )   
 Instructions(part_key = "Intermezzo2")
 learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
