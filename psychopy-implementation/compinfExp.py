@@ -637,9 +637,12 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = F
 
 
 def CuePracticeLoop(trials_prim_cue, 
-                    min_acc = 0.85, mode = "random", i = 0, i_step = 30):
+                    min_acc = 0.85, mode = "random", i = 0, i_step = None,
+                    show_cheetsheet = True):
     mean_acc = 0.0
     df_list = []
+    if i_step is None:
+        i_step = n_exposure * maxn_blocks
     while mean_acc < min_acc:
         df = trials_prim_cue[i:i+i_step].copy()
         df_list.append(PracticeCues(df, mode = mode))
@@ -657,20 +660,26 @@ def CuePracticeLoop(trials_prim_cue,
         i += i_step    
         if mean_acc < min_acc:
             feedbacktype = "Feedback0" 
+            
         else: 
             feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
-                 special_displays = [iSingleImage], args = [[accPrompt]])            
+                 special_displays = [iSingleImage], args = [[accPrompt]])
+        if show_cheetsheet and mean_acc < min_acc:
+                LearnCues(cue_center_pos = [0, 2], 
+                          modes = [first_modality, second_modality])
     df_out = pd.concat(df_list)
     return df_out
 
 
 def TestPracticeLoop(trial_df, 
-                     min_acc = 0.9, mode = "random", i = 0, i_step = 30,
+                     min_acc = 0.9, mode = "random", i = 0, i_step = None,
                      durations = [1, 3, 0.6, 1, 0.7], 
                      test = True, feedback = False, self_paced = False):
     mean_acc = 0.0
     df_list = []
+    if i_step is None:
+        i_step = n_exposure * maxn_blocks
     while mean_acc < min_acc:
         df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
                  durations = durations, test = test, feedback = feedback,
@@ -766,6 +775,8 @@ set_size = len(trials_prim.input_disp[0])
 n_cats = len(np.unique(trials_prim.input_disp.to_list()))
 n_resp = len(trials_prim.resp_options[0])
 map_names = np.unique(trials_prim.map.to_list())
+n_exposure = 5 # this value should be copied from generate_trial_lists
+maxn_blocks = 6 # this value should be copied from generate_trial_lists
 
 # set colors
 color_dict = {"light_grey": [0.7, 0.7, 0.7],
@@ -908,30 +919,30 @@ magicBooks = visual.ImageStim(
 # Global clock
 globalClock = core.Clock()
 
-# Navigation
-Instructions(part_key = "Navigation",
-              special_displays = [iSingleImage,
-                                  iSingleImage], 
-              args = [[keyboard_dict["keyBoardArrows"]],
-                      [keyboard_dict["keyBoardEsc"]]],
-              font = "mono",
-              fontcolor = color_dict["mid_grey"])
+# # Navigation
+# Instructions(part_key = "Navigation",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage], 
+#               args = [[keyboard_dict["keyBoardArrows"]],
+#                       [keyboard_dict["keyBoardEsc"]]],
+#               font = "mono",
+#               fontcolor = color_dict["mid_grey"])
 
-# Introduction
-Instructions(part_key = "Intro",
-              special_displays = [iSingleImage,
-                                  iSingleImage,
-                                  iTransmutableObjects,
-                                  iSpellExample,
-                                  iSpellExample], 
-              args = [[magicBooks],
-                      [philbertine],
-                      [None],
-                      [["A", "B", "C", "E"],
-                      ["A", "E", "C", "E"]],
-                      [["A", "B", "B", "E"],
-                      ["A", "E", "E", "E"]]]
-                      )
+# # Introduction
+# Instructions(part_key = "Intro",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage,
+#                                   iTransmutableObjects,
+#                                   iSpellExample,
+#                                   iSpellExample], 
+#               args = [[magicBooks],
+#                       [philbertine],
+#                       [None],
+#                       [["A", "B", "C", "E"],
+#                       ["A", "E", "C", "E"]],
+#                       [["A", "B", "B", "E"],
+#                       ["A", "E", "E", "E"]]]
+#                       )
 
 # ----------------------------------------------------------------------------
 # Balance out which cue modality is learned first
@@ -953,7 +964,7 @@ Instructions(part_key = "Intermezzo1",
               args = [[keyboard_dict["keyBoard6"]]])
 df_out_1 = CuePracticeLoop(trials_prim_cue, 
                             mode = first_modality, 
-                            i_step = 20
+                            i_step = 5
                             )   
 Instructions(part_key = "Intermezzo2")
 learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
@@ -961,7 +972,7 @@ learnDuration_2 = LearnCues(cue_center_pos = [0, 2],
 df_out_2 = CuePracticeLoop(trials_prim_cue, 
                             mode = second_modality, 
                             i = len(df_out_1),
-                            i_step = 20
+                            # i_step = 5
                             )
 
 # Save cue memory data
@@ -994,14 +1005,14 @@ Instructions(part_key = first_test + "First",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoard4"]]])
 df_out_3 = TestPracticeLoop(trials_test_1,
-                            i_step = 20,
+                            # i_step = 5,
                             self_paced = True,
                             feedback = True)
 
 # Second Test-Type
 Instructions(part_key = second_test + "Second")
 df_out_4 = TestPracticeLoop(trials_test_2,
-                            i_step = 20,
+                            # i_step = 5,
                             self_paced = True,
                             feedback = True)
 
