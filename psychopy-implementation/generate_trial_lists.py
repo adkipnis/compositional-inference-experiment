@@ -455,8 +455,11 @@ def compile_down(general_map, map_type = None, display = None, sep = '-'):
             compiled_map = general_map[0][0] + sep + general_map[1][2]
     return compiled_map 
 
-def select_sans_repeats(selection, n_repeats = 1):
+def select_sans_repeats(selection, n_repeats = 1, inary_maps = False):
     same_len = False
+    if inary_maps:
+        selection = inery2prim(selection)
+        
     while same_len is False:
         list_attempt = np.random.permutation(
             np.repeat(selection, n_repeats, axis = 0)
@@ -464,7 +467,24 @@ def select_sans_repeats(selection, n_repeats = 1):
         list_sans_repeats = np.array([k for k,g in groupby(list_attempt) if g!=0])
         if len(list_attempt) == len(list_sans_repeats):
             same_len = True
+    
+    if inary_maps:
+        list_sans_repeats = prim2inary(list_sans_repeats)
     return list_sans_repeats
+
+def inery2prim(inery_list, sep_2 = '+'):
+    prims = []
+    for inary in inery_list:
+        prims.append(sep_2.join(inary))
+    return np.array(prims)
+
+def prim2inary(prim_list, len_inary = 2, sep_2 = '+'):
+    inaries = []
+    for prims in prim_list:
+        inaries.append([prims.split(sep_2, 1)[j] for j in range(len_inary)])
+    return np.array(inaries)        
+    
+
 # ============================================================================
 # Stimuli & Maps
 
@@ -474,9 +494,9 @@ n_stim = 6 #>= 4, otherwise no parallelizable compositions
 display_size = 4
 n_primitives = 4 
 min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
-n_exposure_cue = 5 # get tested on each cue n times
-n_exposure = 30 # use each primitive n times per block
-maxn_learn_blocks = 5
+n_exposure = 5 # get tested on each map n times per block
+maxn_blocks = 6
+
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
 
@@ -538,17 +558,20 @@ for i in range(1, n_participants+1):
     # 0. Practice blocks
     # Cue Memory
     df_list = []
-    for j in range(maxn_learn_blocks):
-        cue_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
+    for j in range(maxn_blocks):
+        cue_list_prim = select_sans_repeats(selection_prim,
+                                            n_repeats = n_exposure)
         df_list.append(gen_cue_trials(cue_list_prim, stimuli,
                                          display_size = 6, sep='-'))
     trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
-    trials_prim_cue.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue.pkl")
+    trials_prim_cue.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" +
+                              "trials_prim_cue.pkl")
     
     # Test Practice: Count
     df_list = []
-    for j in range(maxn_learn_blocks):
-        map_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
+    for j in range(maxn_blocks):
+        map_list_prim = select_sans_repeats(selection_prim,
+                                            n_repeats = n_exposure)
         df_list.append(gen_trials(stimuli,
                                  map_list_prim,                         
                                  resp_list = resp_list,
@@ -557,12 +580,14 @@ for i in range(1, n_participants+1):
                                  display_size = display_size,
                                  sep = sep))
     trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_c.pkl")
+    trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
+                                     "_" + "trials_prim_prac_c.pkl")
     
     # Test Practice: Position
     df_list = []
-    for j in range(maxn_learn_blocks):
-        map_list_prim = select_sans_repeats(selection_prim, n_repeats = n_exposure_cue)
+    for j in range(maxn_blocks):
+        map_list_prim = select_sans_repeats(selection_prim,
+                                            n_repeats = n_exposure)
         df_list.append(gen_trials(stimuli,
                                  map_list_prim,                         
                                  resp_list = resp_list,
@@ -571,69 +596,81 @@ for i in range(1, n_participants+1):
                                  display_size = display_size,
                                  sep = sep))
     trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_p.pkl")
+    trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
+                                     "_" + "trials_prim_prac_p.pkl")
     
     # 1. Primitive blocks
     # generate trials twice with n_exposure/2 and each test display type,
     # then randomly permute both generated lists
     test_types = ["count", "position"]
     df_list = []
-    for j in range(2):
-        map_list_prim = select_sans_repeats(selection_prim, n_repeats = np.ceil(n_exposure/2))
-        df_list.append(gen_trials(stimuli,
-                                 map_list_prim,                         
-                                 resp_list = resp_list,
-                                 test_type = test_types[j],
-                                 display_size = display_size,
-                                 sep = sep))
-    trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_prim.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim.pkl")
-    # plt.figure()
-    # trials_prim["correct_resp"].plot.hist(alpha=0.5)
-    # trials_prim["trans_ub"].plot.hist(alpha=0.5)
-    # trials_prim["target"].value_counts().plot(kind='bar')
+    for test_type in test_types:
+        for j in range(maxn_blocks):
+            map_list_prim = select_sans_repeats(selection_prim,
+                                                n_repeats = n_exposure)
+            df_list.append(gen_trials(stimuli,
+                                     map_list_prim,                         
+                                     resp_list = resp_list,
+                                     test_type = test_type,
+                                     display_size = display_size,
+                                     sep = sep))
+        trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+        trials_prim.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
+                              "_" + "trials_prim.pkl")
+        # plt.figure()
+        # trials_prim["correct_resp"].plot.hist(alpha=0.5)
+        # trials_prim["trans_ub"].plot.hist(alpha=0.5)
+        # trials_prim["target"].value_counts().plot(kind='bar')
 
 
     # 2. Compositional blocks
     df_list = []
-    for j in range(2):
-        map_list_binary = select_sans_repeats(selection_binary, n_repeats = np.ceil(n_exposure/4))
-        df_list.append(gen_trials(stimuli,
-                                 map_list_binary,                         
-                                 resp_list = resp_list,
-                                 test_type = test_types[j],
-                                 display_size = display_size,
-                                 sep = sep))
-    trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_binary.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin.pkl")
-    
-    # trials_binary["correct_resp"].plot.hist(alpha=0.5)
-    # trials_binary["trans_ub"].plot.hist(alpha=0.5)
-    # trials_binary["target"].value_counts().plot(kind='bar')
+    for test_type in test_types:
+        for j in range(maxn_blocks):
+            map_list_binary = select_sans_repeats(selection_binary,
+                                                  n_repeats = n_exposure,
+                                                  inary_maps = True)
+            df_list.append(gen_trials(stimuli,
+                                     map_list_binary,                         
+                                     resp_list = resp_list,
+                                     test_type = test_type,
+                                     display_size = display_size,
+                                     sep = sep))
+        trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+        trials_binary.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" +
+                                "trials_bin.pkl")
+        
+        # trials_binary["correct_resp"].plot.hist(alpha=0.5)
+        # trials_binary["trans_ub"].plot.hist(alpha=0.5)
+        # trials_binary["target"].value_counts().plot(kind='bar')
 
 
-# 3. Conjugate blocks
-df_list = []
-for j in range(2):
-    map_list_binary_conj = select_sans_repeats(selection_binary_conj, n_repeats = np.ceil(n_exposure/4))
-    df_list.append(gen_trials(stimuli,
-                             map_list_binary_conj,                         
-                             resp_list = resp_list,
-                             test_type = test_types[j],
-                             display_size = display_size,
-                             sep = sep))
-trials_binary_conj = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+# # 3. Conjugate blocks
+# df_list = []
+# for j in range(maxn_blocks):
+#     map_list_binary_conj = select_sans_repeats(selection_binary_conj,
+#                                                n_repeats = n_exposure,
+#                                                inary_maps = True)
+#     df_list.append(gen_trials(stimuli,
+#                              map_list_binary_conj,                         
+#                              resp_list = resp_list,
+#                              test_type = test_types[j],
+#                              display_size = display_size,
+#                              sep = sep))
+# trials_binary_conj = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
 
 
-# 4. Trinary blocks
-df_list = []
-for j in range(2):
-    map_list_trinary = select_sans_repeats(selection_trinary, n_repeats = np.ceil(n_exposure/2))
-    df_list.append(gen_trials(stimuli,
-                             map_list_trinary,                         
-                             resp_list = resp_list,
-                             test_type = test_types[j],
-                             display_size = display_size,
-                             sep = sep))
-trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
+# # 4. Trinary blocks
+# df_list = []
+# for j in range(maxn_blocks):
+#     map_list_trinary = select_sans_repeats(selection_trinary,
+#                                            n_repeats = n_exposure,
+#                                            inary_maps = True)
+#     df_list.append(gen_trials(stimuli,
+#                              map_list_trinary,                         
+#                              resp_list = resp_list,
+#                              test_type = test_types[j],
+#                              display_size = display_size,
+#                              sep = sep))
+# trials_trinary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
 
