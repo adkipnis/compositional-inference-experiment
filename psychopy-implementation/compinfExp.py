@@ -713,7 +713,7 @@ win = visual.Window(
     [2560, 1440],
     # [1920, 1080],
     # [800, 600],
-    fullscr = False,
+    fullscr = True,
     color = [0.85, 0.85, 0.85],
     screen = 0,
     monitor = "testMonitor",
@@ -918,6 +918,7 @@ magicBooks = visual.ImageStim(
 ##############################################################################
 # Global clock
 globalClock = core.Clock()
+win.mouseVisible = False
 
 # Navigation
 Instructions(part_key = "Navigation",
