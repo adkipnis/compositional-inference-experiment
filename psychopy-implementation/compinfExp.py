@@ -67,6 +67,43 @@ def circularGridPositions(center_pos = [0, 0], set_size = 6, radius = 10):
                        center_pos[1] + radius * np.cos(i * angle)]
     return rect_pos
 
+# Background Components -------------------------------------------------------
+def draw_background():
+    progBack.draw()
+    progTest.draw()
+    
+def move_prog_bar_step(bar_len_step):
+    progTest.width += bar_len_step                                              # incrementally increase the bar width 
+    progTest.pos[0] = left_corner + progTest.width/2                            # re-center it accordingly on X-coordinate
+    progBack.draw()
+    progTest.draw()
+    win.flip()
+    return progTest
+
+def move_prog_bar(start_width = 0, end_width = 1, n_steps = 100, wait_s = 0.75):
+    # Setup starting state of progress bar
+    progTest = visual.Rect(win, width = start_width * progBack.width,
+                           height = bar_height, pos = bar_pos,
+                           fillColor = 'green')
+    progTest.pos[0] = left_corner + start_width * progBack.width/2
+    bar_len_step = bar_len/n_steps
+    
+    # First display
+    progBack.draw()
+    progTest.draw()
+    win.flip()
+    core.wait(wait_s)
+    
+    # Growing
+    while progTest.width < progBack.width * end_width:
+        progTest = move_prog_bar_step(bar_len_step)
+    
+    # Last bit for completion
+    progTest = move_prog_bar_step(progBack.width * end_width - progTest.width)
+    core.wait(1.5 * wait_s)
+    return progTest, progTest.width/progBack.width
+
+
 # Trial Components ------------------------------------------------------------
 def tFixation():
     fixation.draw()
@@ -298,16 +335,18 @@ def tTestresponse(TestClock, respKeys, return_numeric = True,
     return(testRT, testResp)
 
 
-def iSingleImage(*args):
+def iSingleImage(*args, show_background = True):
     for arg in args:
         arg.pos = [0, 0]
         # arg.size = [10, 10]
         arg.draw()
+        if show_background: draw_background()
         win.flip()
         core.wait(0.2)
 
 
-def iTransmutableObjects(*args):
+def iTransmutableObjects(*args, show_background = True):
+    if show_background: draw_background()
     categories = list(stim_dict.keys())
     if len(categories) > 4:
         dim = [2, np.ceil(len(categories)/2)]
@@ -327,7 +366,7 @@ def iTransmutableObjects(*args):
     win.flip()
 
 
-def iSpellExample(*displays, show_output = True):
+def iSpellExample(*displays, show_background = True):
     # Input Display
     for i in range(2):
         rect_pos = circularGridPositions(center_pos = [0, 0],
@@ -339,6 +378,7 @@ def iSpellExample(*displays, show_output = True):
             stim.pos = rect_pos[j]
             stim.draw()
         if i == 0:
+            if show_background: draw_background()
             win.flip()
             core.wait(1)
             continue
@@ -347,10 +387,11 @@ def iSpellExample(*displays, show_output = True):
         cue.height = 2
         cue.draw()
         if i == 1:
+            if show_background: draw_background()
             win.flip()
             core.wait(1)
     
-    if show_output:
+    if len(displays) > 1:
         # Output Display
         rect_pos = circularGridPositions(center_pos = [0, 0],
                                      set_size = len(displays[1]), radius = 8)
@@ -360,6 +401,7 @@ def iSpellExample(*displays, show_output = True):
             stim = stim_dict.copy()[displays[1][j]]
             stim.pos = rect_pos[j]
             stim.draw()
+        if show_background: draw_background()
         win.flip()
         core.wait(1)
  
@@ -407,8 +449,10 @@ def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
     
 # Blocks and Loops-------------------------------------------------------------
 
-def Instructions(part_key = "Intro", special_displays = list(), args = list(),
-                 font = "Times New Roman", fontcolor = [-0.9, -0.9, -0.9]):
+def Instructions(part_key = "Intro", special_displays = list(), args = list(), 
+                 font = "Times New Roman",
+                 fontcolor = [-0.9, -0.9, -0.9],
+                 show_background = True):
     assert len(special_displays) == len(args),\
         "Number of special displays must match the number of args"
     assert part_key in instructions.keys(),\
@@ -418,6 +462,7 @@ def Instructions(part_key = "Intro", special_displays = list(), args = list(),
     finished = False
     Part = instructions[part_key]
     page = 0
+    if show_background: draw_background()
     win.flip()
     while not finished:
         page_content = Part[page][0]
@@ -432,9 +477,11 @@ def Instructions(part_key = "Intro", special_displays = list(), args = list(),
                         wrapWidth = 30,
                         color = fontcolor)
             textStim.draw()
+            if show_background: draw_background()
             win.flip()
         elif type(page_content) is int:
-            special_displays[page_content](*args[page_content])
+            special_displays[page_content](*args[page_content],
+                                           show_background = show_background)
         page, finished = iNavigate(page = page, max_page = len(Part),
                                    proceed_key = proceed_key,
                                    wait_s = proceed_wait)
@@ -879,7 +926,22 @@ for i in range(len(keyboard_list)):
                                                 image = keyboard_list[i],
                                                 size = [40, 20],
                                                 interpolate = True)})
-    
+
+# Progress bars
+n_experiment_parts = 8
+progbar_inc = 1/n_experiment_parts
+bar_len = 15.0  # total length
+bar_height = 0.35
+start_width = 0
+bar_pos = [0, 20]
+left_corner = bar_pos[0] - bar_len/2 
+progBack = visual.Rect(
+    win, width = bar_len, height = bar_height, pos = bar_pos,
+    fillColor = color_dict["light_grey"])
+progTest = visual.Rect(
+    win, width = 0.01, height = bar_height, pos = bar_pos,
+    fillColor = "green")
+
 # Misc. Stimuli    
 qm = visual.TextStim(win,
                      text = "?",
@@ -927,7 +989,8 @@ Instructions(part_key = "Navigation",
               args = [[keyboard_dict["keyBoardArrows"]],
                       [keyboard_dict["keyBoardEsc"]]],
               font = "mono",
-              fontcolor = color_dict["mid_grey"])
+              fontcolor = color_dict["mid_grey"],
+              show_background = False)
 
 # Introduction
 Instructions(part_key = "Intro",
@@ -959,7 +1022,9 @@ Instructions(part_key = "learnCues",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoardSpacebar"]]])
 learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
-                          modes = [first_modality, second_modality])                                     
+                          modes = [first_modality, second_modality])           
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                      end_width = start_width + progbar_inc)                    
 Instructions(part_key = "Intermezzo1",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoard6"]]])
@@ -967,6 +1032,8 @@ df_out_1 = CuePracticeLoop(trials_prim_cue,
                             mode = first_modality, 
                             # i_step = 5
                             )   
+progTest, end_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)
 Instructions(part_key = "Intermezzo2")
 learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
                           modes = [first_modality, second_modality])  
@@ -975,7 +1042,8 @@ df_out_2 = CuePracticeLoop(trials_prim_cue,
                             i = len(df_out_1),
                             # i_step = 5
                             )
-
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)         
 # Save cue memory data
 pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
     data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
@@ -1001,7 +1069,7 @@ Instructions(part_key = "TestTypes",
 GenericBlock(trials_prim_prac_p,
               i_step = 1,
               durations = [1, 3, 0.6, 0, 0],
-              test = False)         
+              test = False)                
 Instructions(part_key = first_test + "First",
               special_displays = [iSingleImage], 
               args = [[keyboard_dict["keyBoard4"]]])
@@ -1009,6 +1077,8 @@ df_out_3 = TestPracticeLoop(trials_test_1,
                             # i_step = 5,
                             self_paced = True,
                             feedback = True)
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)  
 
 # Second Test-Type
 Instructions(part_key = second_test + "Second")
@@ -1016,6 +1086,8 @@ df_out_4 = TestPracticeLoop(trials_test_2,
                             # i_step = 5,
                             self_paced = True,
                             feedback = True)
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)  
 
 # Save test type data
 pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
@@ -1032,7 +1104,8 @@ df_out_5 = TestPracticeLoop(trials_prim,
                             min_acc = 0.8,
                             self_paced = True,
                             feedback = True)
-
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)  
 # Practice: Binary
 Instructions(part_key = "Binaries")
 df_out_6 = GenericBlock(trials_bin,
@@ -1040,7 +1113,8 @@ df_out_6 = GenericBlock(trials_bin,
                         durations = [2, 3, 0.6, 1, 0.7],
                         self_paced = True,
                         feedback = True)
-
+progTest, start_width = move_prog_bar(start_width = start_width,
+                                    end_width = start_width + progbar_inc)  
 # Save generic data
 pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
     data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
