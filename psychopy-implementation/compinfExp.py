@@ -983,71 +983,71 @@ globalClock = core.Clock()
 win.mouseVisible = False
 
 # Navigation
-Instructions(part_key = "Navigation",
-              special_displays = [iSingleImage,
-                                  iSingleImage], 
-              args = [[keyboard_dict["keyBoardArrows"]],
-                      [keyboard_dict["keyBoardEsc"]]],
-              font = "mono",
-              fontcolor = color_dict["mid_grey"],
-              show_background = False)
+# Instructions(part_key = "Navigation",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage], 
+#               args = [[keyboard_dict["keyBoardArrows"]],
+#                       [keyboard_dict["keyBoardEsc"]]],
+#               font = "mono",
+#               fontcolor = color_dict["mid_grey"],
+#               show_background = False)
 
-# Introduction
-Instructions(part_key = "Intro",
-              special_displays = [iSingleImage,
-                                  iSingleImage,
-                                  iTransmutableObjects,
-                                  iSpellExample,
-                                  iSpellExample], 
-              args = [[magicBooks],
-                      [philbertine],
-                      [None],
-                      [["A", "B", "C", "E"],
-                      ["A", "E", "C", "E"]],
-                      [["A", "B", "B", "E"],
-                      ["A", "E", "E", "E"]]]
-                      )
+# # Introduction
+# Instructions(part_key = "Intro",
+#               special_displays = [iSingleImage,
+#                                   iSingleImage,
+#                                   iTransmutableObjects,
+#                                   iSpellExample,
+#                                   iSpellExample], 
+#               args = [[magicBooks],
+#                       [philbertine],
+#                       [None],
+#                       [["A", "B", "C", "E"],
+#                       ["A", "E", "C", "E"]],
+#                       [["A", "B", "B", "E"],
+#                       ["A", "E", "E", "E"]]]
+#                       )
 
-# ----------------------------------------------------------------------------
-# Balance out which cue modality is learned first
-if int(expInfo["participant"]) % 2 == 0:
-    first_modality = "visual"
-    second_modality = "textual"
-else:
-    first_modality = "textual"
-    second_modality = "visual"
+# # ----------------------------------------------------------------------------
+# # Balance out which cue modality is learned first
+# if int(expInfo["participant"]) % 2 == 0:
+#     first_modality = "visual"
+#     second_modality = "textual"
+# else:
+#     first_modality = "textual"
+#     second_modality = "visual"
 
-# Cue Memory
-Instructions(part_key = "learnCues",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoardSpacebar"]]])
-learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
-                          modes = [first_modality, second_modality])           
-progTest, start_width = move_prog_bar(start_width = start_width,
-                                      end_width = start_width + progbar_inc)                    
-Instructions(part_key = "Intermezzo1",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoard6"]]])
-df_out_1 = CuePracticeLoop(trials_prim_cue, 
-                            mode = first_modality, 
-                            # i_step = 5
-                            )   
-progTest, end_width = move_prog_bar(start_width = start_width,
-                                    end_width = start_width + progbar_inc)
-Instructions(part_key = "Intermezzo2")
-learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
-                          modes = [first_modality, second_modality])  
-df_out_2 = CuePracticeLoop(trials_prim_cue, 
-                            mode = second_modality, 
-                            i = len(df_out_1),
-                            # i_step = 5
-                            )
-progTest, start_width = move_prog_bar(start_width = start_width,
-                                    end_width = start_width + progbar_inc)         
-# Save cue memory data
-pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-    "_" +"cueMemory.pkl") 
+# # Cue Memory
+# Instructions(part_key = "learnCues",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoardSpacebar"]]])
+# learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
+#                           modes = [first_modality, second_modality])           
+# progTest, start_width = move_prog_bar(start_width = start_width,
+#                                       end_width = start_width + progbar_inc)                    
+# Instructions(part_key = "Intermezzo1",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoard6"]]])
+# df_out_1 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = first_modality, 
+#                             # i_step = 5
+#                             )   
+# progTest, end_width = move_prog_bar(start_width = start_width,
+#                                     end_width = start_width + progbar_inc)
+# Instructions(part_key = "Intermezzo2")
+# learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
+#                           modes = [first_modality, second_modality])  
+# df_out_2 = CuePracticeLoop(trials_prim_cue, 
+#                             mode = second_modality, 
+#                             i = len(df_out_1),
+#                             # i_step = 5
+#                             )
+# progTest, start_width = move_prog_bar(start_width = start_width,
+#                                     end_width = start_width + progbar_inc)         
+# # Save cue memory data
+# pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+#     "_" +"cueMemory.pkl") 
 
 # ----------------------------------------------------------------------------
 # Balance out which test type is learned first
@@ -1062,37 +1062,37 @@ else:
     second_test = "count"
     trials_test_2 = trials_prim_prac_c.copy()
     
-# First Test-Type
-Instructions(part_key = "TestTypes",
-              special_displays = [iSingleImage], 
-              args = [[magicWand]])
-GenericBlock(trials_prim_prac_p,
-              i_step = 1,
-              durations = [1, 3, 0.6, 0, 0],
-              test = False)                
-Instructions(part_key = first_test + "First",
-              special_displays = [iSingleImage], 
-              args = [[keyboard_dict["keyBoard4"]]])
-df_out_3 = TestPracticeLoop(trials_test_1,
-                            # i_step = 5,
-                            self_paced = True,
-                            feedback = True)
-progTest, start_width = move_prog_bar(start_width = start_width,
-                                    end_width = start_width + progbar_inc)  
+# # First Test-Type
+# Instructions(part_key = "TestTypes",
+#               special_displays = [iSingleImage], 
+#               args = [[magicWand]])
+# GenericBlock(trials_prim_prac_p,
+#               i_step = 1,
+#               durations = [1, 3, 0.6, 0, 0],
+#               test = False)                
+# Instructions(part_key = first_test + "First",
+#               special_displays = [iSingleImage], 
+#               args = [[keyboard_dict["keyBoard4"]]])
+# df_out_3 = TestPracticeLoop(trials_test_1,
+#                             # i_step = 5,
+#                             self_paced = True,
+#                             feedback = True)
+# progTest, start_width = move_prog_bar(start_width = start_width,
+#                                     end_width = start_width + progbar_inc)  
 
 # Second Test-Type
-Instructions(part_key = second_test + "Second")
-df_out_4 = TestPracticeLoop(trials_test_2,
-                            # i_step = 5,
-                            self_paced = True,
-                            feedback = True)
-progTest, start_width = move_prog_bar(start_width = start_width,
-                                    end_width = start_width + progbar_inc)  
+# Instructions(part_key = second_test + "Second")
+# df_out_4 = TestPracticeLoop(trials_test_2,
+#                             # i_step = 5,
+#                             self_paced = True,
+#                             feedback = True)
+# progTest, start_width = move_prog_bar(start_width = start_width,
+#                                     end_width = start_width + progbar_inc)  
 
-# Save test type data
-pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-    "_" + "testType.pkl") 
+# # Save test type data
+# pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+#     "_" + "testType.pkl") 
 
 # ----------------------------------------------------------------------------
 # Practice: Primitive
@@ -1100,10 +1100,10 @@ Instructions(part_key = "Primitives",
               special_displays = [iSingleImage], 
               args = [[magicWand]])
 # GenericBlock(trials_prim, mode = "random")
-df_out_5 = TestPracticeLoop(trials_prim,
-                            min_acc = 0.8,
-                            self_paced = True,
-                            feedback = True)
+# df_out_5 = TestPracticeLoop(trials_prim,
+#                             min_acc = 0.8,
+#                             self_paced = True,
+#                             feedback = True)
 progTest, start_width = move_prog_bar(start_width = start_width,
                                     end_width = start_width + progbar_inc)  
 # Practice: Binary
@@ -1116,8 +1116,8 @@ df_out_6 = GenericBlock(trials_bin,
 progTest, start_width = move_prog_bar(start_width = start_width,
                                     end_width = start_width + progbar_inc)  
 # Save generic data
-pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
-    data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-    "_" + "generic.pkl") 
+# pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
+#     data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+#     "_" + "generic.pkl") 
 Instructions(part_key = "Bye")
 win.close()
