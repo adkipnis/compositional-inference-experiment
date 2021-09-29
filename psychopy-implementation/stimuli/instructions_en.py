@@ -36,8 +36,9 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 
 
 # Navigation Introduction
-Navigation = [["For the following displays, you can navigate back and forth"\
-                   " using the arrow keys:", "/e", 4],
+Navigation = [
+              # ["For the following displays, you can navigate back and forth"\
+              #      " using the arrow keys:", "/e", 4],
               0,
               "Don't worry, there is no shame in going back pages.",
               "In this first session, you will learn the basics of the task"\
@@ -76,7 +77,7 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
 # Learn Cues
 learnCues = ["Each spell has a specific name and symbol. Philbertine provides a"\
                    " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-                   "You decide to spend some time to study them really well.",
+                   "You need to spend some time to study them really well.",
                    "Specifically, you need to learn the exact name and symbol "\
                        "which are associated with each respective spell.",
                    "When you are done with studying, you may press the spacebar:",
