@@ -125,6 +125,8 @@ Intermezzo2 = ["You have mastered the first spell cue type. Congrats!",
                     " correctly.",
                 "The following practice board is completely analogous to the previous"\
                     " one.",
+                "Again, you choose the objects using the marked keys on your keyboard:",
+                0,
                 "Just as a refresher you get a second look at Philbertines cheet sheet before that.",
                 "Ready?"]
     
@@ -186,21 +188,25 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               "The previous one was based on object positions. The next will be based "\
                   "on the object count.",
               "After memorizing and transforming the objects (steps 1-4), you will now see an object category",
-              "(5) From the (equally likely) options below, choose how often "\
+              "(5) From the options below, choose how often "\
                   "this object appears in the scene after the transformation.",
+              "Again, use the following keys for this choice:",
+              0,
               "Ready?"] 
 
 positionSecond = ["Some magic students tend to cheat on the test above.",
                   "In order to make sure that you transform the objects in your mind "\
                       "first and only then answer a test question...",
                   "...there are two test displays (both equally likely to appear):",
-                  "The previous one was based on object positions. The next will be based "\
-                      "on the object count.",
+                  "The previous one was based on object count. The next will be based "\
+                      "on the object positions.",
                   "After memorizing and transforming the objects (steps 1-4)...", 
                   "you will see all the squares on which the objects stood. "\
                       "One of them will be marked.",
-                  "(5) From the (equally likely) options below, choose the object that would be "\
+                  "(5) From the options below, choose the object that would be "\
                       "on the marked square after the transformation.",
+                  "Again, use the following keys for this choice:",
+                    0,
                   "Ready?"] 
 
     
