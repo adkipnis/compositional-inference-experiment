@@ -1034,7 +1034,9 @@ df_out_1 = CuePracticeLoop(trials_prim_cue,
                             )   
 progTest, end_width = move_prog_bar(start_width = start_width,
                                     end_width = start_width + progbar_inc)
-Instructions(part_key = "Intermezzo2")
+Instructions(part_key = "Intermezzo2",
+              special_displays = [iSingleImage], 
+              args = [[keyboard_dict["keyBoard6"]]])
 learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
                           modes = [first_modality, second_modality])  
 df_out_2 = CuePracticeLoop(trials_prim_cue, 
@@ -1081,7 +1083,9 @@ progTest, start_width = move_prog_bar(start_width = start_width,
                                     end_width = start_width + progbar_inc)  
 
 # Second Test-Type
-Instructions(part_key = second_test + "Second")
+Instructions(part_key = second_test + "Second",
+              special_displays = [iSingleImage], 
+              args = [[keyboard_dict["keyBoard4"]]])
 df_out_4 = TestPracticeLoop(trials_test_2,
                             # i_step = 5,
                             self_paced = True,
