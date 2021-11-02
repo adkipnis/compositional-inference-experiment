@@ -36,12 +36,12 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 
 
 # Navigation Introduction
-Navigation = [
+Navigation1 = [
               # ["For the following displays, you can navigate back and forth"\
               #      " using the arrow keys:", "/e", 4],
               0,
               "Don't worry, there is no shame in going back pages.",
-              "In this first session, you will learn the basics of the task"\
+              "In this first session, you will prepare the basics of the task"\
                   " which you will later perform in the MEG.",
               # "You can press the spacebar to skip to the next section:",
               # 1,
@@ -54,6 +54,22 @@ Navigation = [
               # ["", "/t", 2]
               ]
 
+Navigation2 = [
+              0,
+              "Don't worry, there is no shame in going back pages.",
+              "In this second session, you will train the actual task"\
+                  " which you will perform in the MEG in the third session.",
+              # "You can press the spacebar to skip to the next section:",
+              # 1,
+              "If for some reason you need to abort the experiment, you can"\
+                  " do so by pressing Esc:",
+              1,
+              "Please be careful not to press this key by accident!",
+              "Finally, if you have any questions, please ask the examiner.",
+              "Now, the experiment begins..."
+              # ["", "/t", 2]
+              ]
+    
 # Story Introduction 
 Intro = ["You are a magic novice, preparing for your Alteration studies.",
          "As you may know, Alteration spells change the world around you.",
@@ -71,7 +87,17 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
          "Note, that these spells have an area effect: If you cast it,"\
              " all susceptible objects will be transformed.",
          4]
-    
+
+IntroAdvanced = ["Since the last time, you have advanced in your Alteration studies.",
+         "Philbertine would be impressed.",
+         "You now know all elements of alteration:",
+         "(1) The two types of spell cue...",
+         "And (2) the two types of spell tests...",
+         "Just as a refresher you will do a couple of trials for each of these.",
+         "You start with the spell cues, use the following keys:",
+         0,
+         "Ready?"]
+        
 
 
 # Learn Cues
@@ -149,36 +175,46 @@ TestTypes = [0,
              "You will now practice applying these spells to groups of objects.",
              "Earlier, you saw what effect transformation spells had.",
              "For the following trials, you will first see the spell cue "\
-                 "and then the objects you need to transform using it.",
-             "It will look like this:"]
+                 "and then the objects you need to transform using it.",       # TODO update order 
+             "It will look like this:",
+             0.0]
 
 positionFirst = ["Here is what you do:",
-                    "(1) Memorize the presented objects.",
-                    "When you are done with memorizing: (2) Press the spacebar.",
-                    "You will then see a spell cue. (3) Apply it to the memorized display.",
-                    "When you are done with transforming: (4) Press the spacebar.",
-                    "You will see all the squares on which the objects stood, "\
-                        "one of them will be marked.",
-                    "(5) From the (equally likely) options below, choose the object that would be "\
-                            "on the marked square after the transformation.",
-                    "Use the following keys for this choice:",
-                    0,
-                    "Ready?"]
+                "(1) Memorize the presented objects:",
+                0.0,
+                "When you are done with memorizing: (2) Press the spacebar.",
+                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+                1.0,
+                "When you are done: (4) Press the spacebar.",
+                "You will see all the squares on which the objects stood, "\
+                    "one of them will be marked.",
+                2.0,
+                "",
+                "(5) From the options below, choose the object that would be "\
+                        "on the marked square after the transformation.",
+                "For training purposes you will get immediate feedback:",
+                3.0,
+                "Use the following keys for this choice:",
+                0,
+                "Ready?"]
 
 countFirst = ["Here is what you do:",
-                  "(1) Memorize the presented objects.",
-                  "When you are done with memorizing: (2) Press the spacebar.",
-                  "You will then see a spell cue. (3) Apply it to the memorized display.",
-                  "When you are done with transforming: (4) Press the spacebar.",
-                  "You will now see an object category.",
-                  "(5) From the (equally likely) options below, choose how often "\
-                      "this object appears in the scene after the transformation.",
-                  "Use the following keys for this choice:",
-                  0,
-                  "Ready?"]
-    
-# Faster = ["Next, you will do normal paced trials.",
-#                 "Ready?"]
+                "(1) Memorize the presented objects:",
+                0.0,
+                "When you are done with memorizing: (2) Press the spacebar.",
+                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+                1.0,
+                "When you are done: (4) Press the spacebar.",
+                "You will now see an object category and some integers on the bottom.",
+                2.0,
+                "",
+                "(5) From the options below, choose how often "\
+                    "this object appears in the scene after the transformation.",
+                "For training purposes you will get immediate feedback:",
+                3.0,
+                "Use the following keys for this choice:",
+                0,
+                "Ready?"]
 
 
 countSecond = ["Some magic students tend to cheat on the test above.",
@@ -187,9 +223,15 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               "...there are two test displays (both equally likely to appear):",
               "The previous one was based on object positions. The next will be based "\
                   "on the object count.",
-              "After memorizing and transforming the objects (steps 1-4), you will now see an object category",
+              "After memorizing and transforming the objects (steps 1-4)...",
+              0.0,
+              "you will see an object category and some integers on the bottom.",
+              1.0,
+              "",
               "(5) From the options below, choose how often "\
                   "this object appears in the scene after the transformation.",
+              "For training purposes you will get immediate feedback:",
+              2.0,
               "Again, use the following keys for this choice:",
               0,
               "Ready?"] 
@@ -201,35 +243,68 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "The previous one was based on object count. The next will be based "\
                       "on the object positions.",
                   "After memorizing and transforming the objects (steps 1-4)...", 
+                  0.0,
                   "you will see all the squares on which the objects stood. "\
                       "One of them will be marked.",
+                  1.0,
+                  "",
                   "(5) From the options below, choose the object that would be "\
                       "on the marked square after the transformation.",
+                  "For training purposes you will get immediate feedback:",
+                  2.0,
                   "Again, use the following keys for this choice:",
-                    0,
+                  0,
                   "Ready?"] 
 
+TestTypesReminder = [0,
+             "You hopefully still remember how you used spells in your first session.",
+             "Just to be safe, here's a reminder:",
+             "You first see a set of objects: (1) Memorize the presented objects.",
+             0.0,
+             "When you are done with memorizing: (2) Press the spacebar.",
+             "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+             1.0,
+             "When you are done: (4) Press the spacebar.",
+             "Then you can receive one of two possible test displays.",
+             "Counting: You will see an object category and integers on the bottom.",
+             2.0,
+             "",
+             "(5) From the options below, choose how often "\
+             "this object appears in the scene after the transformation.",
+             "Position query: You will see all the squares on which the objects stood, "\
+                        "one of them will be marked.",
+             3.0,
+             "",
+             "(5) From the options below, choose the object that would be "\
+                    "on the marked square after the transformation.",
+             "Use the following keys for your choice:",
+             1,
+             "It's important that you understand the instructions, so please go "\
+                 "back and review them if you are unsure. Otherwise click next."
+             ]    
     
 # Primitive Trials
 Primitives = [0,
-              "You are now well prepared for Alteration magic.",
               "In your examination during the next session, you will encounter tasks"\
-                  " which are very similar to the previous ones.",
+                  " which are very similar to the ones you did in the first session.",
               "One important difference: You will not know"\
                   " which of the two tests comes at the end of any trial.",
-              # "Also, you will not get immediate feedback during your examination.",
               "To ensure that you achieve your study goals, you practice this scenario now.",
+              "Again, use the following keys for the decision at the end of each trial:",
+                    1,
               "Ready?"]
 
 # Binary Trials
-Binaries = ["Well done!",
-            "You are almost finished.",
+Binaries = [0,
+            "Well done!",
             "Just as a teaser for the next session: Cues for different spells"\
                 " can be combined to produce new spells.",
             "Essentially, the final result is as if you apply the first spell...",
             "... take the intermediate result and then apply the second spell on it.",
             "You will do some exmaples of these 'binary' spells.",
             "This time there is no minimum score.",
+            "Again, use the following keys for the decision at the end of each trial:",
+                    1,
             "Ready?"]
 
 # Bye
@@ -241,8 +316,10 @@ Bye = ["Congrats!",
 instructions ={  
   "lang": "Eng",  
   "exp": "CompInf",
-  "Navigation": AddProceedKey2All(Navigation, '/k'),
+  "Navigation1": AddProceedKey2All(Navigation1, '/k'),
+  "Navigation2": AddProceedKey2All(Navigation2, '/k'),
   "Intro": AddProceedKey2All(Intro, '/k'),
+  "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),
@@ -253,6 +330,7 @@ instructions ={
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
+  "TestTypesReminder": AddProceedKey2All(TestTypesReminder, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),
   "Bye": AddProceedKey2All(Bye, '/k'),

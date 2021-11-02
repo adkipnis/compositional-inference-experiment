@@ -190,7 +190,7 @@ def tEmpty(trial, IRClock):
     return(intermediateRT)
    
 
-def tCount(trial, feedback = False):
+def tCount(trial, feedback = False, demonstration = False):
     TestClock = core.Clock()
     for inc in range(2 + feedback*1):
         rect.pos = center_pos
@@ -217,7 +217,13 @@ def tCount(trial, feedback = False):
         
         # Second cycle: Get test response
         if inc == 1:
-            testRT, testResp = tTestresponse(TestClock, resp_keys)
+            if not demonstration:
+                testRT, testResp = tTestresponse(TestClock, resp_keys)
+            else:
+                badoptions = np.array(range(4))
+                np.delete(badoptions, trial.correct_resp)
+                core.wait(1)
+                testRT, testResp = 0, badoptions[0]
         
         # Third cycle: Feedback                                                     
         # immedeate feedback
@@ -251,7 +257,7 @@ def tCount(trial, feedback = False):
                     win.flip()        
     return testRT, testResp
 
-def tPosition(trial, feedback = False):
+def tPosition(trial, feedback = False, demonstration = False):
     TestClock = core.Clock()
     for inc in range(2 + feedback*1):
         # position cues
@@ -278,7 +284,13 @@ def tPosition(trial, feedback = False):
         
         # Second cycle: Get test response
         if inc == 1:
-            testRT, testResp = tTestresponse(TestClock, resp_keys)
+            if not demonstration:
+                testRT, testResp = tTestresponse(TestClock, resp_keys)
+            else:
+                badoptions = np.array(range(4))
+                np.delete(badoptions, trial.correct_resp)
+                core.wait(1)
+                testRT, testResp = 0, badoptions[0]
         
         # Third cycle: Feedback                                                     
         # immedeate feedback
@@ -366,7 +378,7 @@ def iTransmutableObjects(*args, show_background = True):
     win.flip()
 
 
-def iSpellExample(*displays, show_background = True):
+def iSpellExample(displays, show_background = True):
     # Input Display
     for i in range(2):
         rect_pos = circularGridPositions(center_pos = [0, 0],
@@ -404,7 +416,7 @@ def iSpellExample(*displays, show_background = True):
         if show_background: draw_background()
         win.flip()
         core.wait(1)
- 
+
 
 def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
               proceed_key = "/k", wait_s = 3):
@@ -449,12 +461,14 @@ def iNavigate(page = 0, max_page = 99, continue_after_last_page = True,
     
 # Blocks and Loops-------------------------------------------------------------
 
-def Instructions(part_key = "Intro", special_displays = list(), args = list(), 
+def Instructions(part_key = "Intro",
+                 special_displays = list(), 
+                 args = list(),
+                 complex_displays = list(),
+                 kwargs = list(),
                  font = "Times New Roman",
                  fontcolor = [-0.9, -0.9, -0.9],
                  show_background = True):
-    assert len(special_displays) == len(args),\
-        "Number of special displays must match the number of args"
     assert part_key in instructions.keys(),\
         "No instructions provided for this part"
         
@@ -463,6 +477,7 @@ def Instructions(part_key = "Intro", special_displays = list(), args = list(),
     Part = instructions[part_key]
     page = 0
     if show_background: draw_background()
+    win.flip()
     win.flip()
     while not finished:
         page_content = Part[page][0]
@@ -480,8 +495,10 @@ def Instructions(part_key = "Intro", special_displays = list(), args = list(),
             if show_background: draw_background()
             win.flip()
         elif type(page_content) is int:
-            special_displays[page_content](*args[page_content],
+            special_displays[page_content](args[page_content],
                                            show_background = show_background)
+        elif type(page_content) is float:
+            complex_displays[int(page_content)](**kwargs[int(page_content)])
         page, finished = iNavigate(page = page, max_page = len(Part),
                                    proceed_key = proceed_key,
                                    wait_s = proceed_wait)
@@ -622,7 +639,8 @@ def PracticeCues(trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
             
     
 def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = False,
-                 durations = [1, 3, 0.6, 1, 0.7], test = True, feedback = False):
+                 display_this = [1, 2, 3, 4, 5, 6, 7], durations = [1, 3, 0.6, 1, 0.7],
+                 test = True, feedback = False):    
     # create the trial handler
     if i_step is None:  
         i_step = len(trial_df)
@@ -635,44 +653,51 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = F
     cueTypeList = []
     
     for trial in trials:
-        # 0. Clear display
         win.flip()
         
         # 1. Fixation
-        tFixation()
+        if 1 in display_this:
+            tFixation()
         
         # 2. Display Family
-        IRClock = tDisplay(trial, duration = durations[1],
-                           self_paced = self_paced)
-        tFixation()
-        
+        if 2 in display_this:
+            IRClock = tDisplay(trial, duration = durations[1],
+                               self_paced = self_paced)
+            
         # 3. Map Cue
-        cue_type = tMapcue(trial, mode = mode, duration = durations[0])
+        if 3 in display_this:
+            tFixation()
+            cue_type = tMapcue(trial, mode = mode, duration = durations[0])
         
         if test:
             # 4. Transformation Display
-            intermediateRT = tEmpty(trial, IRClock)
-            trials.addData("intermediateRT", intermediateRT)
+            if 4 in display_this:
+                intermediateRT = tEmpty(trial, IRClock)
+                trials.addData("intermediateRT", intermediateRT)
         
             # 5. Empty Display
-            win.flip()
-            core.wait(durations[2])
+            if 5 in display_this:
+                win.flip()
+                core.wait(durations[2])
             
             # 6. Test Display
-            if trial.test_type == "count":
-                testRT, testResp = tCount(trial, feedback = feedback)
-            elif trial.test_type == "position":
-                testRT, testResp = tPosition(trial, feedback = feedback)
+            if 6 in display_this:
+                if trial.test_type == "count":
+                    testRT, testResp = tCount(trial, feedback = feedback)
+                elif trial.test_type == "position":
+                    testRT, testResp = tPosition(trial, feedback = feedback)
                 
-            # 7. Save data
-            intermediateRTList.append(intermediateRT)
-            testRespList.append(testResp)
-            testRTList.append(testRT)
-            cueTypeList.append(cue_type)
-            core.wait(durations[3])
-        win.flip()
-        win.flip()
-        core.wait(durations[4])
+                # Save data
+                intermediateRTList.append(intermediateRT)
+                testRespList.append(testResp)
+                testRTList.append(testRT)
+                cueTypeList.append(cue_type)
+                core.wait(durations[3])
+        
+        if 7 in display_this:
+            win.flip()
+            win.flip()
+            core.wait(durations[4])
         
     # append trial list with collected data 
     if test:
@@ -684,7 +709,7 @@ def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = F
 
 
 def CuePracticeLoop(trials_prim_cue, 
-                    min_acc = 0.85, mode = "random", i = 0, i_step = None,
+                    min_acc = 0.95, mode = "random", i = 0, i_step = None,
                     show_cheetsheet = True):
     mean_acc = 0.0
     df_list = []
@@ -757,12 +782,12 @@ def TestPracticeLoop(trial_df,
 #=============================================================================
 # Create main window
 win = visual.Window(
-    [2560, 1440],
-    # [1920, 1080],
+    # [2560, 1440],
+    [1920, 1080],
     # [800, 600],
-    fullscr = True,
+    fullscr = False,
     color = [0.85, 0.85, 0.85],
-    screen = 0,
+    screen = 1,
     monitor = "testMonitor",
     units = "deg")
 
@@ -928,11 +953,8 @@ for i in range(len(keyboard_list)):
                                                 interpolate = True)})
 
 # Progress bars
-n_experiment_parts = 8
-progbar_inc = 1/n_experiment_parts
 bar_len = 15.0  # total length
 bar_height = 0.35
-start_width = 0
 bar_pos = [0, 20]
 left_corner = bar_pos[0] - bar_len/2 
 progBack = visual.Rect(
@@ -975,6 +997,7 @@ magicBooks = visual.ImageStim(
     size = [640, 575], interpolate = True)
 
 
+
 ##############################################################################
 # Introduction Session
 ##############################################################################
@@ -982,13 +1005,16 @@ def Session1():
     # Global clock
     globalClock = core.Clock()
     win.mouseVisible = False
+    n_experiment_parts = 5
+    progbar_inc = 1/n_experiment_parts
+    start_width = 0
     
     # Navigation
-    Instructions(part_key = "Navigation",
+    Instructions(part_key = "Navigation1",
                   special_displays = [iSingleImage,
                                       iSingleImage], 
-                  args = [[keyboard_dict["keyBoardArrows"]],
-                          [keyboard_dict["keyBoardEsc"]]],
+                  args = [keyboard_dict["keyBoardArrows"],
+                          keyboard_dict["keyBoardEsc"]],
                   font = "mono",
                   fontcolor = color_dict["mid_grey"],
                   show_background = False)
@@ -1000,14 +1026,11 @@ def Session1():
                                       iTransmutableObjects,
                                       iSpellExample,
                                       iSpellExample], 
-                  args = [[magicBooks],
-                          [philbertine],
-                          [None],
-                          [["A", "B", "C", "E"],
-                          ["A", "E", "C", "E"]],
-                          [["A", "B", "B", "E"],
-                          ["A", "E", "E", "E"]]]
-                          )
+                  args = [magicBooks,
+                          philbertine,
+                          None,
+                          [["A", "B", "C", "E"], ["A", "E", "C", "E"]],
+                          [["A", "B", "B", "E"], ["A", "E", "E", "E"]]])
     
     # ----------------------------------------------------------------------------
     # Balance out which cue modality is learned first
@@ -1020,33 +1043,34 @@ def Session1():
     
     # Cue Memory
     Instructions(part_key = "learnCues",
-                  special_displays = [iSingleImage], 
-                  args = [[keyboard_dict["keyBoardSpacebar"]]])
+                 special_displays = [iSingleImage], 
+                 args = [keyboard_dict["keyBoardSpacebar"]])
     learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
-                              modes = [first_modality, second_modality])           
+                                modes = [first_modality, second_modality])           
     progTest, start_width = move_prog_bar(start_width = start_width,
-                                          end_width = start_width + progbar_inc)                    
+                                          end_width = start_width + progbar_inc)   
+                 
     Instructions(part_key = "Intermezzo1",
-                  special_displays = [iSingleImage], 
-                  args = [[keyboard_dict["keyBoard6"]]])
-    df_out_1 = CuePracticeLoop(trials_prim_cue, 
-                                mode = first_modality, 
-                                # i_step = 5
-                                )   
+                 special_displays = [iSingleImage], 
+                 args = [keyboard_dict["keyBoard6"]])
+    df_out_1 = CuePracticeLoop(trials_prim_cue,
+                               min_acc = 0.95,
+                               mode = first_modality)   
     progTest, end_width = move_prog_bar(start_width = start_width,
                                         end_width = start_width + progbar_inc)
+    
     Instructions(part_key = "Intermezzo2",
                   special_displays = [iSingleImage], 
-                  args = [[keyboard_dict["keyBoard6"]]])
+                  args = [keyboard_dict["keyBoard6"]])
     learnDuration_2 = LearnCues(cue_center_pos = [0, 2], 
-                              modes = [first_modality, second_modality])  
+                                modes = [first_modality, second_modality])  
     df_out_2 = CuePracticeLoop(trials_prim_cue, 
-                                mode = second_modality, 
-                                i = len(df_out_1),
-                                # i_step = 5
-                                )
+                               min_acc = 0.95,
+                               mode = second_modality, 
+                               i = len(df_out_1))
     progTest, start_width = move_prog_bar(start_width = start_width,
-                                        end_width = start_width + progbar_inc)         
+                                          end_width = start_width + progbar_inc)         
+    
     # Save cue memory data
     pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
         data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
@@ -1056,39 +1080,87 @@ def Session1():
     # Balance out which test type is learned first
     if int(expInfo["participant"]) % 2 == 0:
         first_test = "count"
+        tFirst = tCount
         trials_test_1 = trials_prim_prac_c.copy()
         second_test = "position"
+        tSecond = tPosition
         trials_test_2 = trials_prim_prac_p.copy()
     else:
         first_test = "position"
+        tFirst = tPosition
         trials_test_1 = trials_prim_prac_p.copy()
         second_test = "count"
+        tSecond = tCount
         trials_test_2 = trials_prim_prac_c.copy()
+    
+    # Get Demo trials
+    demoTrials1 = data.TrialHandler(
+        trials_test_1[0:1].to_dict("records"), 1, method="sequential")
+    for demoTrial1 in demoTrials1: True
+    demoTrials2 = data.TrialHandler(
+        trials_test_2[0:1].to_dict("records"), 1, method="sequential")
+    for demoTrial2 in demoTrials2: True
         
     # First Test-Type
     Instructions(part_key = "TestTypes",
                   special_displays = [iSingleImage], 
-                  args = [[magicWand]])
-    GenericBlock(trials_prim_prac_p,
-                  i_step = 1,
-                  durations = [1, 3, 0.6, 0, 0],
-                  test = False)                
+                  args = [magicWand],
+                  complex_displays = [GenericBlock],
+                  kwargs = [{"trial_df": trials_prim_prac_p,
+                             "durations" : [1, 3, 0.6, 0, 0],
+                              "i_step" : 1,
+                              "test" : False}])    
+        
+    
     Instructions(part_key = first_test + "First",
-                  special_displays = [iSingleImage], 
-                  args = [[keyboard_dict["keyBoard4"]]])
+                 special_displays = [iSingleImage], 
+                 args = [keyboard_dict["keyBoard4"]],
+                 complex_displays = [GenericBlock, GenericBlock, tFirst, tFirst],
+                 kwargs = [{"trial_df": trials_test_1,
+                            "display_this": [2],
+                            "durations" : [0, 0, 0, 0, 0],
+                            "i_step" : 1,
+                            "test" : False},
+                           {"trial_df": trials_test_1,
+                            "display_this": [3],
+                            "durations" : [0, 0, 0, 0, 0],
+                            "i_step" : 1,
+                            "test" : False},
+                           {"trial": demoTrial1,
+                            "feedback": False,
+                            "demonstration" : True},
+                           {"trial": demoTrial1,
+                            "feedback": True,
+                            "demonstration" : True}])
+    
+    
     df_out_3 = TestPracticeLoop(trials_test_1,
                                 # i_step = 5,
+                                min_acc = 0.95,
                                 self_paced = True,
                                 feedback = True)
     progTest, start_width = move_prog_bar(start_width = start_width,
-                                        end_width = start_width + progbar_inc)  
+                                          end_width = start_width + progbar_inc)  
     
     # Second Test-Type
     Instructions(part_key = second_test + "Second",
-                  special_displays = [iSingleImage], 
-                  args = [[keyboard_dict["keyBoard4"]]])
+                 special_displays = [iSingleImage], 
+                 args = [keyboard_dict["keyBoard4"]],
+                 complex_displays = [GenericBlock, tSecond, tSecond],
+                 kwargs = [{"trial_df": trials_test_2,
+                            "display_this": [2, 3],
+                            "durations" : [0, 2, 0, 0, 0],
+                            "i_step" : 1,
+                            "test" : False},
+                           {"trial": demoTrial2,
+                            "feedback": False,
+                            "demonstration" : True},
+                           {"trial": demoTrial2,
+                            "feedback": True,
+                            "demonstration" : True}])
     df_out_4 = TestPracticeLoop(trials_test_2,
                                 # i_step = 5,
+                                min_acc = 0.95,
                                 self_paced = True,
                                 feedback = True)
     progTest, start_width = move_prog_bar(start_width = start_width,
@@ -1099,27 +1171,100 @@ def Session1():
         data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
         "_" + "testType.pkl") 
     
+    Instructions(part_key = "Bye")
+    win.close()
+
+##############################################################################
+# Training Session
+##############################################################################
+def Session2():
+    # Global clock
+    globalClock = core.Clock()
+    win.mouseVisible = False
+    n_experiment_parts = 4
+    progbar_inc = 1/n_experiment_parts
+    start_width = 0
+    
+    # Navigation
+    Instructions(part_key = "Navigation2",
+                  special_displays = [iSingleImage,
+                                      iSingleImage], 
+                  args = [keyboard_dict["keyBoardArrows"],
+                          keyboard_dict["keyBoardEsc"]],
+                  font = "mono",
+                  fontcolor = color_dict["mid_grey"],
+                  show_background = False)
+    
+    # Introduction   
+    Instructions(part_key = "IntroAdvanced",
+                  special_displays = [iSingleImage], 
+                  args = [keyboard_dict["keyBoard6"]])
+    df_out_5 = CuePracticeLoop(trials_prim_cue, 
+                                mode = "random")   
+    progTest, start_width = move_prog_bar(start_width = 0,
+                                        end_width = 0 + progbar_inc)
+             
+    # Save cue memory data
+    df_out_5.reset_index(drop=True).to_pickle(
+        data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
+        "_" +"cueMemoryRefresher.pkl")                                          # TODO Session number in title?
+    
+    # Reminder of the test types
+    demoCounts = data.TrialHandler(
+        trials_prim_prac_c[0:1].to_dict("records"), 1, method="sequential")
+    for demoCount in demoCounts: True
+    demoPositions = data.TrialHandler(
+        trials_prim_prac_p[0:1].to_dict("records"), 1, method="sequential")
+    for demoPosition in demoPositions: True
+    
+    Instructions(part_key = "TestTypesReminder",                                
+                  special_displays = [iSingleImage, iSingleImage], 
+                  args = [magicWand, keyboard_dict["keyBoard4"]],
+                  complex_displays = [GenericBlock, GenericBlock, tCount, tPosition],
+                  kwargs = [{"trial_df": trials_prim_prac_c,
+                             "display_this": [2],
+                             "durations" : [0, 0, 0, 0, 0],
+                             "i_step" : 1,
+                             "test" : False},
+                            {"trial_df": trials_prim_prac_c,
+                             "display_this": [3],
+                             "durations" : [0, 0, 0, 0, 0],
+                             "i_step" : 1,
+                             "test" : False},
+                            {"trial": demoCount,
+                             "feedback": False,
+                             "demonstration" : True},
+                            {"trial": demoPosition,
+                             "feedback": False,
+                             "demonstration" : True}])
+    progTest, start_width = move_prog_bar(start_width = start_width,
+                                          end_width = start_width + progbar_inc)  
     # ----------------------------------------------------------------------------
     # Practice: Primitive
     Instructions(part_key = "Primitives",
-                  special_displays = [iSingleImage], 
-                  args = [[magicWand]])
+                  special_displays = [iSingleImage, iSingleImage], 
+                  args = [magicWand,
+                          keyboard_dict["keyBoard4"]])
     GenericBlock(trials_prim, mode = "random")
     df_out_5 = TestPracticeLoop(trials_prim,
-                                min_acc = 0.8,
+                                min_acc = 0.95,
                                 self_paced = True,
                                 feedback = True)
     progTest, start_width = move_prog_bar(start_width = start_width,
-                                        end_width = start_width + progbar_inc)  
+                                          end_width = start_width + progbar_inc)  
+    
     # Practice: Binary
-    Instructions(part_key = "Binaries")
+    Instructions(part_key = "Binaries",
+                  special_displays = [iSingleImage, iSingleImage], 
+                  args = [magicWand,
+                         keyboard_dict["keyBoard4"]])
     df_out_6 = GenericBlock(trials_bin,
-                            i_step = 10,
                             durations = [2, 3, 0.6, 1, 0.7],
                             self_paced = True,
                             feedback = True)
     progTest, start_width = move_prog_bar(start_width = start_width,
-                                        end_width = start_width + progbar_inc)  
+                                          end_width = start_width + progbar_inc)  
+    
     # Save generic data
     pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
         data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
@@ -1127,4 +1272,15 @@ def Session1():
     Instructions(part_key = "Bye")
     win.close()
 
-Session1()
+##############################################################################
+# Execute
+##############################################################################
+
+if expInfo["session"] == '1':
+    Session1()
+elif expInfo["session"] == '2':
+    Session2()
+# elif expInfo["session"] == '3':
+#     Session3()
+else:
+    raise ValueError('A session with this number does not exist')
