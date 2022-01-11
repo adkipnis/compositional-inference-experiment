@@ -1245,7 +1245,6 @@ def Session2():
                   special_displays = [iSingleImage, iSingleImage], 
                   args = [magicWand,
                           keyboard_dict["keyBoard4"]])
-    GenericBlock(trials_prim, mode = "random")
     df_out_5 = TestPracticeLoop(trials_prim,
                                 min_acc = 0.95,
                                 self_paced = True,

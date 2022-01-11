@@ -5,10 +5,9 @@ Created on Thu Feb 11 18:07:53 2021
 
 @author: alex
 """
-import os, glob, pickle, string
+import os, glob, string, csv, pickle
 from itertools import product, combinations, groupby
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt 
 plt.close("all")
 main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +19,12 @@ if not os.path.exists(trial_list_dir):
 
 #=============================================================================
 # Helper Functions
+def listofdicts2csv(listofdicts, fname):
+    keys = listofdicts[0].keys()
+    with open(fname, 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(listofdicts)
 
 def cartesian_product(items, discard_reps = True,
                       strcat = True, sep='-'):
@@ -187,7 +192,7 @@ def select_binary_compositions(binary_comps_dict):
                 if count_1 > 0 and count_2 == 0 or count_2 > 0 and count_1 == 0:
                         working_indices.append([[idx_1, idx_2, idx_3],
                                                 [count_1, count_2]])
-    working_indices = np.array(working_indices) 
+    working_indices = np.array(working_indices, dtype = object) 
     best_idx = working_indices[np.argmax(working_indices[:,1])]
     if idx_t == [0]:
         maps_selection = np.concatenate((maps_second_only[best_idx[0][0], :],
@@ -398,11 +403,11 @@ def gen_trials(stimuli, map_list,
             target_urn[target_list == trial_dict["target"]] -= 1               #remove instance-specific counter from target urn
         # if sum(target_urn)+i+1 > 90:
         #     raise Exception("Target urn contains more targets than expected") 
-        trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
-    df = pd.concat(trials, ignore_index=True)
-    return df[["trial_type", "input_disp", "map", "output_disp", "test_type", "target",
-               "resp_options", "correct_resp", "trans_ub", "trans_lb",
-               "map_type", "arg_set"]]    
+        trials.append(trial_dict)
+    return trials
+# df[["trial_type", "input_disp", "map", "output_disp", "test_type", "target",
+               # "resp_options", "correct_resp", "trans_ub", "trans_lb",
+               # "map_type", "arg_set"]]    
 
 def map_to_integers(general_map, sep = '-'):
     ''' takes map and generates a list of corresponding integers'''
@@ -436,9 +441,8 @@ def gen_cue_trials(map_list, stimuli,
                       "map" : general_map,
                       "resp_options": resp_options,
                       "correct_resp": correct_resp}
-        trials.append(pd.DataFrame(trial_dict.items()).set_index(0).T)
-    df = pd.concat(trials, ignore_index=True)
-    return df  
+        trials.append(trial_dict)
+    return trials  
 
 
 def compile_down(general_map, map_type = None, display = None, sep = '-'):
@@ -541,7 +545,9 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 # Generate Blocks
 
 n_participants = 2
-tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
+with open(stim_dir + os.sep + "spell_names.csv", newline='') as f:
+    reader = csv.reader(f)
+    tcue_list = list(reader)[0]
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
 
@@ -563,9 +569,10 @@ for i in range(1, n_participants+1):
                                             n_repeats = n_exposure)
         df_list.append(gen_cue_trials(cue_list_prim, stimuli,
                                          display_size = 6, sep='-'))
-    trials_prim_cue = pd.concat(df_list).sample(frac=1).reset_index(drop=True)    
-    trials_prim_cue.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" +
-                              "trials_prim_cue.pkl")
+    trials_prim_cue = np.random.permutation(
+        [item for sublist in df_list for item in sublist])
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue.csv"
+    listofdicts2csv(trials_prim_cue, fname)
     
     # Test Practice: Count
     df_list = []
@@ -579,9 +586,11 @@ for i in range(1, n_participants+1):
                                  test_type = "count",
                                  display_size = display_size,
                                  sep = sep))
-    trials_prim_practice_c = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_prim_practice_c.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
-                                     "_" + "trials_prim_prac_c.pkl")
+    trials_prim_practice_c = np.random.permutation(
+        [item for sublist in df_list for item in sublist])
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_c.csv"
+    listofdicts2csv(trials_prim_practice_c, fname)
+    
     
     # Test Practice: Position
     df_list = []
@@ -595,9 +604,11 @@ for i in range(1, n_participants+1):
                                  test_type = "position",
                                  display_size = display_size,
                                  sep = sep))
-    trials_prim_practice_p = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-    trials_prim_practice_p.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
-                                     "_" + "trials_prim_prac_p.pkl")
+    trials_prim_practice_p = np.random.permutation(
+        [item for sublist in df_list for item in sublist])
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_p.csv"
+    listofdicts2csv(trials_prim_practice_p, fname)
+   
     
     # 1. Primitive blocks
     # generate trials twice with n_exposure/2 and each test display type,
@@ -614,13 +625,15 @@ for i in range(1, n_participants+1):
                                      test_type = test_type,
                                      display_size = display_size,
                                      sep = sep))
-        trials_prim = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-        trials_prim.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) +
-                              "_" + "trials_prim.pkl")
-        # plt.figure()
-        # trials_prim["correct_resp"].plot.hist(alpha=0.5)
-        # trials_prim["trans_ub"].plot.hist(alpha=0.5)
-        # trials_prim["target"].value_counts().plot(kind='bar')
+    trials_prim = np.random.permutation(
+        [item for sublist in df_list for item in sublist])
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim.csv"
+    listofdicts2csv(trials_prim, fname)
+    
+    # plt.figure()
+    # trials_prim["correct_resp"].plot.hist(alpha=0.5)
+    # trials_prim["trans_ub"].plot.hist(alpha=0.5)
+    # trials_prim["target"].value_counts().plot(kind='bar')
 
 
     # 2. Compositional blocks
@@ -636,13 +649,14 @@ for i in range(1, n_participants+1):
                                      test_type = test_type,
                                      display_size = display_size,
                                      sep = sep))
-        trials_binary = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-        trials_binary.to_pickle(trial_list_dir + os.sep + str(i).zfill(2) + "_" +
-                                "trials_bin.pkl")
-        
-        # trials_binary["correct_resp"].plot.hist(alpha=0.5)
-        # trials_binary["trans_ub"].plot.hist(alpha=0.5)
-        # trials_binary["target"].value_counts().plot(kind='bar')
+    trials_binary = np.random.permutation(
+        [item for sublist in df_list for item in sublist])
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin.csv"
+    listofdicts2csv(trials_prim, fname)
+
+    # trials_binary["correct_resp"].plot.hist(alpha=0.5)
+    # trials_binary["trans_ub"].plot.hist(alpha=0.5)
+    # trials_binary["target"].value_counts().plot(kind='bar')
 
 
 # # 3. Conjugate blocks
@@ -658,7 +672,6 @@ for i in range(1, n_participants+1):
 #                              display_size = display_size,
 #                              sep = sep))
 # trials_binary_conj = pd.concat(df_list).sample(frac=1).reset_index(drop=True) 
-
 
 # # 4. Trinary blocks
 # df_list = []
