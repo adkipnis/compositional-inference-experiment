@@ -26,6 +26,13 @@ def listofdicts2csv(listofdicts, fname):
         dict_writer.writeheader()
         dict_writer.writerows(listofdicts)
 
+def save_object(obj, fname, ending = 'pkl'):
+    if ending == 'csv':
+        listofdicts2csv(obj, fname + '.csv')
+    elif ending == 'pkl':
+        with open(fname + '.pkl', "wb") as f:
+            pickle.dump(obj, f)
+                
 def cartesian_product(items, discard_reps = True,
                       strcat = True, sep='-'):
     '''generate the space of all possible combinations of a list of items
@@ -493,6 +500,7 @@ def prim2inary(prim_list, len_inary = 2, sep_2 = '+'):
 # Stimuli & Maps
 
 # Design parameters
+ending = 'pkl'
 sep = '-'
 n_stim = 6 #>= 4, otherwise no parallelizable compositions
 display_size = 4
@@ -545,6 +553,7 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
 # Generate Blocks
 
 n_participants = 2
+
 with open(stim_dir + os.sep + "spell_names.csv", newline='') as f:
     reader = csv.reader(f)
     tcue_list = list(reader)[0]
@@ -556,10 +565,9 @@ for i in range(1, n_participants+1):
     tcue_list = np.random.permutation(tcue_list)
     vcue_list = np.random.permutation(vcue_list)
     stim_list = np.random.permutation(stim_list)
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "mappinglists.pkl"
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "mappinglists"
     data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
-    with open(fname, "wb") as f:
-        pickle.dump(data, f)
+    save_object(data, fname, ending = ending)
         
     # 0. Practice blocks
     # Cue Memory
@@ -570,9 +578,9 @@ for i in range(1, n_participants+1):
         df_list.append(gen_cue_trials(cue_list_prim, stimuli,
                                          display_size = 6, sep='-'))
     trials_prim_cue = np.random.permutation(
-        [item for sublist in df_list for item in sublist])
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue.csv"
-    listofdicts2csv(trials_prim_cue, fname)
+        [item for sublist in df_list for item in sublist]).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue"
+    save_object(trials_prim_cue, fname, ending = ending)
     
     # Test Practice: Count
     df_list = []
@@ -587,9 +595,9 @@ for i in range(1, n_participants+1):
                                  display_size = display_size,
                                  sep = sep))
     trials_prim_practice_c = np.random.permutation(
-        [item for sublist in df_list for item in sublist])
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_c.csv"
-    listofdicts2csv(trials_prim_practice_c, fname)
+        [item for sublist in df_list for item in sublist]).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_c"
+    save_object(trials_prim_practice_c, fname, ending = ending)
     
     
     # Test Practice: Position
@@ -605,9 +613,9 @@ for i in range(1, n_participants+1):
                                  display_size = display_size,
                                  sep = sep))
     trials_prim_practice_p = np.random.permutation(
-        [item for sublist in df_list for item in sublist])
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_p.csv"
-    listofdicts2csv(trials_prim_practice_p, fname)
+        [item for sublist in df_list for item in sublist]).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_prac_p"
+    save_object(trials_prim_practice_p, fname, ending = ending)
    
     
     # 1. Primitive blocks
@@ -626,9 +634,9 @@ for i in range(1, n_participants+1):
                                      display_size = display_size,
                                      sep = sep))
     trials_prim = np.random.permutation(
-        [item for sublist in df_list for item in sublist])
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim.csv"
-    listofdicts2csv(trials_prim, fname)
+        [item for sublist in df_list for item in sublist]).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim"
+    save_object(trials_prim, fname, ending = ending)
     
     # plt.figure()
     # trials_prim["correct_resp"].plot.hist(alpha=0.5)
@@ -650,9 +658,9 @@ for i in range(1, n_participants+1):
                                      display_size = display_size,
                                      sep = sep))
     trials_binary = np.random.permutation(
-        [item for sublist in df_list for item in sublist])
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin.csv"
-    listofdicts2csv(trials_prim, fname)
+        [item for sublist in df_list for item in sublist]).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin"
+    save_object(trials_binary, fname, ending = ending)
 
     # trials_binary["correct_resp"].plot.hist(alpha=0.5)
     # trials_binary["trans_ub"].plot.hist(alpha=0.5)

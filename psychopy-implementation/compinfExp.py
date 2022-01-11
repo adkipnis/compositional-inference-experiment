@@ -6,10 +6,9 @@ Created on Fri Jun 18 12:00:24 2021
 @author: alex
 """
 
-import os, glob, pickle, sys
+import os, glob, pickle, sys, csv
 from string import ascii_uppercase
 import numpy as np
-import pandas as pd
 from psychopy import core, visual, gui, data, event, logging
 from psychopy.tools.filetools import toFile
 
@@ -30,6 +29,26 @@ if not os.path.exists(data_dir):
 #=============================================================================
 # Helper Functions
 #=============================================================================
+def readpkl(fname):
+    with open(fname) as f:
+        listofdicts = [{k: v for k, v in row.items()}
+            for row in csv.DictReader(f, skipinitialspace=True)]
+    return listofdicts
+
+def listofdicts2csv(listofdicts, fname):
+    keys = listofdicts[0].keys()
+    with open(fname, 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(listofdicts)
+
+def save_object(obj, fname, ending = 'pkl'):
+    if ending == 'csv':
+        listofdicts2csv(obj, fname + '.csv')
+    elif ending == 'pkl':
+        with open(fname + '.pkl', "wb") as f:
+            pickle.dump(obj, f)
+
 # Positions ------------------------------------------------------------------
 def rectangularGrindPositions(center_pos = [0, 0],
                               v_dist = 10, h_dist = 10, dim = (2, 3)):
@@ -546,7 +565,7 @@ def LearnCues(cue_center_pos = [0, 2], vert_dist = 7, modes = ["textual", "visua
 def PracticeCues(trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
     # create the trial handler
     PracticeCueTrials = data.TrialHandler(
-        trials_prim_cue.to_dict("records"), 1, method="sequential")
+        trials_prim_cue, 1, method="sequential")
     testRespSuperList = []
     testRTSuperList = []
     cueTypeList = []
@@ -740,7 +759,7 @@ def CuePracticeLoop(trials_prim_cue,
         if show_cheetsheet and mean_acc < min_acc:
                 LearnCues(cue_center_pos = [0, 2], 
                           modes = [first_modality, second_modality])
-    df_out = pd.concat(df_list)
+    df_out = [item for sublist in df_list for item in sublist]
     return df_out
 
 
@@ -773,7 +792,7 @@ def TestPracticeLoop(trial_df,
             feedbacktype = "Feedback1"  
         Instructions(part_key = feedbacktype,
                  special_displays = [iSingleImage], args = [[accPrompt]])            
-    df_out = pd.concat(df_list)
+    df_out = [item for sublist in df_list for item in sublist]
     return df_out    
 
 
@@ -819,34 +838,34 @@ fileName = main_dir + os.sep + u"data/%s_%s_%s" %(expInfo["participant"],
 # logging.console.setLevel(logging.WARNING) 
 
 # Load instructions
-with open(stim_dir + os.sep + "instructions_en.pkl", "rb") as handle:
-    instructions = pickle.load(handle)
+instructions = pickle.load(
+    open(stim_dir + os.sep + "instructions_en.pkl", "rb"))
+
 
 # Load triallists and adapt setup to their parameters
-trials_prim_cue = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] +
-                 "_trials_prim_cue.pkl"))
-trials_prim_prac_c = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] +
-                 "_trials_prim_prac_c.pkl"))
-trials_prim_prac_p = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] +
-                 "_trials_prim_prac_p.pkl"))
-trials_prim = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] +
-                 "_trials_prim.pkl"))
-trials_bin = pd.read_pickle(
-    os.path.join(trial_list_dir, expInfo["participant"] +
-                 "_trials_bin.pkl"))
+
+trials_prim_cue = pickle.load(
+    open(os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_cue.pkl"), "rb" ))
+
+trials_prim_prac_c = pickle.load(
+    open(os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_c.pkl"), "rb" ))
+
+trials_prim_prac_p = pickle.load(
+    open(os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim_prac_p.pkl"), "rb" ))
+
+trials_prim = pickle.load(
+    open(os.path.join(trial_list_dir, expInfo["participant"] + "_trials_prim.pkl"), "rb" ))
+
+trials_bin = pickle.load(
+    open(os.path.join(trial_list_dir, expInfo["participant"] + "_trials_bin.pkl"), "rb" ))
     
-with open(trial_list_dir + os.sep + expInfo["participant"] +
-          "_mappinglists.pkl", "rb") as handle:
-    mappinglists = pickle.load(handle)
+mappinglists = pickle.load(open(trial_list_dir + os.sep + expInfo["participant"] +
+          "_mappinglists.pkl", "rb"))
     
-set_size = len(trials_prim.input_disp[0])
-n_cats = len(np.unique(trials_prim.input_disp.to_list()))
-n_resp = len(trials_prim.resp_options[0])
-map_names = np.unique(trials_prim.map.to_list())
+set_size = len(trials_prim[0]["input_disp"])
+n_cats = len(np.unique([trial["input_disp"] for trial in trials_prim]))
+n_resp = len(trials_prim[0]["resp_options"])
+map_names = np.unique([trial["map"] for trial in trials_prim])
 n_exposure = 5 # this value should be copied from generate_trial_lists
 maxn_blocks = 6 # this value should be copied from generate_trial_lists
 
@@ -1043,8 +1062,8 @@ def Session1():
     
     # Cue Memory
     Instructions(part_key = "learnCues",
-                 special_displays = [iSingleImage], 
-                 args = [keyboard_dict["keyBoardSpacebar"]])
+                  special_displays = [iSingleImage], 
+                  args = [keyboard_dict["keyBoardSpacebar"]])
     learnDuration_1 = LearnCues(cue_center_pos = [0, 2], 
                                 modes = [first_modality, second_modality])           
     progTest, start_width = move_prog_bar(start_width = start_width,
@@ -1072,9 +1091,9 @@ def Session1():
                                           end_width = start_width + progbar_inc)         
     
     # Save cue memory data
-    pd.concat([df_out_1, df_out_2]).reset_index(drop=True).to_pickle(
-        data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-        "_" +"cueMemory.pkl") 
+    fname = data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] + "_" +"cueMemory"
+    save_object(df_out_1 + df_out_2, fname, ending = 'pkl')
+    
     
     # ----------------------------------------------------------------------------
     # Balance out which test type is learned first
@@ -1167,10 +1186,10 @@ def Session1():
                                         end_width = start_width + progbar_inc)  
     
     # Save test type data
-    pd.concat([df_out_3, df_out_4]).reset_index(drop=True).to_pickle(
-        data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-        "_" + "testType.pkl") 
-    
+    fname = data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] + "_" + "testType"
+    save_object(df_out_3 + df_out_4, fname, ending = 'pkl')
+
+
     Instructions(part_key = "Bye")
     win.close()
 
@@ -1265,9 +1284,10 @@ def Session2():
                                           end_width = start_width + progbar_inc)  
     
     # Save generic data
-    pd.concat([df_out_5, df_out_6]).reset_index(drop=True).to_pickle(
-        data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] +
-        "_" + "generic.pkl") 
+    fname = data_dir + os.sep + expInfo["participant"] + "_" + expInfo["dateStr"] + "_" + "generic"
+    save_object(df_out_5 + df_out_6, fname, ending = 'pkl')
+    
+    
     Instructions(part_key = "Bye")
     win.close()
 
