@@ -2,14 +2,10 @@ name: psychopy
 channels:
 - conda-forge
 dependencies:
-- python=3.6
-- psychopy
+- python=3.8
 - pip
 - pip:
-  - psychtoolbox
-  - pygame
-  - pyo
-  - pyparallel; platform_system != "Windows"
-  - SoundFile; platform_system == "Windows"
-  - websocket_client
-
+  - spyder-kernels
+  - psychopy
+  - wxPython
+  
