@@ -201,11 +201,12 @@ class Experiment:
         tcue_dict = {}
         for i in range(len(self.map_names)):
             cue_name = self.map_names[i]
-            tcue_dict.update({cue_name: visual.TextStim(self.win,
-                                                        text = tcue_list[i],
-                                                        pos = self.center_pos,
-                                                        height = 4,
-                                                        color = self.color_dict["black"])})
+            tcue_dict.update({cue_name: visual.TextStim(
+                self.win,
+                text = tcue_list[i],
+                pos = self.center_pos,
+                height = 4,
+                color = self.color_dict["black"])})
         self.tcue_dict = tcue_dict
         
         # Visual cues
@@ -215,11 +216,12 @@ class Experiment:
         vcue_dict = {}
         for i in range(len(self.map_names)):
             cue_name = self.map_names[i]
-            vcue_dict.update({cue_name: visual.ImageStim(self.win,
-                                                         image=vcue_list[i],
-                                                         pos = self.center_pos,
-                                                         size = self.vcue_size,
-                                                         interpolate = True)})
+            vcue_dict.update({cue_name: visual.ImageStim(
+                self.win,
+                image=vcue_list[i],
+                pos = self.center_pos,
+                size = self.vcue_size,
+                interpolate = True)})
         self.vcue_dict = vcue_dict
         
         # Stimuli
@@ -228,19 +230,21 @@ class Experiment:
         stim_dict = {}
         for i in range(self.n_cats):
             stim_name = ascii_uppercase[i]
-            stim_dict.update({stim_name: visual.ImageStim(self.win,
-                                                          image = stim_list[i],
-                                                          size = self.normal_size,
-                                                          interpolate = True)})
+            stim_dict.update({stim_name: visual.ImageStim(
+                self.win,
+                image = stim_list[i],
+                size = self.normal_size,
+                interpolate = True)})
         self.stim_dict = stim_dict
         
         # Count responses
         count_dict = {}
         for i in range(self.n_resp):
-            count_dict.update({str(i): visual.TextStim(self.win,
-                                                       text = str(i),
-                                                       height = 4,
-                                                       color = self.color_dict["black"])})
+            count_dict.update({str(i): visual.TextStim(
+                self.win,
+                text = str(i),
+                height = 4,
+                color = self.color_dict["black"])})
         self.count_dict = stim_dict
         
         # Keyboard prompts
@@ -249,10 +253,11 @@ class Experiment:
         for i in range(len(keyboard_list)):
             key_name = os.path.basename(
                 os.path.normpath(keyboard_list[i])).split(".")[0]
-            keyboard_dict.update({key_name: visual.ImageStim(self.win,
-                                                             image=keyboard_list[i],
-                                                             size=[40, 20],
-                                                             interpolate=True)})
+            keyboard_dict.update({key_name: visual.ImageStim(
+                self.win,
+                image=keyboard_list[i],
+                size=[40, 20],
+                interpolate=True)})
         self.keyboard_dict = keyboard_dict
         
         
@@ -289,7 +294,8 @@ class Experiment:
             self.win, width = start_width * self.progBack.width,
             height = self.bar_height, pos = self.bar_pos,
             fillColor = 'green')
-        self.progTest.pos[0] = self.left_corner + start_width * self.progBack.width/2
+        self.progTest.pos[0] = self.left_corner + start_width *\
+            self.progBack.width/2
         bar_len_step = self.bar_len/n_steps
         
         # First display
@@ -421,7 +427,8 @@ class Experiment:
             # Second cycle: Get test response
             if inc == 1:
                 if not demonstration:
-                    testRT, testResp = self.tTestresponse(TestClock, self.resp_keys)
+                    testRT, testResp = self.tTestresponse(
+                        TestClock, self.resp_keys)
                 else:
                     badoptions = np.array(range(4))
                     np.delete(badoptions, trial.correct_resp)
@@ -488,7 +495,8 @@ class Experiment:
             # Second cycle: Get test response
             if inc == 1:
                 if not demonstration:
-                    testRT, testResp = self.tTestresponse(TestClock, self.resp_keys)
+                    testRT, testResp = self.tTestresponse(
+                        TestClock, self.resp_keys)
                 else:
                     badoptions = np.array(range(4))
                     np.delete(badoptions, trial.correct_resp)
@@ -609,7 +617,8 @@ class Experiment:
         if len(displays) > 1:
             # Output Display
             rect_pos = circularGridPositions(center_pos = [0, 0],
-                                          set_size = len(displays[1]), radius = 8)
+                                             set_size = len(displays[1]),
+                                             radius = 8)
             for j in range(len(displays[1])):
                 self.rect.pos = rect_pos[j]
                 self.rect.draw()
@@ -631,15 +640,17 @@ class Experiment:
         
         # get response or wait or something in between
         if proceed_key == "/k": #keypress
-            _, testResp = self.tTestresponse(TestClock, ["left", "right", "space"],
-                                        return_numeric = False)
+            _, testResp = self.tTestresponse(
+                TestClock, ["left", "right", "space"],
+                return_numeric = False)
         elif proceed_key == "/t": #time
             core.wait(wait_s)
             testResp = "right"
         elif proceed_key == "/e": #either
-            _, testResp = self.tTestresponse(TestClock, ["left", "right", "space"],
-                                        return_numeric = False,
-                                        max_wait = wait_s)
+            _, testResp = self.tTestresponse(
+                TestClock, ["left", "right", "space"],
+                return_numeric = False,
+                max_wait = wait_s)
             if testResp is None:
                 testResp = "right"
                 
@@ -697,8 +708,9 @@ class Experiment:
                 if show_background: self.draw_background()
                 self.win.flip()
             elif type(page_content) is int:
-                special_displays[page_content](args[page_content],
-                                               show_background = show_background)
+                special_displays[page_content](
+                    args[page_content],
+                    show_background = show_background)
             elif type(page_content) is float:
                 complex_displays[int(page_content)](**kwargs[int(page_content)])
             page, finished = self.iNavigate(page = page, max_page = len(Part),
@@ -706,281 +718,294 @@ class Experiment:
                                        wait_s = proceed_wait)
             
                   
-    # def LearnCues(cue_center_pos = [0, 2], vert_dist = 7, modes = ["textual", "visual"]):
-    #     # Initialize parameters
-    #     win.flip()
-    #     finished = False
-    #     cat_center_pos =  [0, cue_center_pos[1] - vert_dist]
-    #     page = 0
-    #     category_pos = rectangularGrindPositions(
-    #         center_pos = cat_center_pos, h_dist = 15, dim = (1, 2))
+    def LearnCues(self, cue_center_pos = [0, 2], vert_dist = 7,
+                  modes = ["textual", "visual"]):
+        # Initialize parameters
+        self.win.flip()
+        finished = False
+        cat_center_pos =  [0, cue_center_pos[1] - vert_dist]
+        page = 0
+        category_pos = rectangularGrindPositions(
+            center_pos = cat_center_pos, h_dist = 15, dim = (1, 2))
         
-    #     LearnClock = core.Clock()
-    #     while not finished:
-    #         # Draw map cue
-    #         map_name = map_names[page]
-    #         categories = map_name.split("-")
+        LearnClock = core.Clock()
+        while not finished:
+            # Draw map cue
+            map_name = self.map_names[page]
+            categories = map_name.split("-")
             
-    #         for j in range(len(modes)):
-    #             cue, _ = setCue(map_name, mode = modes[j])
-    #             cue.pos = [sum(x) for x in zip(cue_center_pos, [0, (1-j)*vert_dist])] 
-    #             cue.draw()
+            for j in range(len(modes)):
+                cue, _ = self.setCue(map_name, mode = modes[j])
+                cue.pos = [sum(x) for x in 
+                           zip(cue_center_pos, [0, (1-j)*vert_dist])] 
+                cue.draw()
             
-    #         # Draw corresponding explicit map
-    #         for i in range(len(categories)):
-    #             rect.pos = category_pos[i]
-    #             rect.draw()
-    #             cat = stim_dict.copy()[categories[i]]
-    #             cat.pos = category_pos[i]
-    #             cat.draw()
-    #         leftArrow.pos = cat_center_pos
-    #         leftArrow.draw()
-    #         win.flip()
-    #         core.wait(0.2)
+            # Draw corresponding explicit map
+            for i in range(len(categories)):
+                self.rect.pos = category_pos[i]
+                self.rect.draw()
+                cat = self.stim_dict.copy()[categories[i]]
+                cat.pos = category_pos[i]
+                cat.draw()
+            self.leftArrow.pos = cat_center_pos
+            self.leftArrow.draw()
+            self.win.flip()
+            core.wait(0.2)
             
-    #         page, finished = iNavigate(page = page, max_page = len(map_names),
-    #                                    continue_after_last_page = False)  
-    #     # Save learning duration
-    #     learnDuration = LearnClock.getTime()       
-    #     return learnDuration    
+            page, finished = self.iNavigate(
+                page = page, max_page = len(self.map_names),
+                continue_after_last_page = False)  
+        # Save learning duration
+        learnDuration = LearnClock.getTime()       
+        return learnDuration    
 
 
-    # def PracticeCues(trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
-    #     # create the trial handler
-    #     PracticeCueTrials = data.TrialHandler(
-    #         trials_prim_cue, 1, method="sequential")
-    #     testRespSuperList = []
-    #     testRTSuperList = []
-    #     cueTypeList = []
+    def PracticeCues(self, trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
+        # create the trial handler
+        PracticeCueTrials = data.TrialHandler(
+            trials_prim_cue, 1, method="sequential")
+        testRespSuperList = []
+        testRTSuperList = []
+        cueTypeList = []
         
-    #     for trial in PracticeCueTrials:
-    #         num_cr = len(trial.correct_resp)
-    #         testRespList = []
-    #         testRTList = []
-    #         j = 0
-    #         cue, cue_type = setCue(trial.map[0], mode = mode)
-    #         cue.pos = cue_pos
-    #         cueTypeList.append(cue_type)
+        for trial in PracticeCueTrials:
+            num_cr = len(trial.correct_resp)
+            testRespList = []
+            testRTList = []
+            j = 0
+            cue, cue_type = self.setCue(trial.map[0], mode = mode)
+            cue.pos = cue_pos
+            cueTypeList.append(cue_type)
             
-    #         # Incrementally display stuff
-    #         for inc in range(3 + 2 * num_cr): 
+            # Incrementally display stuff
+            for inc in range(3 + 2 * num_cr): 
             
-    #             # 0. Fixation
-    #             if inc == 0: 
-    #                 tFixation()
-    #                 win.flip()
-    #                 continue
+                # 0. Fixation
+                if inc == 0: 
+                    self.tFixation()
+                    self.win.flip()
+                    continue
                 
-    #             # 1. Map Cue
-    #             cue.draw()
-    #             if inc == 1:
-    #                 win.flip()
-    #                 core.wait(0.5)
-    #                 continue
+                # 1. Map Cue
+                cue.draw()
+                if inc == 1:
+                    self.win.flip()
+                    core.wait(0.5)
+                    continue
                 
-    #             # 2. Response options
-    #             rect.lineColor = color_dict["dark_grey"]
-    #             for i in range(len(cuepractice_pos)):
-    #                 rect.pos = cuepractice_pos[i]
-    #                 rect.draw()
-    #                 resp = stim_dict.copy()[trial.resp_options[i]]
-    #                 resp.pos = cuepractice_pos[i]
-    #                 resp.draw()
-    #             if inc == 2:
-    #                 win.flip()
-    #                 continue
+                # 2. Response options
+                self.rect.lineColor = self.color_dict["dark_grey"]
+                for i in range(len(self.cuepractice_pos)):
+                    self.rect.pos = self.cuepractice_pos[i]
+                    self.rect.draw()
+                    resp = self.stim_dict.copy()[trial.resp_options[i]]
+                    resp.pos = self.cuepractice_pos[i]
+                    resp.draw()
+                if inc == 2:
+                    self.win.flip()
+                    continue
                 
-    #             # 3. - 3 + num_cr: Immediate Feedback
-    #             if inc in list(range(3, 3 + num_cr)):
-    #                 TestClock = core.Clock()
-    #                 testRT, testResp = tTestresponse(TestClock, resp_keys_wide)
-    #                 testRTList.append(testRT)
-    #                 testRespList.append(testResp)
-    #             for i in range(len(testRespList)):
-    #                 testResp = testRespList[i]
-    #                 rect.pos = cuepractice_pos[testResp]
-    #                 if trial.correct_resp[i] == testResp:
-    #                     rect.lineColor = color_dict["green"]
-    #                 else:
-    #                     rect.lineColor = color_dict["red"]
-    #                 rect.draw()
-    #                 rect.lineColor = color_dict["dark_grey"]
-    #                 resp = stim_dict.copy()[trial.resp_options[testResp]]
-    #                 resp.pos = cuepractice_pos[testResp]
-    #                 resp.draw()
+                # 3. - 3 + num_cr: Immediate Feedback
+                if inc in list(range(3, 3 + num_cr)):
+                    TestClock = core.Clock()
+                    testRT, testResp = self.tTestresponse(
+                        TestClock, self.resp_keys_wide)
+                    testRTList.append(testRT)
+                    testRespList.append(testResp)
+                for i in range(len(testRespList)):
+                    testResp = testRespList[i]
+                    self.rect.pos = self.cuepractice_pos[testResp]
+                    if trial.correct_resp[i] == testResp:
+                        self.rect.lineColor = self.color_dict["green"]
+                    else:
+                        self.rect.lineColor = self.color_dict["red"]
+                    self.rect.draw()
+                    self.rect.lineColor = self.color_dict["dark_grey"]
+                    resp = self.stim_dict.copy()[trial.resp_options[testResp]]
+                    resp.pos = self.cuepractice_pos[testResp]
+                    resp.draw()
                 
-    #             if inc in list(range(3, 3 + num_cr)):
-    #                 win.flip()
-    #                 continue
+                if inc in list(range(3, 3 + num_cr)):
+                    self.win.flip()
+                    continue
                 
-    #             # 4. If errors were made, draw correct response
-    #             if trial.correct_resp != testRespList:
-    #                 core.wait(1)
-    #                 for i in range(1 + j):
-    #                     corResp = trial.correct_resp[i]
-    #                     rect.pos = cuepractice_pos[corResp]
-    #                     rect.fillColor = color_dict["blue"]
-    #                     rect.draw()
-    #                     rect.fillColor = color_dict["light_grey"]
-    #                     resp = stim_dict.copy()[trial.resp_options[corResp]]
-    #                     resp.pos = cuepractice_pos[corResp]
-    #                     resp.draw()
-    #             if inc in list(range(3 + num_cr, 3 + 2 * num_cr - 1)):
-    #                 j += 1
-    #                 win.flip()
-    #                 continue
-    #             else:
-    #                 testRTSuperList.append(testRTList)
-    #                 testRespSuperList.append(testRespList)
-    #                 win.flip()
-    #                 core.wait(2)
-    #     trials_prim_cue["emp_resp"] = testRespSuperList
-    #     trials_prim_cue["resp_RT"] = testRTSuperList
-    #     trials_prim_cue["cue_type"] = cueTypeList
-    #     return trials_prim_cue
+                # 4. If errors were made, draw correct response
+                if trial.correct_resp != testRespList:
+                    core.wait(1)
+                    for i in range(1 + j):
+                        corResp = trial.correct_resp[i]
+                        self.rect.pos = self.cuepractice_pos[corResp]
+                        self.rect.fillColor = self.color_dict["blue"]
+                        self.rect.draw()
+                        self.rect.fillColor = self.color_dict["light_grey"]
+                        resp = self.stim_dict.copy()[trial.resp_options[corResp]]
+                        resp.pos = self.cuepractice_pos[corResp]
+                        resp.draw()
+                if inc in list(range(3 + num_cr, 3 + 2 * num_cr - 1)):
+                    j += 1
+                    self.win.flip()
+                    continue
+                else:
+                    testRTSuperList.append(testRTList)
+                    testRespSuperList.append(testRespList)
+                    self.win.flip()
+                    core.wait(2)
+        trials_prim_cue["emp_resp"] = testRespSuperList
+        trials_prim_cue["resp_RT"] = testRTSuperList
+        trials_prim_cue["cue_type"] = cueTypeList
+        return trials_prim_cue
                 
         
-    # def GenericBlock(trial_df, mode = "random", i = 0, i_step = None, self_paced = False,
-    #                  display_this = [1, 2, 3, 4, 5, 6, 7], durations = [1, 3, 0.6, 1, 0.7],
-    #                  test = True, feedback = False):    
-    #     # create the trial handler
-    #     if i_step is None:  
-    #         i_step = len(trial_df)
-    #     df = trial_df[i:i+i_step].copy()
-    #     trials = data.TrialHandler(
-    #         df.to_dict("records"), 1, method="sequential")
-    #     intermediateRTList = []
-    #     testRespList = []
-    #     testRTList = []
-    #     cueTypeList = []
+    def GenericBlock(self, trial_df, mode = "random", i = 0, i_step = None,
+                     self_paced = False, display_this = [1, 2, 3, 4, 5, 6, 7],
+                     durations = [1, 3, 0.6, 1, 0.7],
+                     test = True, feedback = False):    
+        # create the trial handler
+        if i_step is None:  
+            i_step = len(trial_df)
+        df = trial_df[i:i+i_step].copy()
+        trials = data.TrialHandler(
+            df.to_dict("records"), 1, method="sequential")
+        intermediateRTList = []
+        testRespList = []
+        testRTList = []
+        cueTypeList = []
         
-    #     for trial in trials:
-    #         win.flip()
+        for trial in trials:
+            self.win.flip()
             
-    #         # 1. Fixation
-    #         if 1 in display_this:
-    #             tFixation()
+            # 1. Fixation
+            if 1 in display_this:
+                self.tFixation()
             
-    #         # 2. Display Family
-    #         if 2 in display_this:
-    #             IRClock = tDisplay(trial, duration = durations[1],
-    #                                self_paced = self_paced)
+            # 2. Display Family
+            if 2 in display_this:
+                IRClock = self.tDisplay(trial, duration = durations[1],
+                                    self_paced = self_paced)
                 
-    #         # 3. Map Cue
-    #         if 3 in display_this:
-    #             tFixation()
-    #             cue_type = tMapcue(trial, mode = mode, duration = durations[0])
+            # 3. Map Cue
+            if 3 in display_this:
+                self.tFixation()
+                cue_type = self.tMapcue(trial, mode = mode,
+                                        duration = durations[0])
             
-    #         if test:
-    #             # 4. Transformation Display
-    #             if 4 in display_this:
-    #                 intermediateRT = tEmpty(trial, IRClock)
-    #                 trials.addData("intermediateRT", intermediateRT)
+            if test:
+                # 4. Transformation Display
+                if 4 in display_this:
+                    intermediateRT = self.tEmpty(trial, IRClock)
+                    trials.addData("intermediateRT", intermediateRT)
             
-    #             # 5. Empty Display
-    #             if 5 in display_this:
-    #                 win.flip()
-    #                 core.wait(durations[2])
+                # 5. Empty Display
+                if 5 in display_this:
+                    self.win.flip()
+                    core.wait(durations[2])
                 
-    #             # 6. Test Display
-    #             if 6 in display_this:
-    #                 if trial.test_type == "count":
-    #                     testRT, testResp = tCount(trial, feedback = feedback)
-    #                 elif trial.test_type == "position":
-    #                     testRT, testResp = tPosition(trial, feedback = feedback)
+                # 6. Test Display
+                if 6 in display_this:
+                    if trial.test_type == "count":
+                        testRT, testResp = self.tCount(trial,
+                                                       feedback = feedback)
+                    elif trial.test_type == "position":
+                        testRT, testResp = self.tPosition(trial,
+                                                          feedback = feedback)
                     
-    #                 # Save data
-    #                 intermediateRTList.append(intermediateRT)
-    #                 testRespList.append(testResp)
-    #                 testRTList.append(testRT)
-    #                 cueTypeList.append(cue_type)
-    #                 core.wait(durations[3])
+                    # Save data
+                    intermediateRTList.append(intermediateRT)
+                    testRespList.append(testResp)
+                    testRTList.append(testRT)
+                    cueTypeList.append(cue_type)
+                    core.wait(durations[3])
             
-    #         if 7 in display_this:
-    #             win.flip()
-    #             win.flip()
-    #             core.wait(durations[4])
+            if 7 in display_this:
+                self.win.flip()
+                self.win.flip()
+                core.wait(durations[4])
             
-    #     # append trial list with collected data 
-    #     if test:
-    #         df["cue_type"] = cueTypeList
-    #         df["inter_RT"] = intermediateRTList
-    #         df["emp_resp"] = testRespList
-    #         df["resp_RT"] = testRTList
-    #     return df
+        # append trial list with collected data 
+        if test:
+            df["cue_type"] = cueTypeList
+            df["inter_RT"] = intermediateRTList
+            df["emp_resp"] = testRespList
+            df["resp_RT"] = testRTList
+        return df
 
 
-    # def CuePracticeLoop(trials_prim_cue, first_modality, second_modality, # TODO: add new args to instances
-    #                     min_acc = 0.95, mode = "random", i = 0, i_step = None,
-    #                     show_cheetsheet = True):
-    #     mean_acc = 0.0
-    #     df_list = []
-    #     if i_step is None:
-    #         i_step = n_exposure * maxn_blocks
-    #     while mean_acc < min_acc:
-    #         df = trials_prim_cue[i:i+i_step].copy()
-    #         df_list.append(PracticeCues(df, mode = mode))
-    #         errors = (df.correct_resp == df.emp_resp).to_list()
-    #         mean_acc = np.mean(list(map(int, errors))) # convert to integers
+    def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality, # TODO: add new args to instances
+                        min_acc = 0.95, mode = "random", i = 0, i_step = None,
+                        show_cheetsheet = True):
+        mean_acc = 0.0
+        df_list = []
+        if i_step is None:
+            i_step = self.n_exposure * self.maxn_blocks
+        while mean_acc < min_acc:
+            df = trials_prim_cue[i:i+i_step].copy()
+            df_list.append(self.PracticeCues(df, mode = mode))
+            errors = (df.correct_resp == df.emp_resp).to_list()
+            mean_acc = np.mean(list(map(int, errors))) # convert to integers
             
-    #         accPrompt = visual.TextStim(
-    #             win, text = str(np.round(mean_acc * 100)) +"%",
-    #             height = 2.5,
-    #             wrapWidth = 30,
-    #             font = "Times New Roman",
-    #             color = color_dict["black"])
+            accPrompt = visual.TextStim(
+                self.win, text = str(np.round(mean_acc * 100)) +"%",
+                height = 2.5,
+                wrapWidth = 30,
+                font = "Times New Roman",
+                color = self.color_dict["black"])
             
-    #         # repeat or wrap up
-    #         i += i_step    
-    #         if mean_acc < min_acc:
-    #             feedbacktype = "Feedback0" 
+            # repeat or wrap up
+            i += i_step    
+            if mean_acc < min_acc:
+                feedbacktype = "Feedback0" 
                 
-    #         else: 
-    #             feedbacktype = "Feedback1"  
-    #         Instructions(part_key = feedbacktype,
-    #                  special_displays = [iSingleImage], args = [[accPrompt]])
-    #         if show_cheetsheet and mean_acc < min_acc:
-    #                 LearnCues(cue_center_pos = [0, 2], 
-    #                           modes = [first_modality, second_modality])
-    #     df_out = [item for sublist in df_list for item in sublist]
-    #     return df_out
+            else: 
+                feedbacktype = "Feedback1"  
+            self.Instructions(part_key = feedbacktype,
+                      special_displays = [self.iSingleImage],
+                      args = [[accPrompt]])
+            if show_cheetsheet and mean_acc < min_acc:
+                    self.LearnCues(cue_center_pos = [0, 2], 
+                              modes = [first_modality, second_modality])
+        df_out = [item for sublist in df_list for item in sublist]
+        return df_out
 
 
-    # def TestPracticeLoop(trial_df, 
-    #                      min_acc = 0.9, mode = "random", i = 0, i_step = None,
-    #                      durations = [1, 3, 0.6, 1, 0.7], 
-    #                      test = True, feedback = False, self_paced = False):
-    #     mean_acc = 0.0
-    #     df_list = []
-    #     if i_step is None:
-    #         i_step = n_exposure * maxn_blocks
-    #     while mean_acc < min_acc:
-    #         df = GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
-    #                  durations = durations, test = test, feedback = feedback,
-    #                  self_paced = self_paced)
-    #         df_list.append(df)
-    #         errors = (df.correct_resp == df.emp_resp).to_list()
-    #         mean_acc = np.mean(list(map(int, errors))) # convert to integers
+    def TestPracticeLoop(self, trial_df, 
+                          min_acc = 0.9, mode = "random", i = 0, i_step = None,
+                          durations = [1, 3, 0.6, 1, 0.7], 
+                          test = True, feedback = False, self_paced = False):
+        mean_acc = 0.0
+        df_list = []
+        if i_step is None:
+            i_step = self.n_exposure * self.maxn_blocks
+        while mean_acc < min_acc:
+            df = self.GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
+                      durations = durations, test = test, feedback = feedback,
+                      self_paced = self_paced)
+            df_list.append(df)
+            errors = (df.correct_resp == df.emp_resp).to_list()
+            mean_acc = np.mean(list(map(int, errors))) # convert to integers
             
-    #         accPrompt = visual.TextStim(
-    #             win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5,
-    #             wrapWidth = 30, font = "Times New Roman",
-    #             color = color_dict["black"])
+            accPrompt = visual.TextStim(
+                self.win, text = str(np.round(mean_acc * 100)) +"%", height = 2.5,
+                wrapWidth = 30, font = "Times New Roman",
+                color = self.color_dict["black"])
             
-    #         # repeat or wrap up
-    #         i += i_step    
-    #         if mean_acc < min_acc:
-    #             feedbacktype = "Feedback0" 
-    #         else: 
-    #             feedbacktype = "Feedback1"  
-    #         Instructions(part_key = feedbacktype,
-    #                  special_displays = [iSingleImage], args = [[accPrompt]])            
-    #     df_out = [item for sublist in df_list for item in sublist]
-    #     return df_out    
+            # repeat or wrap up
+            i += i_step    
+            if mean_acc < min_acc:
+                feedbacktype = "Feedback0" 
+            else: 
+                feedbacktype = "Feedback1"  
+            self.Instructions(part_key = feedbacktype,
+                              special_displays = [self.iSingleImage],
+                              args = [[accPrompt]])            
+        df_out = [item for sublist in df_list for item in sublist]
+        return df_out    
 
+
+    ###########################################################################
+    # Introduction Session
+    ###########################################################################
     def Session1(self):
-        # Global clock
-        globalClock = core.Clock()
+        # globalClock = core.Clock()
         self.win.mouseVisible = False
         n_experiment_parts = 5
         progbar_inc = 1/n_experiment_parts
@@ -996,6 +1021,268 @@ class Experiment:
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
         
+        # Introduction
+        self.Instructions(part_key = "Intro",
+                      special_displays = [self.iSingleImage,
+                                          self.iSingleImage,
+                                          self.iTransmutableObjects,
+                                          self.iSpellExample,
+                                          self.iSpellExample], 
+                      args = [self.magicBooks,
+                              self.philbertine,
+                              None,
+                              [["A", "B", "C", "E"], ["A", "E", "C", "E"]],
+                              [["A", "B", "B", "E"], ["A", "E", "E", "E"]]])
+        
+        # ----------------------------------------------------------------------------
+        # Balance out which cue modality is learned first
+        if int(self.expInfo["participant"]) % 2 == 0:
+            first_modality = "visual"
+            second_modality = "textual"
+        else:
+            first_modality = "textual"
+            second_modality = "visual"
+        
+        # Cue Memory
+        self.Instructions(part_key = "learnCues",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardSpacebar"]])
+        self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
+                                    modes = [first_modality, second_modality])           
+        start_width = self.move_prog_bar(
+            start_width = start_width,
+            end_width = start_width + progbar_inc)   
+                     
+        self.Instructions(part_key = "Intermezzo1",
+                     special_displays = [self.iSingleImage], 
+                     args = [self.keyboard_dict["keyBoard6"]])
+        self.df_out_1 = self.CuePracticeLoop(
+            self.trials_prim_cue, first_modality, second_modality,
+            min_acc = 0.95,
+            mode = first_modality)   
+        start_width = self.move_prog_bar(
+            start_width = start_width,
+            end_width = start_width + progbar_inc)
+        
+        self.Instructions(part_key = "Intermezzo2",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoard6"]])
+        self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
+                                    modes = [first_modality, second_modality])  
+        self.df_out_2 = self.CuePracticeLoop(
+            self.trials_prim_cue, first_modality, second_modality,
+            min_acc = 0.95,
+            mode = second_modality, 
+            i = len(self.df_out_1))
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)         
+        
+        # Save cue memory data
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
+            self.expInfo["dateStr"] + "_" +"cueMemory"
+        save_object(self.df_out_1 + self.df_out_2, fname, ending = 'pkl')
+        
+        
+        # ----------------------------------------------------------------------------
+        # Balance out which test type is learned first
+        if int(self.expInfo["participant"]) % 2 == 0:
+            first_test = "count"
+            tFirst = self.tCount
+            trials_test_1 = self.trials_prim_prac_c.copy()
+            second_test = "position"
+            tSecond = self.tPosition
+            trials_test_2 = self.trials_prim_prac_p.copy()
+        else:
+            first_test = "position"
+            tFirst = self.tPosition
+            trials_test_1 = self.trials_prim_prac_p.copy()
+            second_test = "count"
+            tSecond = self.tCount
+            trials_test_2 = self.trials_prim_prac_c.copy()
+        
+        # Get Demo trials
+        demoTrials1 = data.TrialHandler(
+            trials_test_1[0:1].to_dict("records"), 1, method="sequential")
+        for demoTrial1 in demoTrials1: True
+        demoTrials2 = data.TrialHandler(
+            trials_test_2[0:1].to_dict("records"), 1, method="sequential")
+        for demoTrial2 in demoTrials2: True
+            
+        # First Test-Type
+        self.Instructions(part_key = "TestTypes",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.magicWand],
+                      complex_displays = [self.GenericBlock],
+                      kwargs = [{"trial_df": self.trials_prim_prac_p,
+                                 "durations" : [1, 3, 0.6, 0, 0],
+                                  "i_step" : 1,
+                                  "test" : False}])    
+            
+        
+        self.Instructions(part_key = first_test + "First",
+                     special_displays = [self.iSingleImage], 
+                     args = [self.keyboard_dict["keyBoard4"]],
+                     complex_displays = [self.GenericBlock, self.GenericBlock,
+                                         tFirst, tFirst],
+                     kwargs = [{"trial_df": trials_test_1,
+                                "display_this": [2],
+                                "durations" : [0, 0, 0, 0, 0],
+                                "i_step" : 1,
+                                "test" : False},
+                               {"trial_df": trials_test_1,
+                                "display_this": [3],
+                                "durations" : [0, 0, 0, 0, 0],
+                                "i_step" : 1,
+                                "test" : False},
+                               {"trial": demoTrial1,
+                                "feedback": False,
+                                "demonstration" : True},
+                               {"trial": demoTrial1,
+                                "feedback": True,
+                                "demonstration" : True}])
+        
+        
+        self.df_out_3 = self.TestPracticeLoop(trials_test_1,
+                                    # i_step = 5,
+                                    min_acc = 0.95,
+                                    self_paced = True,
+                                    feedback = True)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)  
+        
+        # Second Test-Type
+        self.Instructions(part_key = second_test + "Second",
+                     special_displays = [self.iSingleImage], 
+                     args = [self.keyboard_dict["keyBoard4"]],
+                     complex_displays = [self.GenericBlock, tSecond, tSecond],
+                     kwargs = [{"trial_df": trials_test_2,
+                                "display_this": [2, 3],
+                                "durations" : [0, 2, 0, 0, 0],
+                                "i_step" : 1,
+                                "test" : False},
+                               {"trial": demoTrial2,
+                                "feedback": False,
+                                "demonstration" : True},
+                               {"trial": demoTrial2,
+                                "feedback": True,
+                                "demonstration" : True}])
+        self.df_out_4 = self.TestPracticeLoop(trials_test_2,
+                                    # i_step = 5,
+                                    min_acc = 0.95,
+                                    self_paced = True,
+                                    feedback = True)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)  
+        
+        # Save test type data
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "testType"
+        save_object(self.df_out_3 + self.df_out_4, fname, ending = 'pkl')
+
+        self.Instructions(part_key = "Bye")
+        self.win.close()
+
+    ###########################################################################
+    # Training Session
+    ###########################################################################
+    def Session2(self):
+        # globalClock = core.Clock()
+        self.win.mouseVisible = False
+        n_experiment_parts = 4
+        progbar_inc = 1/n_experiment_parts
+        start_width = 0
+        
+        # Navigation
+        self.Instructions(part_key = "Navigation2",
+                      special_displays = [self.iSingleImage,
+                                          self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardArrows"],
+                              self.keyboard_dict["keyBoardEsc"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
+        
+        # Introduction   
+        self.Instructions(part_key = "IntroAdvanced",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoard6"]])
+        self.df_out_5 = self.CuePracticeLoop(
+            self.trials_prim_cue, "visual", "textual",                         # order?
+            mode = "random")   
+        start_width = self.move_prog_bar(start_width = 0,
+                                         end_width = 0 + progbar_inc)
+                 
+        # Save cue memory data
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "cueMemoryRefresher.pkl"     
+        save_object(self.df_out_5, fname, ending = 'pkl')
+        
+        # Reminder of the test types
+        demoCounts = data.TrialHandler(
+            self.trials_prim_prac_c[0:1].to_dict("records"), 1,
+            method="sequential")
+        for demoCount in demoCounts: True #awkward way to get the last demoCount
+        demoPositions = data.TrialHandler(
+            self.trials_prim_prac_p[0:1].to_dict("records"), 1,
+            method="sequential")
+        for demoPosition in demoPositions: True #see above
+        
+        self.Instructions(part_key = "TestTypesReminder",                                
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand, self.keyboard_dict["keyBoard4"]],
+                      complex_displays = [self.GenericBlock, self.GenericBlock,
+                                          self.tCount, self.tPosition],
+                      kwargs = [{"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [2],
+                                  "durations" : [0, 0, 0, 0, 0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [3],
+                                  "durations" : [0, 0, 0, 0, 0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial": demoCount,
+                                  "feedback": False,
+                                  "demonstration" : True},
+                                {"trial": demoPosition,
+                                  "feedback": False,
+                                  "demonstration" : True}])
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)  
+        # ----------------------------------------------------------------------------
+        # Practice: Primitive
+        self.Instructions(part_key = "Primitives",
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoard4"]])
+        self.df_out_6 = self.TestPracticeLoop(self.trials_prim,
+                                    min_acc = 0.95,
+                                    self_paced = True,
+                                    feedback = True)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)  
+        
+        # Practice: Binary
+        self.Instructions(part_key = "Binaries",
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoard4"]])
+        self.df_out_7 = self.GenericBlock(self.trials_bin,
+                                durations = [2.0, 3.0, 0.6, 1.0, 0.7],
+                                self_paced = True,
+                                feedback = True)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = start_width + progbar_inc)  
+        
+        # Save generic data
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "generic"
+        save_object(self.df_out_6 + self.df_out_7, fname, ending = 'pkl')
+        self.Instructions(part_key = "Bye")
+        self.win.close()
+    
+    
 # =============================================================================
 # Helper Functions
 # =============================================================================
