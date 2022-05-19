@@ -29,7 +29,7 @@ class Experiment:
 
         # directory for trial lists, stimuli and instructions
         self.trial_list_dir = os.path.join(self.main_dir, "trial-lists")
-        if not os.path.exists(self.trial_list_dir):
+        if not os.path.exists(self.trial_list_dir):                             # TODO: Add check if mappinglists are coded for the right directory
             import GenerateTrialLists
         self.stim_dir = os.path.join(self.main_dir, "stimuli")
         sys.path.insert(0, './stimuli')
@@ -72,7 +72,7 @@ class Experiment:
         # Store info about the experiment session
         psychopyVersion = __version__
         expName = "CompositionalInference"
-        expInfo = {"participant": "01", "session": "1"}
+        expInfo = {"participant": "01", "session": "3"}
         expInfo["dateStr"] = data.getDateStr()  # add the current time
         expInfo["psychopyVersion"] = psychopyVersion
         expInfo["frameRate"] = self.win.getActualFrameRate()
@@ -92,6 +92,38 @@ class Experiment:
             u"data/%s_%s_%s" % (expInfo["participant"],
                                 expName, expInfo["dateStr"])
         self.expInfo = expInfo
+        
+        # Optionally init parallel port
+        if expInfo["session"] == "3":
+            self.init_parallelport()
+            self.use_pp = True
+        else:
+            self.use_pp = False
+            
+            
+    def init_parallelport(self):
+        # for sending triggers
+        self.port_out = ParallelPort(address="0xd110")
+        self.port_out.setData(0)
+        # Trigger codes
+        self.trigger_dict = {"fix": 1,
+                             "disp": 2,
+                             "cue": 3}
+        # for receiving button presses
+        self.port_in = ParallelPort(address="0xd111")
+        # mapping of MEG response: b1 = 8, b2 = 16, b3 = 32, b5 = 0   
+        # arrangement: b2,b1   b3,b5
+        pp_map = [None]*33
+        pp_map[16] = self.resp_keys[0]
+        pp_map[8] = self.resp_keys[1]
+        pp_map[32] = self.resp_keys[2]
+        pp_map[0] = self.resp_keys[3]
+        self.pp_map = pp_map
+#        self.pp_map_out = dict(zip(self.resp_keys, [1,2,3,4]))
+    
+    def send_trigger(self, trigger_type):
+        self.port_out.setData(self.trigger_dict[trigger_type])
+#        self.port_out.setData(0)
 
 
     def load_trials(self):
@@ -245,7 +277,7 @@ class Experiment:
                 text = str(i),
                 height = 4,
                 color = self.color_dict["black"])})
-        self.count_dict = stim_dict
+        self.count_dict = count_dict
         
         # Keyboard prompts
         keyboard_dict = {}
@@ -315,6 +347,7 @@ class Experiment:
     
     # Trial Components --------------------------------------------------------
     def tFixation(self):
+        if self.use_pp: self.send_trigger("fix")
         self.fixation.draw()
         self.win.flip()
         core.wait(0.3)
@@ -350,17 +383,19 @@ class Experiment:
             else:
                 cue.pos = self.center_pos
             cue.draw()
+        if self.use_pp: self.send_trigger("cue")
         self.win.flip()
         core.wait(duration)
         return mode
 
-    def getIR(IRClock):
+    def getIR(self, IRClock):
         # get intermediate response
         intermediateResp = None
         while intermediateResp == None:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-                if thisKey == "space": 
+#                if thisKey == "space":                                          # TODO: MEG Version
+                if thisKey in ["num_4", "num_5"]:  
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -381,6 +416,7 @@ class Experiment:
             stim = self.stim_dict.copy()[trial.input_disp[i]]
             stim.pos = self.rect_pos[i]
             stim.draw()
+        if self.use_pp: self.send_trigger("disp")
         self.win.flip()
         IRClock = core.Clock()
         if self_paced:
@@ -534,14 +570,27 @@ class Experiment:
                     if inc == 2:
                         self.win.flip()
         return testRT, testResp
+
                 
+    def read_pp(self, base = 128, max_wait = 3):
+        clock = core.Clock()
+        received = base
+        while received == base and clock.getTime() < max_wait:
+            received = self.port_in.readData()
+        out = received & 0x78
+        return out
+
 
     def tTestresponse(self, TestClock, respKeys, return_numeric = True,
                       max_wait = np.inf):
         testResp = None
         testRT = None
         while testResp is None:
-            allKeys = event.waitKeys(maxWait = max_wait)
+            if self.use_pp:
+                response_button = self.read_pp(max_wait = max_wait)
+                allKeys = [self.pp_map[response_button]]
+            else:
+                allKeys = event.waitKeys(maxWait = max_wait)
             if allKeys is None and max_wait < np.inf:
                 break
             else:
@@ -865,7 +914,7 @@ class Experiment:
             i_step = len(trial_df)
         df = trial_df[i:i+i_step].copy()
         trials = data.TrialHandler(
-            df.to_dict("records"), 1, method="sequential")
+            df, 1, method="sequential")
         intermediateRTList = []
         testRespList = []
         testRTList = []
@@ -930,7 +979,7 @@ class Experiment:
         return df
 
 
-    def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality, # TODO: add new args to instances
+    def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality,
                         min_acc = 0.95, mode = "random", i = 0, i_step = None,
                         show_cheetsheet = True):
         mean_acc = 0.0
@@ -1102,10 +1151,10 @@ class Experiment:
         
         # Get Demo trials
         demoTrials1 = data.TrialHandler(
-            trials_test_1[0:1].to_dict("records"), 1, method="sequential")
+            trials_test_1[0:1], 1, method="sequential")
         for demoTrial1 in demoTrials1: True
         demoTrials2 = data.TrialHandler(
-            trials_test_2[0:1].to_dict("records"), 1, method="sequential")
+            trials_test_2[0:1], 1, method="sequential")
         for demoTrial2 in demoTrials2: True
             
         # First Test-Type
@@ -1216,14 +1265,14 @@ class Experiment:
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "cueMemoryRefresher.pkl"     
         save_object(self.df_out_5, fname, ending = 'pkl')
-        
+#        
         # Reminder of the test types
         demoCounts = data.TrialHandler(
-            self.trials_prim_prac_c[0:1].to_dict("records"), 1,
+            self.trials_prim_prac_c[0:1], 1,
             method="sequential")
         for demoCount in demoCounts: True #awkward way to get the last demoCount
         demoPositions = data.TrialHandler(
-            self.trials_prim_prac_p[0:1].to_dict("records"), 1,
+            self.trials_prim_prac_p[0:1], 1,
             method="sequential")
         for demoPosition in demoPositions: True #see above
         
@@ -1281,7 +1330,31 @@ class Experiment:
         save_object(self.df_out_6 + self.df_out_7, fname, ending = 'pkl')
         self.Instructions(part_key = "Bye")
         self.win.close()
-    
+        
+        
+    ###########################################################################
+    # MEG Session
+    ###########################################################################
+    def Session3(self):
+        self.win.mouseVisible = False
+        n_experiment_parts = 4
+        progbar_inc = 1/n_experiment_parts
+        start_width = 0
+        
+#        # Navigation
+#        self.Instructions(part_key = "Navigation2",
+#                      special_displays = [self.iSingleImage,
+#                                          self.iSingleImage], 
+#                      args = [self.keyboard_dict["keyBoardArrows"],
+#                              self.keyboard_dict["keyBoardEsc"]],
+#                      font = "mono",
+#                      fontcolor = self.color_dict["mid_grey"],
+#                      show_background = False)
+        
+        self.df_out_8 = self.TestPracticeLoop(self.trials_prim,
+                                    min_acc = 0.95,
+                                    self_paced = True,
+                                    feedback = True)
     
 # =============================================================================
 # Helper Functions
