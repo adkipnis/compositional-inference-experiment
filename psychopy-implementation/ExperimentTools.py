@@ -30,10 +30,10 @@ class Experiment:
         # directory for trial lists, stimuli and instructions
         self.trial_list_dir = os.path.join(self.main_dir, "trial-lists")
         if not os.path.exists(self.trial_list_dir):
-            import generate_trial_lists
+            import GenerateTrialLists
         self.stim_dir = os.path.join(self.main_dir, "stimuli")
         sys.path.insert(0, './stimuli')
-        import instructions_en
+        import Instructions_EN
 
         # data dir
         self.data_dir = os.path.join(self.main_dir, "data")
@@ -97,7 +97,7 @@ class Experiment:
     def load_trials(self):
         # Instructions
         self.instructions = pickle.load(
-            open(self.stim_dir + os.sep + "instructions_en.pkl", "rb"))
+            open(self.stim_dir + os.sep + "Instructions_EN.pkl", "rb"))
 
         # Load triallists and adapt setup to their parameters
         self.trials_prim_cue = pickle.load(
@@ -130,7 +130,7 @@ class Experiment:
         self.n_resp = len(self.trials_prim[0]["resp_options"])
         self.map_names = np.unique([trial["map"]
                                    for trial in self.trials_prim])
-        self.n_exposure = 5  # this value should match in generate_trial_lists
+        self.n_exposure = 5  # this value should match in GenerateTrialLists
         self.maxn_blocks = 6  # this too
         
         # Determine_positions
