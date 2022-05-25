@@ -303,7 +303,7 @@ def draw_position_target(stimuli, resp, display_out,
     put corresponding item from display_out into ordered response_options
     randomly fill the remaining options up with distinct categories'''
     target_position = None
-    target_position = np.random.choice(range(display_size), p = p) # randomly draw position  # TODO: p
+    target_position = np.random.choice(range(display_size), p = p) # randomly draw position  
     target_item = display_out[target_position]
     response_options = np.tile(None, n_options) # init ordered response options
     response_options[resp] = target_item
@@ -314,9 +314,60 @@ def draw_position_target(stimuli, resp, display_out,
     return target_position, response_options
 
 
+def gen_trial_dict_loc(content_list, index, content_type, catch = False):
+    '''
+    Parameters
+    ----------
+    content_list : list
+        list of strings symbolizing either items or primitive maps.
+    index : int
+        position in content_list, for which a trial dictionary
+        will be created
+    content_type : str
+        "item" (objects), "visual" or "textual" (cue)
+    catch : bool, optional
+        if True make this a catch trial with a query after
+        stimulus presentation. Default is False
+
+    Returns
+    -------
+    trial_dict : dict
+        self explanatory.
+
+    '''
+    cue_type_list = np.array(["visual", "textual"])
+    content = content_list[index]
+    pos = np.random.uniform(low = -1, high = 1, size = 2)
+    if catch:
+        correct_resp = np.random.choice([True, False])
+        if correct_resp:
+            query_stim = content
+        else:
+            query_stim = np.random.choice(
+                content_list[content_list != content])
+        if content_type != "item":
+            query_type = cue_type_list[cue_type_list != content_type][0]
+        else:
+            query_type = None
+    else:
+        correct_resp = None
+        query_stim = None
+        query_type = None
+    
+    trial_dict = {"content": content,
+                  "type": content_type,
+                  "pos": pos,
+                  "catch": catch,
+                  "query_stim": query_stim,
+                  "query_type": query_type,
+                  "correct_resp": correct_resp}
+    return trial_dict
+
+
 def gen_trial_dict(stimuli, general_map, resp,
                    resp_list = None, test_type = "count", trial_type = "generic",
                    p = None, display_size = 5, max_duplicates = 3, sep = '-'):
+    
     ''' takes a set of stimuli, a general map and a fixed correct response,
         then generates a dict containing adequate input, output displays,
         a target item and the (max) number of mental transformations''' 
@@ -490,6 +541,7 @@ def inery2prim(inery_list, sep_2 = '+'):
     return np.array(prims)
 
 def prim2inary(prim_list, len_inary = 2, sep_2 = '+'):
+
     inaries = []
     for prims in prim_list:
         inaries.append([prims.split(sep_2, 1)[j] for j in range(len_inary)])
@@ -508,7 +560,7 @@ n_primitives = 4
 min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
 n_exposure = 5 # get tested on each map n times per block
 maxn_blocks = 6
-
+n_exposure_loc = 8 # present each entity n+2 times for the localizer task
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
 
@@ -548,6 +600,11 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
                                                      selection_binary,
                                                      sep = sep)
 
+# Localizer lists
+selection_prim_loc = np.tile(selection_prim, n_exposure_loc)
+selection_prim_loc_query = np.tile(selection_prim, 2)
+stimuli_loc = np.tile(stimuli, n_exposure_loc)
+stimuli_loc_query = np.tile(stimuli, 2)
 
 # ============================================================================
 # Generate Blocks
@@ -661,10 +718,35 @@ for i in range(1, n_participants+1):
         [item for sublist in df_list for item in sublist]).tolist()
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin"
     save_object(trials_binary, fname, ending = ending)
-
+    
     # trials_binary["correct_resp"].plot.hist(alpha=0.5)
     # trials_binary["trans_ub"].plot.hist(alpha=0.5)
     # trials_binary["target"].value_counts().plot(kind='bar')
+    
+    
+    # 3. Functional Localizer blocks #TODO
+    df_list = []
+    
+    
+    
+    # cue trials
+    for cue_type in ["visual", "textual"]:
+        for j in range(len(selection_prim_loc)):
+            df_list.append(gen_trial_dict_loc(selection_prim_loc, j, cue_type))
+        for j in range(len(selection_prim_loc_query)):
+            df_list.append(gen_trial_dict_loc(selection_prim_loc_query,
+                                              j, cue_type, catch = True))
+    
+    # item trials
+    for j in range(len(stimuli_loc)):
+        df_list.append(gen_trial_dict_loc(stimuli_loc, j, "item"))
+    for j in range(len(stimuli_loc_query)):
+        df_list.append(gen_trial_dict_loc(stimuli_loc_query, j, "item", catch = True))
+        
+    trials_localizer = np.random.permutation(df_list).tolist()
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_localizer"
+    save_object(trials_localizer, fname, ending = ending)
+    
 
 
 # # 3. Conjugate blocks
