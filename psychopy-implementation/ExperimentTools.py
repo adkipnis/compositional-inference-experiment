@@ -9,8 +9,9 @@ import pickle
 import sys
 import csv
 from string import ascii_uppercase
+from pathlib import Path
 import numpy as np
-from psychopy import __version__, core, visual, gui, data, event
+from psychopy import __version__, core, event, visual, gui, data
 from psychopy.tools.filetools import toFile
 from psychopy.parallel import ParallelPort
 
@@ -68,25 +69,29 @@ class Experiment:
             units = "deg")
 
 
-    def dialoguebox(self):
+    def dialoguebox(self, participant = "01", session = "0", show = True):
         # Store info about the experiment session
         psychopyVersion = __version__
         expName = "CompositionalInference"
-        expInfo = {"participant": "01", "session": "3"}
+        expInfo = {"participant": participant, "session": session}
         expInfo["dateStr"] = data.getDateStr()  # add the current time
         expInfo["psychopyVersion"] = psychopyVersion
         expInfo["frameRate"] = self.win.getActualFrameRate()
 
         # Dialogue Box
-        dlg = gui.DlgFromDict(dictionary = expInfo,
-                              sortKeys = False,
-                              title = expName)
-        if dlg.OK:
+        if show:
+            dlg = gui.DlgFromDict(dictionary = expInfo,
+                                  sortKeys = False,
+                                  title = expName)
+            if dlg.OK:
+                toFile(self.data_dir + os.sep + expInfo["participant"] +
+                       "_participantParams.pkl", expInfo)
+            else:
+                core.quit()  # the user hit cancel so exit
+        else:
             toFile(self.data_dir + os.sep + expInfo["participant"] +
                    "_participantParams.pkl", expInfo)
-        else:
-            core.quit()  # the user hit cancel so exit
-
+            
         # Save data to this file later
         self.fileName = self.main_dir + os.sep +\
             u"data/%s_%s_%s" % (expInfo["participant"],
@@ -129,9 +134,13 @@ class Experiment:
     def load_trials(self):
         # Instructions
         self.instructions = pickle.load(
-            open(self.stim_dir + os.sep + "Instructions_EN.pkl", "rb"))
+            open(self.stim_dir + os.sep + "instructions_en.pkl", "rb"))
 
         # Load triallists and adapt setup to their parameters
+        self.trials_localizer = pickle.load(
+            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
+                              "_trials_localizer.pkl"), "rb"))
+        
         self.trials_prim_cue = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
                               "_trials_prim_cue.pkl"), "rb"))
@@ -155,6 +164,10 @@ class Experiment:
         self.mappinglists = pickle.load(
             open(self.trial_list_dir + os.sep + self.expInfo["participant"] +
                  "_mappinglists.pkl", "rb"))
+        
+        # Find names for each item (for localizer query)
+        self.item_names = [Path(fname).stem[2:]
+                           for fname in self.mappinglists["stim"]]
 
         self.set_size = len(self.trials_prim[0]["input_disp"])
         self.n_cats = len(np.unique([trial["input_disp"]
@@ -394,8 +407,7 @@ class Experiment:
         while intermediateResp == None:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-#                if thisKey == "space":                                          # TODO: MEG Version
-                if thisKey in ["num_4", "num_5"]:  
+                if thisKey in ["space", "num_4", "num_5"]:  
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -570,8 +582,24 @@ class Experiment:
                     if inc == 2:
                         self.win.flip()
         return testRT, testResp
+    
+    
+    def tLocalizer(self, trial, duration = 2):
+        if trial.type == "item":
+            stim = self.stim_dict.copy()[trial.content]
+            stim.size = self.center_size
+        else:
+            stim, _ = self.setCue(trial.content, mode = trial.type)
+        
+        for i in range(2):
+            stim.pos[i] = self.center_pos[i] + trial.pos[i] * 12
 
-                
+        stim.draw()
+        if self.use_pp: self.send_trigger("cue")
+        self.win.flip()
+        core.wait(duration)
+        
+    
     def read_pp(self, base = 128, max_wait = 3):
         clock = core.Clock()
         received = base
@@ -751,7 +779,7 @@ class Experiment:
                             text = page_content,
                             font = font,
                             height = 1.8,
-                            wrapWidth = 30,
+                            wrapWidth = 40,
                             color = fontcolor)
                 textStim.draw()
                 if show_background: self.draw_background()
@@ -1048,7 +1076,78 @@ class Experiment:
                               args = [[accPrompt]])            
         df_out = [item for sublist in df_list for item in sublist]
         return df_out    
-
+    
+    
+    def LocalizerBlock(self, trial_df, durations = [2, 2, 2, 1]):    # TODO
+        # create the trial handler
+        trials = data.TrialHandler(
+            trial_df, 1, method = "sequential")
+        testRespList = []
+        testRTList = []
+        
+        for trial in trials:
+            self.win.flip()
+            
+            # 1. Fixation
+            self.tFixation()
+            
+            # 2. Display stimulus
+            self.tLocalizer(trial, duration = durations[0])
+            
+            # 3. Empty Display
+            self.win.flip()
+            core.wait(durations[1])
+            
+            
+            # 4. Catch Trial Query
+            if trial.catch:
+                
+                # Prepare query
+                if trial.type == "item":
+                    # transform alphabetical to numeric
+                    name_index = ord(trial.content) - 65 
+                    name = self.item_names[name_index]
+                    text = "Was the previous item a\n" + name +"?"
+                else:
+                    text = "Was the previous cue equivalent to..."
+                
+                # Display query text
+                textStim = visual.TextStim(
+                            self.win,
+                            text,
+                            font = "Times New Roman",
+                            color = self.color_dict["black"],
+                            height = 1.8,
+                            pos = self.center_pos,
+                            wrapWidth = 40)
+                textStim.draw()
+                self.win.flip()
+                core.wait(durations[2])
+                
+                # For Cue trials, display display cue of other type
+                if trial.content != "item":
+                    stim, _ = self.setCue(trial.content,
+                                          mode = trial.query_type)
+                    stim.draw()
+                    self.win.flip()
+                
+                # Get response
+                TestClock = core.Clock()
+                testRT, testResp = self.tTestresponse(
+                    TestClock, self.resp_keys)
+                self.win.flip()
+                if testResp in self.resp_keys[0:2]: testResp = False
+                else: testResp = True
+                
+                # Save data
+                testRespList.append(testResp)
+                testRTList.append(testRT)
+                core.wait(durations[3])
+            
+        trial_df["emp_resp"] = testRespList
+        trial_df["resp_RT"] = testRTList
+        return trial_df
+    
 
     ###########################################################################
     # Introduction Session
@@ -1335,26 +1434,24 @@ class Experiment:
     ###########################################################################
     # MEG Session
     ###########################################################################
-    def Session3(self):
+    def Session0(self):
         self.win.mouseVisible = False
         n_experiment_parts = 4
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-#        # Navigation
-#        self.Instructions(part_key = "Navigation2",
-#                      special_displays = [self.iSingleImage,
-#                                          self.iSingleImage], 
-#                      args = [self.keyboard_dict["keyBoardArrows"],
-#                              self.keyboard_dict["keyBoardEsc"]],
-#                      font = "mono",
-#                      fontcolor = self.color_dict["mid_grey"],
-#                      show_background = False)
+        # Navigation
+        self.Instructions(part_key = "Navigation3",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardArrows"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
         
-        self.df_out_8 = self.TestPracticeLoop(self.trials_prim,
-                                    min_acc = 0.95,
-                                    self_paced = True,
-                                    feedback = True)
+        # self.df_out_8 = self.TestPracticeLoop(self.trials_prim,
+        #                             min_acc = 0.95,
+        #                             self_paced = True,
+        #                             feedback = True)
     
 # =============================================================================
 # Helper Functions
