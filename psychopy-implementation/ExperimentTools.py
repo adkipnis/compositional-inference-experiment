@@ -592,8 +592,8 @@ class Experiment:
             stim, _ = self.setCue(trial.content, mode = trial.type)
         
         for i in range(2):
-            stim.pos[i] = self.center_pos[i] + trial.pos[i] * 12
-
+            stim.pos[i] = self.center_pos[i] + trial.pos[i] * self.center_size[i]
+        stim.pos = stim.pos.tolist()
         stim.draw()
         if self.use_pp: self.send_trigger("cue")
         self.win.flip()
@@ -1084,6 +1084,7 @@ class Experiment:
             trial_df, 1, method = "sequential")
         testRespList = []
         testRTList = []
+        yes_response = self.resp_keys[2:4].tolist()
         
         for trial in trials:
             self.win.flip()
@@ -1125,9 +1126,10 @@ class Experiment:
                 core.wait(durations[2])
                 
                 # For Cue trials, display display cue of other type
-                if trial.content != "item":
+                if trial.type != "item":
                     stim, _ = self.setCue(trial.content,
                                           mode = trial.query_type)
+                    stim.pos = self.center_pos
                     stim.draw()
                     self.win.flip()
                 
@@ -1136,8 +1138,10 @@ class Experiment:
                 testRT, testResp = self.tTestresponse(
                     TestClock, self.resp_keys)
                 self.win.flip()
-                if testResp in self.resp_keys[0:2]: testResp = False
-                else: testResp = True
+                if testResp in yes_response:
+                    testResp = True
+                else:
+                    testResp = False
                 
                 # Save data
                 testRespList.append(testResp)
