@@ -2,10 +2,7 @@ name: psychopy
 channels:
 - conda-forge
 dependencies:
-- python=3.8
-- pip
-- pip:
-  - spyder-kernels
-  - psychopy
-  - wxPython
+- python
+- spyder-kernels
+- psychopy
   
