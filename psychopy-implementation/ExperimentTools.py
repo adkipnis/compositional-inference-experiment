@@ -59,10 +59,10 @@ class Experiment:
                       }
 
 
-    def init_window(self, res = [1920, 1080], screen = 0):
+    def init_window(self, res = [1920, 1080], screen = 0, fullscr = False):
         self.win = visual.Window(
             res,
-            fullscr = False,
+            fullscr = fullscr,
             color = [0.85, 0.85, 0.85],
             screen = screen,
             monitor = "testMonitor",
@@ -324,24 +324,22 @@ class Experiment:
         self.progBack.draw()
         self.progTest.draw()
         
-    def move_prog_bar_step(self, bar_len_step):
+    def move_prog_bar_step(self, bar_width_step):
         # incrementally increase the bar width
-        self.progTest.width += bar_len_step                  
+        self.progTest.width += bar_width_step                  
         # re-center it accordingly on X-coordinate                             
-        self.progTest.pos[0] = self.left_corner + self.progTest.width/2                            
+        self.progTest.pos[0] = self.left_corner + self.progTest.width/2          
+        self.progTest.pos = self.progTest.pos.tolist()                  
         self.draw_background()
         self.win.flip()
 
     def move_prog_bar(self, start_width = 0, end_width = 1,
                       n_steps = 100, wait_s = 0.75):
         # Setup starting state of progress bar
-        self.progTest = visual.Rect(
-            self.win, width = start_width * self.progBack.width,
-            height = self.bar_height, pos = self.bar_pos,
-            fillColor = 'green')
+        self.progTest.width = start_width * self.progBack.width
         self.progTest.pos[0] = self.left_corner + start_width *\
             self.progBack.width/2
-        bar_len_step = self.bar_len/n_steps
+        bar_width_step = self.bar_len/n_steps
         
         # First display
         self.draw_background()
@@ -350,7 +348,7 @@ class Experiment:
         
         # Growing
         while self.progTest.width < self.progBack.width * end_width:
-            self.move_prog_bar_step(bar_len_step)
+            self.move_prog_bar_step(bar_width_step)
         
         # Last bit for completion
         self.move_prog_bar_step(
