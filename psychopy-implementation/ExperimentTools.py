@@ -1340,7 +1340,6 @@ class Experiment:
         self.win.mouseVisible = False
         n_experiment_parts = 4
         progbar_inc = 1/n_experiment_parts
-        start_width = 0
         
         # Navigation
         self.Instructions(part_key = "Navigation2",
@@ -1422,8 +1421,8 @@ class Experiment:
                                 durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                 self_paced = True,
                                 feedback = True)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)  
+        start_width = self.move_prog_bar(start_width = start_width, 
+                                         end_width = 1)  
         
         # Save generic data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1436,25 +1435,63 @@ class Experiment:
     ###########################################################################
     # MEG Session
     ###########################################################################
-    def Session0(self):
+    def Session3(self):
         self.win.mouseVisible = False
         n_experiment_parts = 4
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-        # Navigation
-        self.Instructions(part_key = "Navigation3",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardArrows"]],
-                      font = "mono",
-                      fontcolor = self.color_dict["mid_grey"],
-                      show_background = False)
+        # # Navigation
+        # self.Instructions(part_key = "Navigation3",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardArrows"]],
+        #               font = "mono",
+        #               fontcolor = self.color_dict["mid_grey"],
+        #               show_background = False)
+        start_width = self.move_prog_bar(start_width = 0,
+                                         end_width = 0 + progbar_inc)
         
-        # self.df_out_8 = self.TestPracticeLoop(self.trials_prim,
-        #                             min_acc = 0.95,
-        #                             self_paced = True,
-        #                             feedback = True)
-    
+        
+        # Localizer Trials
+        self.df_out_8 = self.LocalizerBlock(self.trials_localizer, durations = [2, 2, 2, 1])
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = 0 + progbar_inc)
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        save_object(self.df_out_8, fname, ending = 'pkl')
+        
+        
+        # Primitive trials # TODO
+        # self.Instructions(part_key = "Primitive_MEG",
+        #               special_displays = [self.iSingleImage, self.iSingleImage], 
+        #               args = [self.magicWand,
+        #                       self.keyboard_dict["keyBoard4"]])
+        self.df_out_9 = self.TestPracticeLoop(self.trials_prim,
+                                              min_acc = 0.0,
+                                              self_paced = True,
+                                              feedback = False)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                         end_width = 0 + progbar_inc)
+        
+        # Primitive trials # TODO
+        # self.Instructions(part_key = "Binary_MEG",
+        #               special_displays = [self.iSingleImage, self.iSingleImage], 
+        #               args = [self.magicWand,
+        #                       self.keyboard_dict["keyBoard4"]])
+        self.df_out_10 = self.TestPracticeLoop(self.trials_bin,
+                                               min_acc = 0.0,
+                                               self_paced = True,
+                                               feedback = False)
+        self.move_prog_bar(start_width = start_width, end_width = 1)
+        
+        # Finalization
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "generic_MEG"
+        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
+        
+        self.Instructions(part_key = "Bye")
+        self.win.close()
+        
 # =============================================================================
 # Helper Functions
 # =============================================================================
