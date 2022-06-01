@@ -30,7 +30,7 @@ class Experiment:
 
         # directory for trial lists, stimuli and instructions
         self.trial_list_dir = os.path.join(self.main_dir, "trial-lists")
-        if not os.path.exists(self.trial_list_dir):                             # TODO: Add check if mappinglists are coded for the right directory
+        if not os.path.exists(self.trial_list_dir):                             # TODO: mappinglists without trunk
             import GenerateTrialLists
         self.stim_dir = os.path.join(self.main_dir, "stimuli")
         sys.path.insert(0, './stimuli')
@@ -45,10 +45,10 @@ class Experiment:
         self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
-        
         self.resp_keys_vpixx = np.array(
-                ["2", "1", "up", "left", "left", "right"])
-        # 0, 1, 2, 3, False, True
+                ["2", "1", "up", "left", "0", "right"])
+        # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
+        # Mapping: 0, 1, 2, 3, False, True
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.vcue_size = [7, 7]
@@ -1099,7 +1099,7 @@ class Experiment:
             trial_df, 1, method = "sequential")
         testRespList = []
         testRTList = []
-        yes_response = self.resp_keys[2:4].tolist()
+        
         
         for trial in trials:
             self.win.flip()
@@ -1151,12 +1151,14 @@ class Experiment:
                 # Get response
                 TestClock = core.Clock()
                 testRT, testResp = self.tTestresponse(
-                    TestClock, self.resp_keys)
+                    TestClock, self.resp_keys_vpixx)
                 self.win.flip()
-                if testResp in yes_response:
-                    testResp = True
-                else:
+                
+                # Interpret response according to mapping in self.resp_keys_vpixx
+                if testResp == 4:
                     testResp = False
+                elif testResp == 5:
+                    testResp = True
                 
                 # Save data
                 testRespList.append(testResp)
