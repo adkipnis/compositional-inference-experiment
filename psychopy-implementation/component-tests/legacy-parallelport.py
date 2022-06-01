@@ -19,10 +19,10 @@ pp_map[8] = resp_keys[1]
 pp_map[32] = resp_keys[2]
 pp_map[0] = resp_keys[3]
 
-def read_pp(base = 128, max_wait = 3):
+def read_pp(base = 128, max_wait = 3, min_wait = 0):
     clock = core.Clock()
     received = base
-    while received == base and clock.getTime() < max_wait:
+    while received == base and min_wait < clock.getTime() < max_wait:
         received = port_in.readData()
     out = received & 0x78
     print(out)

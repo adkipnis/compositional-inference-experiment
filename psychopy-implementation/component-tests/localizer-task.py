@@ -11,7 +11,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 1)
+Exp.init_window(screen = 0, fullscr = True)
 Exp.dialoguebox(show = False)
 Exp.load_trials()
 Exp.render_visuals()

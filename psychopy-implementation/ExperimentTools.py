@@ -45,6 +45,10 @@ class Experiment:
         self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
+        
+        self.resp_keys_vpixx = np.array(
+                ["2", "1", "up", "left", "left", "right"])
+        # 0, 1, 2, 3, False, True
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.vcue_size = [7, 7]
@@ -100,31 +104,53 @@ class Experiment:
         
         # Optionally init parallel port
         if expInfo["session"] == "3":
-            self.init_parallelport()
+            self.init_interface()
             self.use_pp = True
         else:
             self.use_pp = False
             
             
-    def init_parallelport(self):
+    def init_interface(self):
+        # set pp to base state
+        self.port_out2 = ParallelPort(address="0xd112")
+        self.port_out2.setData(8)
+        
         # for sending triggers
         self.port_out = ParallelPort(address="0xd110")
         self.port_out.setData(0)
+       
         # Trigger codes
         self.trigger_dict = {"fix": 1,
                              "disp": 2,
                              "cue": 3}
-        # for receiving button presses
-        self.port_in = ParallelPort(address="0xd111")
-        # mapping of MEG response: b1 = 8, b2 = 16, b3 = 32, b5 = 0   
-        # arrangement: b2,b1   b3,b5
-        pp_map = [None]*33
-        pp_map[16] = self.resp_keys[0]
-        pp_map[8] = self.resp_keys[1]
-        pp_map[32] = self.resp_keys[2]
-        pp_map[0] = self.resp_keys[3]
-        self.pp_map = pp_map
-#        self.pp_map_out = dict(zip(self.resp_keys, [1,2,3,4]))
+
+        
+#        # for receiving button presses
+#        self.port_in = ParallelPort(address="0xd111")
+#        # mapping of MEG response: b1 = 8, b2 = 16, b3 = 32, b5 = 0   
+#        # arrangement: b2,b1   b3,b5
+#        pp_map = [None]*33
+#        pp_map[16] = self.resp_keys[0]
+#        pp_map[8] = self.resp_keys[1]
+#        pp_map[32] = self.resp_keys[2]
+#        pp_map[0] = self.resp_keys[3]
+#        self.pp_map = pp_map
+##        self.pp_map_out = dict(zip(self.resp_keys, [1,2,3,4]))
+#    
+#    def assign_pp_button(self, resp_key_idx):
+#        out = self.read_pp(max_wait = 5, min_wait = 0.5)
+#        self.pp_map[out] = self.resp_keys[resp_key_idx]
+#        print("Assigned " + str(out) + " to button: " +
+#              str(self.pp_map[out]) + " with index " + str(resp_key_idx))
+    
+#    def read_pp(self, base = 128, min_wait = 0, max_wait = 3):
+#        clock = core.Clock()
+#        received = base
+#        while received == base and min_wait < clock.getTime() < max_wait:
+#            received = self.port_in.readData()
+#        out = received & 0x78
+#        return out
+    
     
     def send_trigger(self, trigger_type):
         self.port_out.setData(self.trigger_dict[trigger_type])
@@ -363,6 +389,7 @@ class Experiment:
         self.win.flip()
         core.wait(0.3)
 
+
     def setCue(self, key, mode = "random"):
         # opt: randomize mode
         if mode == "random":
@@ -376,6 +403,7 @@ class Experiment:
         elif mode == "textual":
             cue = self.tcue_dict.copy()[key]
         return cue, mode
+
 
     def tMapcue(self, trial, mode = "random", 
                 # with_background = False,  # would need flexible background 
@@ -398,6 +426,7 @@ class Experiment:
         self.win.flip()
         core.wait(duration)
         return mode
+
 
     def getIR(self, IRClock):
         # get intermediate response
@@ -513,6 +542,7 @@ class Experiment:
                         self.win.flip()        
         return testRT, testResp
 
+
     def tPosition(self, trial, feedback = False, demonstration = False):
         TestClock = core.Clock()
         for inc in range(2 + feedback*1):
@@ -596,27 +626,14 @@ class Experiment:
         if self.use_pp: self.send_trigger("cue")
         self.win.flip()
         core.wait(duration)
-        
-    
-    def read_pp(self, base = 128, max_wait = 3):
-        clock = core.Clock()
-        received = base
-        while received == base and clock.getTime() < max_wait:
-            received = self.port_in.readData()
-        out = received & 0x78
-        return out
 
 
-    def tTestresponse(self, TestClock, respKeys, return_numeric = True,
+    def tTestresponse(self, TestClock, respKeys, return_numeric = True, 
                       max_wait = np.inf):
         testResp = None
         testRT = None
         while testResp is None:
-            if self.use_pp:
-                response_button = self.read_pp(max_wait = max_wait)
-                allKeys = [self.pp_map[response_button]]
-            else:
-                allKeys = event.waitKeys(maxWait = max_wait)
+            allKeys = event.waitKeys(maxWait = max_wait)
             if allKeys is None and max_wait < np.inf:
                 break
             else:

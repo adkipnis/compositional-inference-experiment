@@ -12,7 +12,7 @@ from psychopy import core
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 1)
+Exp.init_window(screen = 0)
 Exp.dialoguebox(show = False)
 Exp.load_trials()
 Exp.render_visuals()
