@@ -832,9 +832,9 @@ class Experiment:
         # create the trial handler
         PracticeCueTrials = data.TrialHandler(
             trials_prim_cue, 1, method="sequential")
-        testRespSuperList = []
-        testRTSuperList = []
-        cueTypeList = []
+        self.testRespSuperList = []
+        self.testRTSuperList = []
+        self.cueTypeList = []
         
         for trial in PracticeCueTrials:
             num_cr = len(trial.correct_resp)
@@ -843,7 +843,7 @@ class Experiment:
             j = 0
             cue, cue_type = self.setCue(trial.map[0], mode = mode)
             cue.pos = cue_pos
-            cueTypeList.append(cue_type)
+            self.cueTypeList.append(cue_type)
             
             # Incrementally display stuff
             for inc in range(3 + 2 * num_cr): 
@@ -914,13 +914,13 @@ class Experiment:
                     self.win.flip()
                     continue
                 else:
-                    testRTSuperList.append(testRTList)
-                    testRespSuperList.append(testRespList)
+                    self.testRTSuperList.append(testRTList)
+                    self.testRespSuperList.append(testRespList)
                     self.win.flip()
                     core.wait(2)
-        trials_prim_cue["emp_resp"] = testRespSuperList
-        trials_prim_cue["resp_RT"] = testRTSuperList
-        trials_prim_cue["cue_type"] = cueTypeList
+        trials_prim_cue["emp_resp"] = self.testRespSuperList
+        trials_prim_cue["resp_RT"] = self.testRTSuperList
+        trials_prim_cue["cue_type"] = self.cueTypeList
         return trials_prim_cue
                 
         
@@ -934,10 +934,10 @@ class Experiment:
         df = trial_df[i:i+i_step].copy()
         trials = data.TrialHandler(
             df, 1, method="sequential")
-        intermediateRTList = []
-        testRespList = []
-        testRTList = []
-        cueTypeList = []
+        self.intermediateRTList = []
+        self.testRespList = []
+        self.testRTList = []
+        self.cueTypeList = []
         
         for trial in trials:
             self.win.flip()
@@ -978,10 +978,10 @@ class Experiment:
                                                           feedback = feedback)
                     
                     # Save data
-                    intermediateRTList.append(intermediateRT)
-                    testRespList.append(testResp)
-                    testRTList.append(testRT)
-                    cueTypeList.append(cue_type)
+                    self.intermediateRTList.append(intermediateRT)
+                    self.testRespList.append(testResp)
+                    self.testRTList.append(testRT)
+                    self.cueTypeList.append(cue_type)
                     core.wait(durations[3])
             
             if 7 in display_this:
@@ -991,10 +991,10 @@ class Experiment:
             
         # append trial list with collected data 
         if test:
-            df["cue_type"] = cueTypeList
-            df["inter_RT"] = intermediateRTList
-            df["emp_resp"] = testRespList
-            df["resp_RT"] = testRTList
+            df["cue_type"] = self.cueTypeList
+            df["inter_RT"] = self.intermediateRTList
+            df["emp_resp"] = self.testRespList
+            df["resp_RT"] = self.testRTList
         return df
 
 
