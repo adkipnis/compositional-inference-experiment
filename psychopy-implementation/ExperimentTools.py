@@ -124,34 +124,7 @@ class Experiment:
                              "disp": 2,
                              "cue": 3}
 
-        
-#        # for receiving button presses
-#        self.port_in = ParallelPort(address="0xd111")
-#        # mapping of MEG response: b1 = 8, b2 = 16, b3 = 32, b5 = 0   
-#        # arrangement: b2,b1   b3,b5
-#        pp_map = [None]*33
-#        pp_map[16] = self.resp_keys[0]
-#        pp_map[8] = self.resp_keys[1]
-#        pp_map[32] = self.resp_keys[2]
-#        pp_map[0] = self.resp_keys[3]
-#        self.pp_map = pp_map
-##        self.pp_map_out = dict(zip(self.resp_keys, [1,2,3,4]))
-#    
-#    def assign_pp_button(self, resp_key_idx):
-#        out = self.read_pp(max_wait = 5, min_wait = 0.5)
-#        self.pp_map[out] = self.resp_keys[resp_key_idx]
-#        print("Assigned " + str(out) + " to button: " +
-#              str(self.pp_map[out]) + " with index " + str(resp_key_idx))
-    
-#    def read_pp(self, base = 128, min_wait = 0, max_wait = 3):
-#        clock = core.Clock()
-#        received = base
-#        while received == base and min_wait < clock.getTime() < max_wait:
-#            received = self.port_in.readData()
-#        out = received & 0x78
-#        return out
-    
-    
+
     def send_trigger(self, trigger_type):
         self.port_out.setData(self.trigger_dict[trigger_type])
 #        self.port_out.setData(0)
@@ -186,14 +159,18 @@ class Experiment:
         self.trials_bin = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
                               "_trials_bin.pkl"), "rb"))
-
+        
+        # individual mappings for each participant
         self.mappinglists = pickle.load(
             open(self.trial_list_dir + os.sep + self.expInfo["participant"] +
                  "_mappinglists.pkl", "rb"))
+        self.item_names = [name[2:] for name in self.mappinglists["stim"]]        
+        # convert mappinglists to file links
+        self.mappinglists["stim"] = [self.stim_dir + os.sep + name + ".png" 
+                                     for name in self.mappinglists["stim"]]
+        self.mappinglists["vcue"] = [self.stim_dir + os.sep + name + ".png" 
+                                     for name in self.mappinglists["vcue"]]
         
-        # Find names for each item (for localizer query)
-        self.item_names = [Path(fname).stem[2:]
-                           for fname in self.mappinglists["stim"]]
 
         self.set_size = len(self.trials_prim[0]["input_disp"])
         self.n_cats = len(np.unique([trial["input_disp"]
@@ -281,7 +258,6 @@ class Experiment:
         self.tcue_dict = tcue_dict
         
         # Visual cues
-        vcue_list = glob.glob(self.stim_dir + os.sep + "c_*.png")
         vcue_list = self.mappinglists["vcue"]
         assert len(vcue_list) >= len(self.map_names)
         vcue_dict = {}
@@ -1097,8 +1073,8 @@ class Experiment:
         # create the trial handler
         trials = data.TrialHandler(
             trial_df, 1, method = "sequential")
-        testRespList = []
-        testRTList = []
+        self.testRespList = []
+        self.testRTList = []
         
         
         for trial in trials:
@@ -1161,12 +1137,12 @@ class Experiment:
                     testResp = True
                 
                 # Save data
-                testRespList.append(testResp)
-                testRTList.append(testRT)
+                self.testRespList.append(testResp)
+                self.testRTList.append(testRT)
                 core.wait(durations[3])
             
-        trial_df["emp_resp"] = testRespList
-        trial_df["resp_RT"] = testRTList
+        trial_df["emp_resp"] = self.testRespList
+        trial_df["resp_RT"] = self.testRTList
         return trial_df
     
 

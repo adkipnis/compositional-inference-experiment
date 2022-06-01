@@ -6,6 +6,7 @@ Created on Thu Feb 11 18:07:53 2021
 @author: alex
 """
 import os, glob, string, csv, pickle
+from pathlib import Path
 from itertools import product, combinations, groupby
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -615,9 +616,11 @@ with open(stim_dir + os.sep + "spell_names.csv", newline='') as f:
     reader = csv.reader(f)
     tcue_list = list(reader)[0]
 vcue_list = glob.glob(stim_dir + os.sep + "c_*.png")
+vcue_list = [Path(fname).stem for fname in vcue_list] # remove trunk
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
+stim_list = [Path(fname).stem for fname in stim_list] 
 
-for i in range(1, n_participants+1):
+for i in range(1, n_participants+1): #TODO
     # Mappings between cues and stimuli
     tcue_list = np.random.permutation(tcue_list)
     vcue_list = np.random.permutation(vcue_list)
