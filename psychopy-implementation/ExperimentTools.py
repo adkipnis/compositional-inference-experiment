@@ -30,7 +30,7 @@ class Experiment:
 
         # directory for trial lists, stimuli and instructions
         self.trial_list_dir = os.path.join(self.main_dir, "trial-lists")
-        if not os.path.exists(self.trial_list_dir):                             # TODO: mappinglists without trunk
+        if not os.path.exists(self.trial_list_dir):
             import GenerateTrialLists
         self.stim_dir = os.path.join(self.main_dir, "stimuli")
         sys.path.insert(0, './stimuli')
@@ -73,7 +73,8 @@ class Experiment:
             units = "deg")
 
 
-    def dialoguebox(self, participant = "01", session = "0", show = True):
+    def dialoguebox(self, participant = "01", session = "3", show = True, 
+                    dev = False):
         # Store info about the experiment session
         psychopyVersion = __version__
         expName = "CompositionalInference"
@@ -103,7 +104,7 @@ class Experiment:
         self.expInfo = expInfo
         
         # Optionally init parallel port
-        if expInfo["session"] == "3":
+        if not dev and expInfo["session"] == "3":
             self.init_interface()
             self.use_pp = True
         else:
@@ -119,9 +120,10 @@ class Experiment:
         self.port_out = ParallelPort(address="0xd110")
         self.port_out.setData(0)
        
-        # Trigger codes
-        self.trigger_dict = {"fix": 1,
-                             "disp": 2,
+        # Trigger codes # TODO
+        self.trigger_dict = {"trial": 1,
+                             "fixate": 20, 
+                             "disp": 21,
                              "cue": 3}
 
 
@@ -410,7 +412,7 @@ class Experiment:
         while intermediateResp == None:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-                if thisKey in ["space", "num_4", "num_5"]:  
+                if thisKey in ["space", "right"]:  
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -450,7 +452,9 @@ class Experiment:
         return intermediateRT
        
 
-    def tCount(self, trial, feedback = False, demonstration = False):
+    def tCount(self, trial, feedback = False, demonstration = False,
+               resp_keys = None):
+        if resp_keys is None: resp_keys = self.resp_keys
         TestClock = core.Clock()
         for inc in range(2 + feedback*1):
             self.rect.pos = self.center_pos
@@ -479,7 +483,7 @@ class Experiment:
             if inc == 1:
                 if not demonstration:
                     testRT, testResp = self.tTestresponse(
-                        TestClock, self.resp_keys)
+                        TestClock, resp_keys)
                 else:
                     badoptions = np.array(range(4))
                     np.delete(badoptions, trial.correct_resp)
@@ -519,7 +523,9 @@ class Experiment:
         return testRT, testResp
 
 
-    def tPosition(self, trial, feedback = False, demonstration = False):
+    def tPosition(self, trial, feedback = False, demonstration = False,
+                  resp_keys = None):
+        if resp_keys is None: resp_keys = self.resp_keys
         TestClock = core.Clock()
         for inc in range(2 + feedback*1):
             # position cues
@@ -548,7 +554,7 @@ class Experiment:
             if inc == 1:
                 if not demonstration:
                     testRT, testResp = self.tTestresponse(
-                        TestClock, self.resp_keys)
+                        TestClock, resp_keys)
                 else:
                     badoptions = np.array(range(4))
                     np.delete(badoptions, trial.correct_resp)
@@ -701,7 +707,7 @@ class Experiment:
     def iNavigate(self, page = 0, max_page = 99, continue_after_last_page = True,
                   proceed_key = "/k", wait_s = 3):
         
-        assert proceed_key in ["/k", "/t", "/e"], "Unkown proceed key"
+        assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
         finished = False
         testResp = None
         TestClock = core.Clock()
@@ -710,6 +716,10 @@ class Experiment:
         if proceed_key == "/k": #keypress
             _, testResp = self.tTestresponse(
                 TestClock, ["left", "right", "space"],
+                return_numeric = False)
+        if proceed_key == "/m": #meg keypress
+            _, testResp = self.tTestresponse(
+                TestClock, ["0", "right"],
                 return_numeric = False)
         elif proceed_key == "/t": #time
             core.wait(wait_s)
@@ -728,7 +738,7 @@ class Experiment:
                 page +=1
             elif continue_after_last_page:
                 finished = True
-        elif testResp == "left" and page > 0:
+        elif testResp in ["0", "left"] and page > 0:
             page -= 1
         elif testResp == "space":
             self.nextPrompt.draw()
@@ -927,7 +937,10 @@ class Experiment:
     def GenericBlock(self, trial_df, mode = "random", i = 0, i_step = None,
                      self_paced = False, display_this = [1, 2, 3, 4, 5, 6, 7],
                      durations = [1, 3, 0.6, 1, 0.7],
-                     test = True, feedback = False):    
+                     test = True, feedback = False,
+                     resp_keys = None):
+        if resp_keys is None: resp_keys = self.resp_keys
+        
         # create the trial handler
         if i_step is None:  
             i_step = len(trial_df)
@@ -972,10 +985,12 @@ class Experiment:
                 if 6 in display_this:
                     if trial.test_type == "count":
                         testRT, testResp = self.tCount(trial,
-                                                       feedback = feedback)
+                                                       feedback = feedback,
+                                                       resp_keys = resp_keys)
                     elif trial.test_type == "position":
                         testRT, testResp = self.tPosition(trial,
-                                                          feedback = feedback)
+                                                          feedback = feedback,
+                                                          resp_keys = resp_keys)
                     
                     # Save data
                     self.intermediateRTList.append(intermediateRT)
@@ -1069,11 +1084,12 @@ class Experiment:
         return df_out    
     
     
-    def LocalizerBlock(self, trial_df, durations = [2, 2, 2, 1]):    # TODO
+    def LocalizerBlock(self, trial_df, durations = [2, 2, 2, 1]):
         # create the trial handler
         trials = data.TrialHandler(
             trial_df, 1, method = "sequential")
         self.testRespList = []
+        self.corRespList = []
         self.testRTList = []
         
         
@@ -1093,7 +1109,7 @@ class Experiment:
             
             # 4. Catch Trial Query
             if trial.catch:
-                
+            
                 # Prepare query
                 if trial.type == "item":
                     # transform alphabetical to numeric
@@ -1137,13 +1153,20 @@ class Experiment:
                     testResp = True
                 
                 # Save data
+                self.corRespList.append(trial.correct_resp)
                 self.testRespList.append(testResp)
                 self.testRTList.append(testRT)
                 core.wait(durations[3])
             
-        trial_df["emp_resp"] = self.testRespList
-        trial_df["resp_RT"] = self.testRTList
-        return trial_df
+        trial_df["emp_resp"] = np.array(self.testRespList)
+        trial_df["cor_resp"] = np.array(self.corRespList)
+        trial_df["resp_RT"] = np.array(self.testRTList)
+        
+        # calculate accuracy
+        accuracy = sum(trial_df["emp_resp"] == trial_df["cor_resp"])\
+            / len(trial_df["cor_resp"])
+        
+        return trial_df, accuracy
     
 
     ###########################################################################
@@ -1345,16 +1368,20 @@ class Experiment:
                       font = "mono",
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
+        self.win.flip()
+        core.wait(2)
         
         # Introduction   
         self.Instructions(part_key = "IntroAdvanced",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard6"]])
+        self.win.flip()
+        core.wait(2)
         self.df_out_5 = self.CuePracticeLoop(
             self.trials_prim_cue, "visual", "textual",                         # order?
             mode = "random")   
         start_width = self.move_prog_bar(start_width = 0,
-                                         end_width = 0 + progbar_inc)
+                                          end_width = 0 + progbar_inc)
                  
         # Save cue memory data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1432,59 +1459,99 @@ class Experiment:
     ###########################################################################
     def Session3(self):
         self.win.mouseVisible = False
-        n_experiment_parts = 4
+        n_experiment_parts = 3
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
         # # Navigation
         # self.Instructions(part_key = "Navigation3",
         #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardArrows"]],
+        #               args = [self.keyboard_dict["keyBoardMegBF"]],
         #               font = "mono",
         #               fontcolor = self.color_dict["mid_grey"],
         #               show_background = False)
-        start_width = self.move_prog_bar(start_width = 0,
-                                         end_width = 0 + progbar_inc)
+        # self.win.flip()
+        # core.wait(2)
+        
+        # # Introduction   
+        # self.Instructions(part_key = "IntroMEG",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardMegNY"]],
+        #               show_background = False)
+        # self.win.flip()
+        # core.wait(2)
+        
+        # # Localizer Block
+        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+        #                                          durations = [2, 2, 2, 1])
+        # # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
+        # start_width = self.move_prog_bar(start_width = start_width,
+        #                                  end_width = 0 + progbar_inc)
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        # save_object(self.df_out_8, fname, ending = 'pkl')
         
         
-        # Localizer Trials
-        self.df_out_8 = self.LocalizerBlock(self.trials_localizer, durations = [2, 2, 2, 1])
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = 0 + progbar_inc)
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "localizer_MEG"
-        save_object(self.df_out_8, fname, ending = 'pkl')
+        # # Primitive trials
+        # demoCounts = data.TrialHandler(
+        #     self.trials_prim_prac_c[0:1], 1,
+        #     method="sequential")
+        # for demoCount in demoCounts: True #awkward way to get the last demoCount
+        # demoPositions = data.TrialHandler(
+        #     self.trials_prim_prac_p[0:1], 1,
+        #     method="sequential")
+        # for demoPosition in demoPositions: True #see above
         
-        
-        # Primitive trials # TODO
-        # self.Instructions(part_key = "Primitive_MEG",
+        # self.Instructions(part_key = "PrimitivesMEG",                                
         #               special_displays = [self.iSingleImage, self.iSingleImage], 
         #               args = [self.magicWand,
-        #                       self.keyboard_dict["keyBoard4"]])
-        self.df_out_9 = self.TestPracticeLoop(self.trials_prim,
-                                              min_acc = 0.0,
-                                              self_paced = True,
-                                              feedback = False)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = 0 + progbar_inc)
+        #                       self.keyboard_dict["keyBoardMeg0123"]],
+        #               complex_displays = [self.GenericBlock, self.GenericBlock,
+        #                                   self.tCount, self.tPosition],
+        #               kwargs = [{"trial_df": self.trials_prim_prac_c,
+        #                           "display_this": [2],
+        #                           "durations" : [0, 0, 0, 0, 0],
+        #                           "i_step" : 1,
+        #                           "test" : False},
+        #                         {"trial_df": self.trials_prim_prac_c,
+        #                           "display_this": [3],
+        #                           "durations" : [0, 0, 0, 0, 0],
+        #                           "i_step" : 1,
+        #                           "test" : False},
+        #                         {"trial": demoCount,
+        #                           "feedback": False,
+        #                           "demonstration" : True},
+        #                         {"trial": demoPosition,
+        #                           "feedback": False,
+        #                           "demonstration" : True}])
+        # self.win.flip()
+        # core.wait(2)
+        # self.df_out_9 = self.GenericBlock(self.trials_prim,
+        #                                   mode = "random",
+        #                                   durations = [1, 3, 0.6, 1, 0.7],
+        #                                   self_paced = True,
+        #                                   resp_keys = self.resp_keys_vpixx)
+        # start_width = self.move_prog_bar(start_width = start_width,
+        #                                   end_width = 0 + progbar_inc)
         
-        # Primitive trials # TODO
-        # self.Instructions(part_key = "Binary_MEG",
+        # # Binary trials
+        # self.Instructions(part_key = "BinariesMEG",
         #               special_displays = [self.iSingleImage, self.iSingleImage], 
         #               args = [self.magicWand,
-        #                       self.keyboard_dict["keyBoard4"]])
-        self.df_out_10 = self.TestPracticeLoop(self.trials_bin,
-                                               min_acc = 0.0,
-                                               self_paced = True,
-                                               feedback = False)
-        self.move_prog_bar(start_width = start_width, end_width = 1)
+        #                       self.keyboard_dict["keyBoardMeg0123"]])
+        # self.df_out_10 = self.GenericBlock(self.trials_bin,
+        #                                   mode = "random",
+        #                                   durations = [2.0, 3.0, 0.6, 1.0, 0.7],
+        #                                   self_paced = True,
+        #                                   resp_keys = self.resp_keys_vpixx)
+        # self.move_prog_bar(start_width = start_width, end_width = 1)
         
-        # Finalization
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "generic_MEG"
-        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
+        # # Finalization
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+        #     self.expInfo["dateStr"] + "_" + "generic_MEG"
+        # save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
         
-        self.Instructions(part_key = "Bye")
+        self.Instructions(part_key = "ByeBye")
         self.win.close()
         
 # =============================================================================
