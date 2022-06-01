@@ -69,6 +69,17 @@ Navigation2 = [
               "Now, the experiment begins..."
               # ["", "/t", 2]
               ]
+
+    
+Navigation3 = [
+              0,
+              "This is the third and final session of the experiment.",
+              "If you need to abort the experiment,\nor you have any questions,\n"\
+                  "please ask the examiner.",
+              "Now, the experiment begins..."
+              # ["", "/t", 2]
+              ]
+    
     
 # Story Introduction 
 Intro = ["You are a magic novice, preparing for your Alteration studies.",
@@ -97,7 +108,19 @@ IntroAdvanced = ["Since the last time, you have advanced in your Alteration stud
          "You start with the spell cues, use the following keys:",
          0,
          "Ready?"]
-        
+
+# TODO eyetracking?
+IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
+         "You have trained hard to get here.",
+         "The (very large) magical helmet above you\nreads your spellcasting.",
+         "Everyone's mind is special,\nso before the exam...",
+         "...it has to be attuned to yours:",
+         "For this, you will view familiar images.",
+         "After some of them, you have\nto answer a yes/no question.",
+         "Use the following keys:",
+         0,
+         "Ready?"]
+
 
 
 # Learn Cues
@@ -282,6 +305,7 @@ TestTypesReminder = [0,
              "It's important that you understand the instructions, so please go "\
                  "back and review them if you are unsure. Otherwise click next."
              ]    
+
     
 # Primitive Trials
 Primitives = [0,
@@ -293,6 +317,35 @@ Primitives = [0,
               "Again, use the following keys for the decision at the end of each trial:",
                     1,
               "Ready?"]
+    
+PrimitivesMEG = [0,
+              "The magical helmet is now accustomed to your thought patterns.",
+              "It says, you have a beautiful mind. :)",
+              "You will surely put it to good use in the exam.",
+              "In the first of two parts,\nyour task is the one you practices in the last sessions.",
+              "You hopefully still remember it, but here's a reminder:",
+              "You first see a set of objects:\n(1) Memorize the presented objects.",
+              0.0,
+              "When you are done with memorizing:\n(2) Press the right thumb button.",
+              "You will then see a spell cue.\n(3) In your head, apply it to the memorized display.",
+              1.0,
+              "When you are done:\n(4) Press the right thumb button.",
+              "Then you can receive one of two possible test displays.",
+              "Type 1 - Counting: You will see an object category and integers on the bottom.",
+              2.0,
+              "",
+              "(5) From the options below, choose how often "\
+              "this object appears in the scene after the transformation.",
+              "Type 2 - Position query: You will see all the squares on which the objects stood, "\
+                         "one of them will be marked.",
+              3.0,
+              "",
+              "(5) From the options below, choose the object that would be "\
+                     "on the marked square after the transformation.",
+              "Use the following keys:",
+              1,
+              "Be as accurate as possible\n-\nyour reward will depend on it!",
+              "Ready to begin the exam?"]
 
 # Binary Trials
 Binaries = [0,
@@ -307,10 +360,25 @@ Binaries = [0,
                     1,
             "Ready?"]
 
+BinariesMEG = [0,
+            "Well done, you have finished the first part!",
+            "The second part of the exam is like the first one,\nbut with two spell cues:",
+            "You apply the first spell,\ntake the intermediate result"\
+                "\nand then apply the second spell on it.",
+            "Again, use the following keys:",
+                    1,
+            "Be as accurate as possible.",
+            "Ready?"]
+    
 # Bye
 Bye = ["Congrats!",
        "You are done with your Alteration studies for today.",
        "See you in your next session!"]
+
+ByeBye = ["Congrats!",
+       "You have finished your exam.",
+       "The magical council will send you your grade and reward soon.",
+       "Farewell on your remaining magical journey. :)"]
     
 # Store as Dictionary
 instructions ={  
@@ -318,8 +386,10 @@ instructions ={
   "exp": "CompInf",
   "Navigation1": AddProceedKey2All(Navigation1, '/k'),
   "Navigation2": AddProceedKey2All(Navigation2, '/k'),
+  "Navigation3": AddProceedKey2All(Navigation3, '/m'),
   "Intro": AddProceedKey2All(Intro, '/k'),
   "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
+  "IntroMEG": AddProceedKey2All(IntroMEG, '/m'),  
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),
@@ -332,8 +402,11 @@ instructions ={
   "countSecond": AddProceedKey2All(countSecond, '/k'),
   "TestTypesReminder": AddProceedKey2All(TestTypesReminder, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
+  "PrimitivesMEG": AddProceedKey2All(PrimitivesMEG, '/m'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),
+  "BinariesMEG": AddProceedKey2All(BinariesMEG, '/m'),
   "Bye": AddProceedKey2All(Bye, '/k'),
+  "ByeBye": AddProceedKey2All(ByeBye, '/m'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
