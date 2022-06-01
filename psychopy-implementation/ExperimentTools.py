@@ -129,7 +129,7 @@ class Experiment:
 
     def send_trigger(self, trigger_type):
         self.port_out.setData(self.trigger_dict[trigger_type])
-#        self.port_out.setData(0)
+        self.port_out.setData(0)
 
 
     def load_trials(self):
@@ -1463,93 +1463,93 @@ class Experiment:
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-        # # Navigation
-        # self.Instructions(part_key = "Navigation3",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegBF"]],
-        #               font = "mono",
-        #               fontcolor = self.color_dict["mid_grey"],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Navigation
+        self.Instructions(part_key = "Navigation3",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegBF"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Introduction   
-        # self.Instructions(part_key = "IntroMEG",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegNY"]],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Introduction   
+        self.Instructions(part_key = "IntroMEG",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegNY"]],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Localizer Block
-        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-        #                                          durations = [2, 2, 2, 1])
-        # # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
-        # start_width = self.move_prog_bar(start_width = start_width,
-        #                                  end_width = 0 + progbar_inc)
-        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
-        # save_object(self.df_out_8, fname, ending = 'pkl')
+        # Localizer Block
+        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+                                                  durations = [2, 2, 2, 1])
+        # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
+        start_width = self.move_prog_bar(start_width = start_width,
+                                          end_width = 0 + progbar_inc)
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        save_object(self.df_out_8, fname, ending = 'pkl')
         
         
-        # # Primitive trials
-        # demoCounts = data.TrialHandler(
-        #     self.trials_prim_prac_c[0:1], 1,
-        #     method="sequential")
-        # for demoCount in demoCounts: True #awkward way to get the last demoCount
-        # demoPositions = data.TrialHandler(
-        #     self.trials_prim_prac_p[0:1], 1,
-        #     method="sequential")
-        # for demoPosition in demoPositions: True #see above
+        # Primitive trials
+        demoCounts = data.TrialHandler(
+            self.trials_prim_prac_c[0:1], 1,
+            method="sequential")
+        for demoCount in demoCounts: True #awkward way to get the last demoCount
+        demoPositions = data.TrialHandler(
+            self.trials_prim_prac_p[0:1], 1,
+            method="sequential")
+        for demoPosition in demoPositions: True #see above
         
-        # self.Instructions(part_key = "PrimitivesMEG",                                
-        #               special_displays = [self.iSingleImage, self.iSingleImage], 
-        #               args = [self.magicWand,
-        #                       self.keyboard_dict["keyBoardMeg0123"]],
-        #               complex_displays = [self.GenericBlock, self.GenericBlock,
-        #                                   self.tCount, self.tPosition],
-        #               kwargs = [{"trial_df": self.trials_prim_prac_c,
-        #                           "display_this": [2],
-        #                           "durations" : [0, 0, 0, 0, 0],
-        #                           "i_step" : 1,
-        #                           "test" : False},
-        #                         {"trial_df": self.trials_prim_prac_c,
-        #                           "display_this": [3],
-        #                           "durations" : [0, 0, 0, 0, 0],
-        #                           "i_step" : 1,
-        #                           "test" : False},
-        #                         {"trial": demoCount,
-        #                           "feedback": False,
-        #                           "demonstration" : True},
-        #                         {"trial": demoPosition,
-        #                           "feedback": False,
-        #                           "demonstration" : True}])
-        # self.win.flip()
-        # core.wait(2)
-        # self.df_out_9 = self.GenericBlock(self.trials_prim,
-        #                                   mode = "random",
-        #                                   durations = [1, 3, 0.6, 1, 0.7],
-        #                                   self_paced = True,
-        #                                   resp_keys = self.resp_keys_vpixx)
-        # start_width = self.move_prog_bar(start_width = start_width,
-        #                                   end_width = 0 + progbar_inc)
+        self.Instructions(part_key = "PrimitivesMEG",                                
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoardMeg0123"]],
+                      complex_displays = [self.GenericBlock, self.GenericBlock,
+                                          self.tCount, self.tPosition],
+                      kwargs = [{"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [2],
+                                  "durations" : [0, 0, 0, 0, 0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [3],
+                                  "durations" : [0, 0, 0, 0, 0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial": demoCount,
+                                  "feedback": False,
+                                  "demonstration" : True},
+                                {"trial": demoPosition,
+                                  "feedback": False,
+                                  "demonstration" : True}])
+        self.win.flip()
+        core.wait(2)
+        self.df_out_9 = self.GenericBlock(self.trials_prim,
+                                          mode = "random",
+                                          durations = [1, 3, 0.6, 1, 0.7],
+                                          self_paced = True,
+                                          resp_keys = self.resp_keys_vpixx)
+        start_width = self.move_prog_bar(start_width = start_width,
+                                          end_width = 0 + progbar_inc)
         
-        # # Binary trials
-        # self.Instructions(part_key = "BinariesMEG",
-        #               special_displays = [self.iSingleImage, self.iSingleImage], 
-        #               args = [self.magicWand,
-        #                       self.keyboard_dict["keyBoardMeg0123"]])
-        # self.df_out_10 = self.GenericBlock(self.trials_bin,
-        #                                   mode = "random",
-        #                                   durations = [2.0, 3.0, 0.6, 1.0, 0.7],
-        #                                   self_paced = True,
-        #                                   resp_keys = self.resp_keys_vpixx)
-        # self.move_prog_bar(start_width = start_width, end_width = 1)
+        # Binary trials
+        self.Instructions(part_key = "BinariesMEG",
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoardMeg0123"]])
+        self.df_out_10 = self.GenericBlock(self.trials_bin,
+                                          mode = "random",
+                                          durations = [2.0, 3.0, 0.6, 1.0, 0.7],
+                                          self_paced = True,
+                                          resp_keys = self.resp_keys_vpixx)
+        self.move_prog_bar(start_width = start_width, end_width = 1)
         
-        # # Finalization
-        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-        #     self.expInfo["dateStr"] + "_" + "generic_MEG"
-        # save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
+        # Finalization
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "generic_MEG"
+        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
         
         self.Instructions(part_key = "ByeBye")
         self.win.close()
