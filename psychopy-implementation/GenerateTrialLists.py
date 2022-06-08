@@ -561,7 +561,10 @@ n_primitives = 4
 min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
 n_exposure = 5 # get tested on each map n times per block
 maxn_blocks = 6
-n_exposure_loc = 8 # present each entity n+2 times for the localizer task
+n_exposure_loc = 30 # present each entity n times for the localizer task
+percentage_catch = 0.1 # p * 100% of the trials will contain catch trials
+n_exposure_loc_quick = round(n_exposure_loc * (1-percentage_catch))
+n_exposure_loc_catch = round(n_exposure_loc * percentage_catch)
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
 
@@ -602,10 +605,10 @@ selection_trinary = gen_special_trinary_compositions(selection_prim,
                                                      sep = sep)
 
 # Localizer lists
-selection_prim_loc = np.tile(selection_prim, n_exposure_loc)
-selection_prim_loc_query = np.tile(selection_prim, 2)
-stimuli_loc = np.tile(stimuli, n_exposure_loc)
-stimuli_loc_query = np.tile(stimuli, 2)
+selection_prim_loc = np.tile(selection_prim, n_exposure_loc_quick)
+selection_prim_loc_query = np.tile(selection_prim, n_exposure_loc_catch)
+stimuli_loc = np.tile(stimuli, n_exposure_loc_quick)
+stimuli_loc_query = np.tile(stimuli, n_exposure_loc_catch)
 
 # ============================================================================
 # Generate Blocks
@@ -729,8 +732,6 @@ for i in range(1, n_participants+1): #TODO
     
     # 3. Functional Localizer blocks #TODO
     df_list = []
-    
-    
     
     # cue trials
     for cue_type in ["visual", "textual"]:
