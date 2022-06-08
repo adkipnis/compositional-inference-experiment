@@ -214,7 +214,6 @@ positionFirst = ["Here is what you do:",
                 "You will see all the squares on which the objects stood, "\
                     "one of them will be marked.",
                 2.0,
-                "",
                 "(5) From the options below, choose the object that would be "\
                         "on the marked square after the transformation.",
                 "For training purposes you will get immediate feedback:",
@@ -232,7 +231,6 @@ countFirst = ["Here is what you do:",
                 "When you are done: (4) Press the spacebar.",
                 "You will now see an object category and some integers on the bottom.",
                 2.0,
-                "",
                 "(5) From the options below, choose how often "\
                     "this object appears in the scene after the transformation.",
                 "For training purposes you will get immediate feedback:",
@@ -252,7 +250,6 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               0.0,
               "you will see an object category and some integers on the bottom.",
               1.0,
-              "",
               "(5) From the options below, choose how often "\
                   "this object appears in the scene after the transformation.",
               "For training purposes you will get immediate feedback:",
@@ -272,7 +269,6 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "you will see all the squares on which the objects stood. "\
                       "One of them will be marked.",
                   1.0,
-                  "",
                   "(5) From the options below, choose the object that would be "\
                       "on the marked square after the transformation.",
                   "For training purposes you will get immediate feedback:",
@@ -293,13 +289,11 @@ TestTypesReminder = [0,
              "Then you can receive one of two possible test displays.",
              "Counting: You will see an object category and integers on the bottom.",
              2.0,
-             "",
              "(5) From the options below, choose how often "\
              "this object appears in the scene after the transformation.",
              "Position query: You will see all the squares on which the objects stood, "\
                         "one of them will be marked.",
              3.0,
-             "",
              "(5) From the options below, choose the object that would be "\
                     "on the marked square after the transformation.",
              "Use the following keys for your choice:",
@@ -335,13 +329,11 @@ PrimitivesMEG = [0,
               "Then you can receive one of two possible test displays.",
               "Type 1 - Counting: You will see an object category and integers on the bottom.",
               2.0,
-              "",
               "(5) From the options below, choose how often "\
               "this object appears in the scene after the transformation.",
               "Type 2 - Position query: You will see all the squares on which the objects stood, "\
                          "one of them will be marked.",
               3.0,
-              "",
               "(5) From the options below, choose the object that would be "\
                      "on the marked square after the transformation.",
               "Use the following keys:",

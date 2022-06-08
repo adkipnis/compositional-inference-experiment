@@ -406,18 +406,21 @@ class Experiment:
         return mode
 
 
-    def getIR(self, IRClock):
+    def getIR(self, IRClock, min_s = 0.1, max_s = 60):
         # get intermediate response
         intermediateResp = None
-        while intermediateResp == None:
+        core.wait(min_s)
+        while intermediateResp == None and IRClock.getTime() < max_s:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
                 if thisKey in ["space", "right"]:  
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
-                    core.quit()  # abort experiment
+                    core.quit() # abort experiment
             event.clearEvents()
+        if intermediateResp == None and IRClock.getTime() >= max_s:
+            intermediateRT = max_s
         return intermediateRT
             
 
@@ -799,6 +802,9 @@ class Experiment:
                     show_background = show_background)
             elif type(page_content) is float:
                 complex_displays[int(page_content)](**kwargs[int(page_content)])
+                if complex_displays[int(page_content)].__name__ in \
+                    ["tPosition", "tCount"]:
+                    self.win.flip() # TODO
             page, finished = self.iNavigate(page = page, max_page = len(Part),
                                        proceed_key = proceed_key,
                                        wait_s = proceed_wait)
@@ -1184,6 +1190,9 @@ class Experiment:
         
         return trial_df, accuracy
     
+    def MEG_run(): # TODO
+        
+        return
 
     ###########################################################################
     # Introduction Session
@@ -1479,33 +1488,33 @@ class Experiment:
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-        # Navigation
-        self.Instructions(part_key = "Navigation3",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMegBF"]],
-                      font = "mono",
-                      fontcolor = self.color_dict["mid_grey"],
-                      show_background = False)
-        self.win.flip()
-        core.wait(2)
+        # # Navigation
+        # self.Instructions(part_key = "Navigation3",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardMegBF"]],
+        #               font = "mono",
+        #               fontcolor = self.color_dict["mid_grey"],
+        #               show_background = False)
+        # self.win.flip()
+        # core.wait(2)
         
-        # Introduction   
-        self.Instructions(part_key = "IntroMEG",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMegNY"]],
-                      show_background = False)
-        self.win.flip()
-        core.wait(2)
+        # # Introduction   
+        # self.Instructions(part_key = "IntroMEG",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardMegNY"]],
+        #               show_background = False)
+        # self.win.flip()
+        # core.wait(2)
         
-        # Localizer Block
-        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-                                                  durations = [2, 2, 2, 1])
-        # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
-        start_width = self.move_prog_bar(start_width = start_width,
-                                          end_width = 0 + progbar_inc)
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "localizer_MEG"
-        save_object(self.df_out_8, fname, ending = 'pkl')
+        # # Localizer Block
+        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+        #                                           durations = [2, 2, 2, 1])
+        # # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
+        # start_width = self.move_prog_bar(start_width = start_width,
+        #                                   end_width = 0 + progbar_inc)
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        # save_object(self.df_out_8, fname, ending = 'pkl')
         
         
         # Primitive trials
