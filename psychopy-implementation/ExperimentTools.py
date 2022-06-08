@@ -189,7 +189,7 @@ class Experiment:
         self.resp_pos = rectangularGrindPositions(
             center_pos = [0, -10], h_dist = 10, dim = (1, 4))
         self.cuepractice_pos = rectangularGrindPositions(
-            center_pos = [0, -8], h_dist = 8, dim = (1, 6))
+            center_pos = [0, -8], h_dist = 8, dim = (1, self.n_cats))
 
 
     def render_visuals(self):
@@ -846,7 +846,15 @@ class Experiment:
         return learnDuration    
 
 
-    def PracticeCues(self, trials_prim_cue, mode = "visual", cue_pos = [0, 5]):
+    def PracticeCues(self, trials_prim_cue, mode = "visual", cue_pos = [0, 5],
+                     resp_keys = None):
+        
+        assert self.n_cats in [4,6], "unusual number of unique objects,"\
+            "cannot set response keys"
+        if resp_keys is None:
+            if self.n_cats == 4: resp_keys = self.resp_keys
+            elif self.n_cats == 6: resp_keys = self.resp_keys_wide
+                
         # create the trial handler
         PracticeCueTrials = data.TrialHandler(
             trials_prim_cue, 1, method="sequential")
@@ -895,7 +903,7 @@ class Experiment:
                 if inc in list(range(3, 3 + num_cr)):
                     TestClock = core.Clock()
                     testRT, testResp = self.tTestresponse(
-                        TestClock, self.resp_keys_wide)
+                        TestClock, resp_keys)
                     testRTList.append(testRT)
                     testRespList.append(testResp)
                 for i in range(len(testRespList)):
@@ -1207,8 +1215,8 @@ class Experiment:
                       args = [self.magicBooks,
                               self.philbertine,
                               None,
-                              [["A", "B", "C", "E"], ["A", "E", "C", "E"]],
-                              [["A", "B", "B", "E"], ["A", "E", "E", "E"]]])
+                              [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
         
         # ----------------------------------------------------------------------------
         # Balance out which cue modality is learned first
@@ -1231,7 +1239,7 @@ class Experiment:
                      
         self.Instructions(part_key = "Intermezzo1",
                      special_displays = [self.iSingleImage], 
-                     args = [self.keyboard_dict["keyBoard6"]])
+                     args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.df_out_1 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
             min_acc = 0.95,
@@ -1242,7 +1250,7 @@ class Experiment:
         
         self.Instructions(part_key = "Intermezzo2",
                       special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoard6"]])
+                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
                                     modes = [first_modality, second_modality])  
         self.df_out_2 = self.CuePracticeLoop(
@@ -1382,7 +1390,7 @@ class Experiment:
         # Introduction   
         self.Instructions(part_key = "IntroAdvanced",
                       special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoard6"]])
+                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.win.flip()
         core.wait(2)
         self.df_out_5 = self.CuePracticeLoop(
