@@ -215,11 +215,11 @@ class Experiment:
 
         self.nextPrompt = visual.TextStim(
             self.win,
-            text="Press Spacebar to go back \nor press the Enter key to"\
+            text = "Press Spacebar to go back \nor press the Enter key to"\
                 " continue to next section.",
-            height=1.5,
-            wrapWidth=30,
-            font="mono",
+            height = 1.5,
+            wrapWidth = 30,
+            font = "mono",
             color = self.color_dict["mid_grey"])
 
         self.leftArrow = visual.ImageStim(
@@ -231,7 +231,23 @@ class Experiment:
             self.win,
             image=glob.glob(self.stim_dir + os.sep + "magicWand.png")[0],
             size = self.normal_size, interpolate=True)
-
+        
+        self.pauseClock = visual.ImageStim(
+            self.win,
+            image=glob.glob(self.stim_dir + os.sep + "pauseClock.png")[0],
+            pos = self.center_pos,
+            size = self.center_size,
+            interpolate=True)
+        
+        self.pauseText = visual.TextStim(
+            self.win,
+            text = "Short Break.\nContinue?",
+            height = 1.8,
+            pos = [0, -1],
+            wrapWidth = 30,
+            font = "Times New Roman",
+            color = [-0.9, -0.9, -0.9])
+        
         self.philbertine = visual.ImageStim(
             self.win, image=glob.glob(self.stim_dir + os.sep +
                                  "philbertine.png")[0],
@@ -438,12 +454,12 @@ class Experiment:
             stim.draw()
         if self.use_pp: self.send_trigger("disp")
         self.win.flip()
-        IRClock = core.Clock()
         if self_paced:
-            self.getIR(IRClock)
+            intermediateRT = self.getIR(core.Clock())
         else:
-            core.wait(duration) 
-        return IRClock
+            core.wait(duration)
+            intermediateRT = duration
+        return intermediateRT
 
 
     def tEmpty(self, trial, IRClock):
@@ -453,7 +469,15 @@ class Experiment:
         self.win.flip()
         intermediateRT = self.getIR(IRClock)
         return intermediateRT
-       
+    
+    def tPause(self): 
+        # self.draw_background() # TODO move progressbar?
+        self.pauseClock.draw()
+        self.pauseText.draw()
+        self.win.flip()
+        intermediateRT = self.getIR(core.Clock())
+        self.win.flip()
+        return intermediateRT
 
     def tCount(self, trial, feedback = False, demonstration = False,
                resp_keys = None):
@@ -804,7 +828,7 @@ class Experiment:
                 complex_displays[int(page_content)](**kwargs[int(page_content)])
                 if complex_displays[int(page_content)].__name__ in \
                     ["tPosition", "tCount"]:
-                    self.win.flip() # TODO
+                    self.win.flip()
             page, finished = self.iNavigate(page = page, max_page = len(Part),
                                        proceed_key = proceed_key,
                                        wait_s = proceed_wait)
@@ -960,10 +984,11 @@ class Experiment:
                      self_paced = False, display_this = [1, 2, 3, 4, 5, 6, 7],
                      durations = [1, 3, 0.6, 1, 0.7],
                      test = True, feedback = False,
+                     pause_between_runs = True, runlength = 600, 
                      resp_keys = None):
         if resp_keys is None: resp_keys = self.resp_keys
         
-        # create the trial handler
+        # create the trial handler and optionally timer
         if i_step is None:  
             i_step = len(trial_df)
         df = trial_df[i:i+i_step].copy()
@@ -974,6 +999,10 @@ class Experiment:
         self.testRTList = []
         self.cueTypeList = []
         
+        if pause_between_runs:
+            run_number = 1
+            timer = core.CountdownTimer(runlength)
+        
         for trial in trials:
             self.win.flip()
             
@@ -983,9 +1012,9 @@ class Experiment:
             
             # 2. Display Family
             if 2 in display_this:
-                IRClock = self.tDisplay(trial, duration = durations[1],
+                displayRT = self.tDisplay(trial, duration = durations[1],
                                     self_paced = self_paced)
-                
+                trials.addData("displayRT", displayRT)
             # 3. Map Cue
             if 3 in display_this:
                 self.tFixation()
@@ -995,7 +1024,7 @@ class Experiment:
             if test:
                 # 4. Transformation Display
                 if 4 in display_this:
-                    intermediateRT = self.tEmpty(trial, IRClock)
+                    intermediateRT = self.tEmpty(trial, core.Clock())
                     trials.addData("intermediateRT", intermediateRT)
             
                 # 5. Empty Display
@@ -1025,7 +1054,14 @@ class Experiment:
                 self.win.flip()
                 self.win.flip()
                 core.wait(durations[4])
-            
+                
+            if pause_between_runs:
+                trials.addData("intermediateRT", run_number)
+                if timer.getTime() <= 0:
+                    self.tPause()
+                    timer.reset()
+                    run_number += 1
+                    
         # append trial list with collected data 
         if test:
             df["cue_type"] = self.cueTypeList
@@ -1190,9 +1226,6 @@ class Experiment:
         
         return trial_df, accuracy
     
-    def MEG_run(): # TODO
-        
-        return
 
     ###########################################################################
     # Introduction Session
@@ -1488,33 +1521,33 @@ class Experiment:
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-        # # Navigation
-        # self.Instructions(part_key = "Navigation3",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegBF"]],
-        #               font = "mono",
-        #               fontcolor = self.color_dict["mid_grey"],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Navigation
+        self.Instructions(part_key = "Navigation3",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegBF"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Introduction   
-        # self.Instructions(part_key = "IntroMEG",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegNY"]],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Introduction   
+        self.Instructions(part_key = "IntroMEG",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegNY"]],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Localizer Block
-        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-        #                                           durations = [2, 2, 2, 1])
-        # # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
-        # start_width = self.move_prog_bar(start_width = start_width,
-        #                                   end_width = 0 + progbar_inc)
-        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
-        # save_object(self.df_out_8, fname, ending = 'pkl')
+        # Localizer Block
+        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+                                                  durations = [2, 2, 2, 1])
+        # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
+        start_width = self.move_prog_bar(start_width = start_width,
+                                          end_width = 0 + progbar_inc)
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        save_object(self.df_out_8, fname, ending = 'pkl')
         
         
         # Primitive trials
@@ -1555,6 +1588,8 @@ class Experiment:
                                           mode = "random",
                                           durations = [1, 3, 0.6, 1, 0.7],
                                           self_paced = True,
+                                          pause_between_runs = True,
+                                          runlength = 600,
                                           resp_keys = self.resp_keys_vpixx)
         start_width = self.move_prog_bar(start_width = start_width,
                                           end_width = 0 + progbar_inc)
@@ -1568,6 +1603,8 @@ class Experiment:
                                           mode = "random",
                                           durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
+                                          pause_between_runs = True,
+                                          runlength = 600,
                                           resp_keys = self.resp_keys_vpixx)
         self.move_prog_bar(start_width = start_width, end_width = 1)
         
