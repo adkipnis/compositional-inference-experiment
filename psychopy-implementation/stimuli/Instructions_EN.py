@@ -119,6 +119,8 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
          "After some of them, you have\nto answer a yes/no question.",
          "Use the following keys:",
          0,
+         "Try to move as little as possible:\nThe helmet will be "\
+             "attuned quicker\nthis way.",
          "Ready?"]
 
 
@@ -345,6 +347,7 @@ PrimitivesMEG = [0,
               "Use the following keys:",
               1,
               "Be as accurate as possible\n-\nyour reward will depend on it!",
+              "Remember to move as little as possible for the helmet.",
               "Ready to begin the exam?"]
 
 # Binary Trials
