@@ -46,7 +46,7 @@ class Experiment:
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
         self.resp_keys_vpixx = np.array(
-                ["2", "1", "up", "left", "0", "right"])
+                ["2", "1", "up", "left", "4", "right"])
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
         self.center_pos = [0, 5]
@@ -73,7 +73,7 @@ class Experiment:
             units = "deg")
 
 
-    def dialoguebox(self, participant = "01", session = "3", show = True, 
+    def dialoguebox(self, participant = "01", session = "1", show = True, 
                     dev = False):
         # Store info about the experiment session
         psychopyVersion = __version__
@@ -454,7 +454,11 @@ class Experiment:
 
     def tCount(self, trial, feedback = False, demonstration = False,
                resp_keys = None):
-        if resp_keys is None: resp_keys = self.resp_keys
+        if resp_keys is None:
+            if self.expInfo["session"] == "3":
+                resp_keys = self.resp_keys_vpixx
+            else:
+                resp_keys = self.resp_keys
         TestClock = core.Clock()
         for inc in range(2 + feedback*1):
             self.rect.pos = self.center_pos
@@ -525,7 +529,11 @@ class Experiment:
 
     def tPosition(self, trial, feedback = False, demonstration = False,
                   resp_keys = None):
-        if resp_keys is None: resp_keys = self.resp_keys
+        if resp_keys is None:
+            if self.expInfo["session"] == "3":
+                resp_keys = self.resp_keys_vpixx
+            else:
+                resp_keys = self.resp_keys
         TestClock = core.Clock()
         for inc in range(2 + feedback*1):
             # position cues
@@ -719,7 +727,7 @@ class Experiment:
                 return_numeric = False)
         if proceed_key == "/m": #meg keypress
             _, testResp = self.tTestresponse(
-                TestClock, ["0", "right"],
+                TestClock, self.resp_keys_vpixx[-2:],
                 return_numeric = False)
         elif proceed_key == "/t": #time
             core.wait(wait_s)
@@ -733,12 +741,12 @@ class Experiment:
                 testResp = "right"
                 
         # Proceed accordingly    
-        if testResp == "right":
+        if testResp in ["right", self.resp_keys_vpixx[-1]]:
             if page < max_page-1:
                 page +=1
             elif continue_after_last_page:
                 finished = True
-        elif testResp in ["0", "left"] and page > 0:
+        elif testResp in ["left", self.resp_keys_vpixx[-2]] and page > 0:
             page -= 1
         elif testResp == "space":
             self.nextPrompt.draw()
