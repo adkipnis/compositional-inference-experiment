@@ -157,10 +157,18 @@ class Experiment:
         self.trials_prim = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
                               "_trials_prim.pkl"), "rb"))
+        
+        self.trials_prim_MEG = pickle.load(
+            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
+                              "_trials_prim_MEG.pkl"), "rb"))
 
         self.trials_bin = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
                               "_trials_bin.pkl"), "rb"))
+        
+        self.trials_bin_MEG = pickle.load(
+            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
+                              "_trials_bin_MEG.pkl"), "rb"))
         
         # individual mappings for each participant
         self.mappinglists = pickle.load(
@@ -1584,7 +1592,7 @@ class Experiment:
                                   "demonstration" : True}])
         self.win.flip()
         core.wait(2)
-        self.df_out_9 = self.GenericBlock(self.trials_prim,
+        self.df_out_9 = self.GenericBlock(self.trials_prim_MEG,
                                           mode = "random",
                                           durations = [1, 3, 0.6, 1, 0.7],
                                           self_paced = True,
@@ -1599,7 +1607,7 @@ class Experiment:
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
                               self.keyboard_dict["keyBoardMeg0123"]])
-        self.df_out_10 = self.GenericBlock(self.trials_bin,
+        self.df_out_10 = self.GenericBlock(self.trials_bin_MEG,
                                           mode = "random",
                                           durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,

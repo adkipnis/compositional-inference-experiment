@@ -715,21 +715,24 @@ for i in range(1, n_participants+1): #TODO
     # generate trials twice with n_exposure/2 and each test display type,
     # then randomly permute both generated lists
     test_types = ["count", "position"]
+    use_cases = ["", "_MEG"]
     df_list = []
-    for test_type in test_types:
-        for j in range(maxn_blocks):
-            map_list_prim = select_sans_repeats(selection_prim,
-                                                n_repeats = n_exposure)
-            df_list.append(gen_trials(stimuli,
-                                     map_list_prim,                         
-                                     resp_list = resp_list,
-                                     test_type = test_type,
-                                     display_size = display_size,
-                                     sep = sep))
-    trials_prim = np.random.permutation(
-        [item for sublist in df_list for item in sublist]).tolist()
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim"
-    save_object(trials_prim, fname, ending = ending)
+    for use_case in use_cases:
+        for test_type in test_types:
+            for j in range(maxn_blocks):
+                map_list_prim = select_sans_repeats(selection_prim,
+                                                    n_repeats = n_exposure)
+                df_list.append(gen_trials(stimuli,
+                                         map_list_prim,                         
+                                         resp_list = resp_list,
+                                         test_type = test_type,
+                                         display_size = display_size,
+                                         sep = sep))
+        trials_prim = np.random.permutation(
+            [item for sublist in df_list for item in sublist]).tolist()
+        fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + \
+            "trials_prim" + use_case
+        save_object(trials_prim, fname, ending = ending)
     
     # plt.figure()
     # trials_prim["correct_resp"].plot.hist(alpha=0.5)
@@ -739,28 +742,30 @@ for i in range(1, n_participants+1): #TODO
 
     # 2. Compositional blocks
     df_list = []
-    for test_type in test_types:
-        for j in range(maxn_blocks):
-            map_list_binary = select_sans_repeats(selection_binary,
-                                                  n_repeats = n_exposure,
-                                                  inary_maps = True)
-            df_list.append(gen_trials(stimuli,
-                                     map_list_binary,                         
-                                     resp_list = resp_list,
-                                     test_type = test_type,
-                                     display_size = display_size,
-                                     sep = sep))
-    trials_binary = np.random.permutation(
-        [item for sublist in df_list for item in sublist]).tolist()
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_bin"
-    save_object(trials_binary, fname, ending = ending)
+    for use_case in use_cases:
+        for test_type in test_types:
+            for j in range(maxn_blocks):
+                map_list_binary = select_sans_repeats(selection_binary,
+                                                      n_repeats = n_exposure,
+                                                      inary_maps = True)
+                df_list.append(gen_trials(stimuli,
+                                         map_list_binary,                         
+                                         resp_list = resp_list,
+                                         test_type = test_type,
+                                         display_size = display_size,
+                                         sep = sep))
+        trials_binary = np.random.permutation(
+            [item for sublist in df_list for item in sublist]).tolist()
+        fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" +\
+            "trials_bin" + use_case
+        save_object(trials_binary, fname, ending = ending)
     
     # trials_binary["correct_resp"].plot.hist(alpha=0.5)
     # trials_binary["trans_ub"].plot.hist(alpha=0.5)
     # trials_binary["target"].value_counts().plot(kind='bar')
     
     
-    # 3. Functional Localizer blocks #TODO
+    # 3. Functional Localizer blocks
     df_list = []
     
     # cue trials
