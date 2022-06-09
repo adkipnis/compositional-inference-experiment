@@ -1148,12 +1148,12 @@ class Experiment:
 
     def TestPracticeLoop(self, trial_df, 
                           min_acc = 0.9, mode = "random", i = 0, i_step = None,
-                          durations = [1, 3, 0.6, 1, 0.7], 
+                          durations = [1.0, 3.0, 0.6, 1.0, 0.7], 
                           test = True, feedback = False, self_paced = False):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
-            i_step = self.n_exposure * self.maxn_blocks
+            i_step = self.n_exposure * self.maxn_blocks # length of one loop
         while mean_acc < min_acc:
             df = self.GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
                       durations = durations, test = test, feedback = feedback,
@@ -1456,7 +1456,7 @@ class Experiment:
     def Session2(self):
         # globalClock = core.Clock()
         self.win.mouseVisible = False
-        n_experiment_parts = 4
+        n_experiment_parts = 3
         self.progbar_inc = 1/n_experiment_parts
         
         # Navigation
@@ -1478,7 +1478,7 @@ class Experiment:
         self.win.flip()
         core.wait(2)
         self.df_out_5 = self.CuePracticeLoop(
-            self.trials_prim_cue, "visual", "textual",                         # order?
+            self.trials_prim_cue, "visual", "textual",                         
             mode = "random")   
         self.start_width = self.move_prog_bar(start_width = 0,
                                               end_width = 0 + self.progbar_inc)
@@ -1517,9 +1517,7 @@ class Experiment:
                                 {"trial": demoPosition,
                                   "feedback": False,
                                   "demonstration" : True}])
-        self.start_width = self.move_prog_bar(
-            start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)  
+
         # ---------------------------------------------------------------------
         # Practice: Primitive
         self.Instructions(part_key = "Primitives",
@@ -1539,7 +1537,8 @@ class Experiment:
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
                               self.keyboard_dict["keyBoard4"]])
-        self.df_out_7 = self.GenericBlock(self.trials_bin,
+        self.df_out_7 = self.TestPracticeLoop(self.trials_bin,
+                                min_acc = 0.75,
                                 durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                 self_paced = True,
                                 feedback = True)

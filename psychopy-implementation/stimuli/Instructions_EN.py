@@ -48,12 +48,12 @@ BadLocalizer = ["Hm.",
 
 Binaries = [0,
             "Well done!",
-            "Just as a teaser for the next session: Cues for different spells"\
-                " can be combined to produce new spells.",
-            "Essentially, the final result is as if you apply the first spell...",
-            "... take the intermediate result and then apply the second spell on it.",
-            "You will do some exmaples of these 'binary' spells.",
-            "This time there is no minimum score.",
+            "Today's final lesson: Cues for different spells"\
+                "\ncan be combined to produce new spells.",
+            "Essentially, the final result of a double spell\nis as if you apply the first spell,...",
+            "take the intermediate result\nand then apply the second spell on it.",
+            "You will now practice these 'composed' spells.",
+            "This time you need to get at least 75% of them right.",
             "Again, use the following keys for the decision at the end of each trial:",
                     1,
             "Ready?"]
@@ -152,8 +152,8 @@ IntroAdvanced = ["Since the last time, you have advanced in your Alteration stud
          "You now know all elements of Alteration:",
          "(1) The two types of spell cue...",
          "And (2) the two types of spell tests...",
-         "Just as a refresher you will do a couple of trials for each of these.",
-         "You start with the spell cues, use the following keys:",
+         "Just as a refresher you will do\na couple of trials for each of these.",
+         "You start with the spell cues.\nUse the following keys:",
          0,
          "Ready?"]
 
@@ -200,9 +200,8 @@ Navigation1 = [
 
 Navigation2 = [
               0,
-              "Don't worry, there is no shame in going back pages.",
               "In this second session, you will train the actual task"\
-                  " which you will perform in the MEG in the third session.",
+                  " which you will perform in the MEG.",
               # "You can press the spacebar to skip to the next section:",
               # 1,
               "If for some reason you need to abort the experiment, you can"\
@@ -283,12 +282,13 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "Ready?"] 
     
 Primitives = [0,
-              "In your examination during the next session, you will encounter tasks"\
-                  " which are very similar to the ones you did in the first session.",
+              "In your examination during the next session, you will perform tasks"\
+                  " which are very similar to the ones you trained in the first session.",
               "One important difference: You will not know"\
-                  " which of the two tests comes at the end of any trial.",
-              "To ensure that you achieve your study goals, you practice this scenario now.",
-              "Again, use the following keys for the decision at the end of each trial:",
+                  "\nwhich of the two tests comes at the end of any trial.",
+              "To ensure that you achieve your study goals,\nyou practice this scenario now.",
+              "You need to get at least 95% of all practice trials right.",
+              "Again, use the following keys for the decision\nat the end of each trial:",
                     1,
               "Ready?"]
     
@@ -332,14 +332,14 @@ TestTypes = [0,
              0.0]
     
 TestTypesReminder = [0,
-             "You hopefully still remember how you used spells in your first session.",
+             "You hopefully still remember\nhow you used spells in your first session.",
              "Just to be safe, here's a reminder:",
-             "You first see a set of objects: (1) Memorize the presented objects.",
+             "You first see a set of objects:\n(1) Memorize the presented objects.",
              0.0,
-             "When you are done with memorizing: (2) Press the spacebar.",
-             "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+             "When you are done with memorizing:\n(2) Press the spacebar.",
+             "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
              1.0,
-             "When you are done: (4) Press the spacebar.",
+             "When you are done:\n(4) Press the spacebar.",
              "Then you can receive one of two possible test displays.",
              "Counting: You will see an object category and integers on the bottom.",
              2.0,
