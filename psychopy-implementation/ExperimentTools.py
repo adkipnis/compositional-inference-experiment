@@ -526,7 +526,7 @@ class Experiment:
                         TestClock, resp_keys)
                 else:
                     badoptions = np.array(range(4))
-                    np.delete(badoptions, trial.correct_resp)
+                    badoptions = np.delete(badoptions, trial.correct_resp)
                     core.wait(1)
                     testRT, testResp = 0, badoptions[0]
             
