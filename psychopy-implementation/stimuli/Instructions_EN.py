@@ -331,7 +331,7 @@ Primitives = [0,
               "Ready?"]
     
 PrimitivesMEG = [0,
-              "The magical helmet is now accustomed to your thought patterns.",
+              "The magical helmet is now accustomed\nto your thought patterns.",
               "It says, you have a beautiful mind. :)",
               "You will surely put it to good use in the exam.",
               "In the first of two parts,\nyour task is the one you practices in the last sessions.",
