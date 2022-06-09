@@ -77,32 +77,34 @@ ByeBye = ["Congrats!",
        "The magical council will send you your grade and reward soon.",
        "Farewell on your remaining magical journey. :)"]
 
+
 countFirst = ["Here is what you do:",
                 "(1) Memorize the presented objects:",
                 0.0,
-                "When you are done with memorizing: (2) Press the spacebar.",
-                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+                "When you are done with memorizing:\n(2) Press the spacebar.",
+                "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
                 1.0,
-                "When you are done: (4) Press the spacebar.",
-                "You will now see an object category and some integers on the bottom.",
+                "When you are done:\n(4) Press the spacebar.",
+                "You will now see an object category\nand some integers on the bottom",
                 2.0,
                 "(5) From the options below, choose how often "\
                     "this object appears in the scene after the transformation.",
-                "For training purposes you will get immediate feedback:",
+                "For training purposes you will get immediate feedback.",
+                "Let's say, you incorrectly chose the leftmost option:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
                 "Ready?"]
 
 countSecond = ["Some magic students tend to cheat on the test above.",
-               "In order to make sure that you transform the objects in your mind "\
-                   "first and only then answer a test question...",
-              "...there are two test displays (both equally likely to appear):",
-              "The previous one was based on object positions. The next will be based "\
+               "In order to make sure\nthat you transform the objects in your mind "\
+                   "first\nand only then answer a test question...",
+              "...there are two test displays\n(both equally likely to appear):",
+              "The previous one was based on object positions.\nThe next will be based "\
                   "on the object count.",
-              "After memorizing and transforming the objects (steps 1-4)...",
+              "After memorizing and transforming the objects\n(steps 1-4)...",
               0.0,
-              "you will see an object category and some integers on the bottom.",
+              "you will see an object category\nand some integers on the bottom.",
               1.0,
               "(5) From the options below, choose how often "\
                   "this object appears in the scene after the transformation.",
@@ -139,7 +141,7 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
          2,
          "With the correct spell, each beginner object\ncan be transformed into "\
              "another beginner object!",
-         "Here you see an example of such an alteration spell:",
+         "Here you see an example of such an Alteration spell:",
          3,
          "Note, that these spells have an area effect: If you cast it,"\
              " all susceptible objects will be transformed.",
@@ -147,7 +149,7 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
 
 IntroAdvanced = ["Since the last time, you have advanced in your Alteration studies.",
          "Philbertine would be impressed.",
-         "You now know all elements of alteration:",
+         "You now know all elements of Alteration:",
          "(1) The two types of spell cue...",
          "And (2) the two types of spell tests...",
          "Just as a refresher you will do a couple of trials for each of these.",
@@ -254,22 +256,23 @@ positionFirst = ["Here is what you do:",
                 2.0,
                 "(5) From the options below, choose the object that would be "\
                         "on the marked square after the transformation.",
-                "For training purposes you will get immediate feedback:",
+                "For training purposes you will get immediate feedback.",
+                "Let's say, you incorrectly chose the following option:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
                 "Ready?"]
     
 positionSecond = ["Some magic students tend to cheat on the test above.",
-                  "In order to make sure that you transform the objects in your mind "\
-                      "first and only then answer a test question...",
-                  "...there are two test displays (both equally likely to appear):",
-                  "The previous one was based on object count. The next will be based "\
+                  "In order to make sure\nthat you transform the objects in your mind "\
+                      "first\nand only then answer a test question...",
+                  "...there are two test displays\n(both equally likely to appear):",
+                  "The previous one was based on object count.\nThe next will be based "\
                       "on the object positions.",
-                  "After memorizing and transforming the objects (steps 1-4)...", 
+                  "After memorizing and transforming the objects\n(steps 1-4)...",
                   0.0,
                   "you will see all the squares on which the objects stood. "\
-                      "One of them will be marked.",
+                      "\nOne of them will be marked.",
                   1.0,
                   "(5) From the options below, choose the object that would be "\
                       "on the marked square after the transformation.",
@@ -278,7 +281,7 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "Again, use the following keys for this choice:",
                   0,
                   "Ready?"] 
-
+    
 Primitives = [0,
               "In your examination during the next session, you will encounter tasks"\
                   " which are very similar to the ones you did in the first session.",
