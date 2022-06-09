@@ -34,54 +34,100 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
     return instruction_list_new
 
 
+# ============================================================================
+BadLocalizer = ["Hm.",
+                "You've answered less than 80%\nof the questions correctly.",
+                "The magical helmet is not satisfied.",
+                "That's okay, you probably just\ndid not pay enough attention.",
+                "To qualify for the exam,\nplease retry with a better score.",
+                "Again, use the following keys:",
+                0,
+                "Try to move as little as possible:\nThe helmet will be "\
+                    "attuned quicker\nthis way.",
+                "Ready?"]
 
-# Navigation Introduction
-Navigation1 = [
-              # ["For the following displays, you can navigate back and forth"\
-              #      " using the arrow keys:", "/e", 4],
-              0,
-              "Don't worry, there is no shame in going back pages.",
-              "In this first session, you will prepare the basics of the task"\
-                  " which you will later perform in the MEG.",
-              # "You can press the spacebar to skip to the next section:",
-              # 1,
-              "If for some reason you need to abort the experiment, you can"\
-                  " do so by pressing Esc:",
-              1,
-              "Please be careful not to press this key by accident!",
-              "Finally, if you have any questions, please ask the examiner.",
-              "Now, the experiment begins..."
-              # ["", "/t", 2]
-              ]
+Binaries = [0,
+            "Well done!",
+            "Just as a teaser for the next session: Cues for different spells"\
+                " can be combined to produce new spells.",
+            "Essentially, the final result is as if you apply the first spell...",
+            "... take the intermediate result and then apply the second spell on it.",
+            "You will do some exmaples of these 'binary' spells.",
+            "This time there is no minimum score.",
+            "Again, use the following keys for the decision at the end of each trial:",
+                    1,
+            "Ready?"]
 
-Navigation2 = [
-              0,
-              "Don't worry, there is no shame in going back pages.",
-              "In this second session, you will train the actual task"\
-                  " which you will perform in the MEG in the third session.",
-              # "You can press the spacebar to skip to the next section:",
-              # 1,
-              "If for some reason you need to abort the experiment, you can"\
-                  " do so by pressing Esc:",
-              1,
-              "Please be careful not to press this key by accident!",
-              "Finally, if you have any questions, please ask the examiner.",
-              "Now, the experiment begins..."
-              # ["", "/t", 2]
-              ]
+BinariesMEG = [0,
+            "Well done, you have finished the first part!",
+            "The second part of the exam is like the first one,\nbut with two spell cues:",
+            "You apply the first spell,\ntake the intermediate result"\
+                "\nand then apply the second spell on it.",
+            "Again, use the following keys:",
+                    1,
+            "Be as accurate as possible.",
+            "Ready?"]
+    
+Bye = ["Congrats!",
+       "You are done with your Alteration studies for today.",
+       "See you in your next session!"]
 
-    
-Navigation3 = [
+ByeBye = ["Congrats!",
+       "You have finished your exam.",
+       "The magical council will send you your grade and reward soon.",
+       "Farewell on your remaining magical journey. :)"]
+
+countFirst = ["Here is what you do:",
+                "(1) Memorize the presented objects:",
+                0.0,
+                "When you are done with memorizing: (2) Press the spacebar.",
+                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+                1.0,
+                "When you are done: (4) Press the spacebar.",
+                "You will now see an object category and some integers on the bottom.",
+                2.0,
+                "(5) From the options below, choose how often "\
+                    "this object appears in the scene after the transformation.",
+                "For training purposes you will get immediate feedback:",
+                3.0,
+                "Use the following keys for this choice:",
+                0,
+                "Ready?"]
+
+countSecond = ["Some magic students tend to cheat on the test above.",
+               "In order to make sure that you transform the objects in your mind "\
+                   "first and only then answer a test question...",
+              "...there are two test displays (both equally likely to appear):",
+              "The previous one was based on object positions. The next will be based "\
+                  "on the object count.",
+              "After memorizing and transforming the objects (steps 1-4)...",
+              0.0,
+              "you will see an object category and some integers on the bottom.",
+              1.0,
+              "(5) From the options below, choose how often "\
+                  "this object appears in the scene after the transformation.",
+              "For training purposes you will get immediate feedback:",
+              2.0,
+              "Again, use the following keys for this choice:",
               0,
-              "This is the third and final session of the experiment.",
-              "If you need to abort the experiment,\nor you have any questions,\n"\
-                  "please ask the examiner.",
-              "Now, the experiment begins..."
-              # ["", "/t", 2]
-              ]
+              "Ready?"] 
+
+DropOut = ["Luck is not on your side today.",
+           "You've answered less than 80%\nof the questions correctly, again.",
+           "The magical helmet judges that\nyou are not ready.",
+           "Unfortunately this concludes the experiment.",
+           "Your participation will be\ncompensated nonetheless, of course.",
+           "Have a nice day, goodbye!"]
+
+Feedback0 = ["In this training run, your score was:",
+             0,
+             "You feel like you can do better, so you decide to have another "\
+                 "look at the cheet sheet and then train a little more."]
     
-    
-# Story Introduction 
+Feedback1 = ["In this training run, your score was:", 
+             0, 
+             "This is good, you are confident to make the next step..."]
+
 Intro = ["You are a magic novice, preparing for your Alteration studies.",
          "As you may know, Alteration spells change the world around you.",
          "Luckily, you own a copy of the famous book series"\
@@ -89,9 +135,9 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
          0,
          "... famously written by Philbertine:",
          1,
-         "The introductory chapter lists the following beginner objects:",
+         "The introductory chapter\nlists the following beginner objects:",
          2,
-         "With the correct spell, each beginner object can be transformed into "\
+         "With the correct spell, each beginner object\ncan be transformed into "\
              "another beginner object!",
          "Here you see an example of such an alteration spell:",
          3,
@@ -123,110 +169,86 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
              "attuned quicker\nthis way.",
          "Ready?"]
 
-BadLocalizer = ["Hm.",
-                "You've answered less than 80%\nof the questions correctly.",
-                "The magical helmet is not satisfied.",
-                "That's okay, you probably just\ndid not pay enough attention.",
-                "To qualify for the exam,\nplease retry with a better score.",
-                "Again, use the following keys:",
-                0,
-                "Try to move as little as possible:\nThe helmet will be "\
-                    "attuned quicker\nthis way.",
-                "Ready?"]
-
-DropOut = ["Luck is not on your side today.",
-           "You've answered less than 80%\nof the questions correctly, again.",
-           "The magical helmet judges that\nyou are not ready.",
-           "Unfortunately this concludes the experiment.",
-           "Your participation will be\ncompensated nonetheless, of course.",
-           "Have a nice day, goodbye!"]
-
-# Learn Cues
 learnCues = ["Each spell has a specific name and symbol. Philbertine provides a"\
-                   " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-                   "You need to spend some time to study them really well.",
-                   "Specifically, you need to learn the exact name and symbol "\
-                       "which are associated with each respective spell.",
-                   "When you are done with studying, you may press the spacebar:",
-                   0,
-                   "Ready?"]   
+            " cheat-sheet for the " + str(nMaps) + " beginner spells.",
+            "You need to spend some time to study them really well.",
+            "Specifically, you need to learn the exact name and symbol "\
+                "which are associated with each respective spell.",
+            "When you are done with studying,\nyou may press the spacebar:",
+            0,
+            "Ready?"]   
     
-# visualFirst = ["Each spell has a specific symbol. Philbertine provides a"\
-#                   " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-#                   "You decide to spend a couple of minutes to study them.",
-#                   "When you are done with studying, you may press the spacebar:",
-#                   0,
-#                   "Ready?"]    
+Navigation1 = [
+              # ["For the following displays, you can navigate back and forth"\
+              #      " using the arrow keys:", "/e", 4],
+              0,
+              "Don't worry, there is no shame in going back pages.",
+              "In this first session, you will prepare the basics of the task"\
+                  " which you will later perform in the MEG.",
+              # "You can press the spacebar to skip to the next section:",
+              # 1,
+              "If for some reason\nyou need to abort the experiment,\nyou can"\
+                  " do so by pressing Esc:",
+              1,
+              "Please be careful not to press this key by accident!",
+              "Finally, if you have any questions, please ask the examiner.",
+              "Now, the experiment begins..."
+              # ["", "/t", 2]
+              ]
+
+Navigation2 = [
+              0,
+              "Don't worry, there is no shame in going back pages.",
+              "In this second session, you will train the actual task"\
+                  " which you will perform in the MEG in the third session.",
+              # "You can press the spacebar to skip to the next section:",
+              # 1,
+              "If for some reason you need to abort the experiment, you can"\
+                  " do so by pressing Esc:",
+              1,
+              "Please be careful not to press this key by accident!",
+              "Finally, if you have any questions, please ask the examiner.",
+              "Now, the experiment begins..."
+              # ["", "/t", 2]
+              ]
+
+Navigation3 = [
+              0,
+              "This is the third and final session of the experiment.",
+              "If you need to abort the experiment,\nor you have any questions,\n"\
+                  "please ask the examiner.",
+              "Now, the experiment begins..."
+              # ["", "/t", 2]
+              ]
     
-Intermezzo1 = ["Now that you have committed the spell cues to your memory, you"\
-                   " want to make sure you remember them correctly.",
-               "In her wise anticipation, Philbertine provides you with a"\
+Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
+                   " want to make sure\nyou remember them correctly.",
+               "In her wise anticipation, Philbertine provides you\nwith a"\
                    " magical practice board.",
-               "You will first see the spell cue. Then you need to select the"\
+               "You will first see the spell cue.\nThen you need to select the"\
                    " two corresponding objects:",
-               "(1) The object which is susceptible to the spell, and (2) the"\
+               "(1) The object which is susceptible to the spell, and\n(2) the"\
                    " object into which it is transformed.",
-               "You choose the objects using the marked keys on your keyboard:",
+               "You choose the objects using the marked keys\non your keyboard:",
                0,
-               "These keys will correspond to your options from left to right.",
+               "These keys will correspond to your options\nfrom left to right.",
                "Ready?"]
-
-# visualSecond = ["You have now learned the names of the basic spells.",
-#                    "However, Filbertine writes of the 'Duality' of spells:",
-#                    "Each spell has a specific name and symbol.",
-#                    "You need to be able to cast a spell after seeing its symbol,",
-#                    "so you decide to spend a couple more minutes to study these...",
-#                    "When you are done with studying, you may press the spacebar.",
-#                    "Ready?"]
-
-# textualSecond = ["You have now learned the symbols of the basic spells.",
-#                     "However, Filbertine writes of the 'Duality' of spells:",
-#                     "Each spell has a specific name and symbol.",
-#                     "You need to be able to cast a spell after seeing its name,",
-#                     "so you decide to spend a couple more minutes to study these...",
-#                     "When you are done with studying, you may press the spacebar.",
-#                     "Ready?"]
     
 Intermezzo2 = ["You have mastered the first spell cue type. Congrats!",
-               "Next, you will see if you have learned the second spell cue type"\
-                    " correctly.",
-                "The following practice board is completely analogous to the previous"\
+               "Next, you will see if you have correctly learned\nthe second spell cue type.",
+                "The following practice board is\ncompletely analogous to the previous"\
                     " one.",
-                "Again, you choose the objects using the marked keys on your keyboard:",
+                "Again, you choose the objects using\nthe marked keys on your keyboard:",
                 0,
-                "Just as a refresher you get a second look at Philbertines cheet sheet before that.",
-                "Ready?"]
-    
-# Practice accuracy too bad, repeat:
-Feedback0 = ["In this training run, your score was:",
-             0,
-             "You feel like you can do better, so you decide to have another "\
-                 "look at the cheet sheet and then train a little more."]
-Feedback1 = ["In this training run, your score was:", 
-             0, 
-             "This is good, you are confident to make the next step..."]
-
-
-    
-# Learn Test Types
-TestTypes = [0,
-             "It is time for some field practice.",
-             "You now know the spell names and symbols that prompt you to "\
-                 "cast a spell.",
-             "You will now practice applying these spells to groups of objects.",
-             "Earlier, you saw what effect transformation spells had.",
-             "For the following trials, you will first see the spell cue "\
-                 "and then the objects you need to transform using it.",       # TODO update order 
-             "It will look like this:",
-             0.0]
+                "Just as a refresher you get a second look\nat Philbertines cheet sheet before you continue."]
 
 positionFirst = ["Here is what you do:",
                 "(1) Memorize the presented objects:",
                 0.0,
-                "When you are done with memorizing: (2) Press the spacebar.",
-                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+                "When you are done with memorizing:\n(2) Press the spacebar.",
+                "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
                 1.0,
-                "When you are done: (4) Press the spacebar.",
+                "When you are done:\n(4) Press the spacebar.",
                 "You will see all the squares on which the objects stood, "\
                     "one of them will be marked.",
                 2.0,
@@ -237,43 +259,7 @@ positionFirst = ["Here is what you do:",
                 "Use the following keys for this choice:",
                 0,
                 "Ready?"]
-
-countFirst = ["Here is what you do:",
-                "(1) Memorize the presented objects:",
-                0.0,
-                "When you are done with memorizing: (2) Press the spacebar.",
-                "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
-                1.0,
-                "When you are done: (4) Press the spacebar.",
-                "You will now see an object category and some integers on the bottom.",
-                2.0,
-                "(5) From the options below, choose how often "\
-                    "this object appears in the scene after the transformation.",
-                "For training purposes you will get immediate feedback:",
-                3.0,
-                "Use the following keys for this choice:",
-                0,
-                "Ready?"]
-
-
-countSecond = ["Some magic students tend to cheat on the test above.",
-               "In order to make sure that you transform the objects in your mind "\
-                   "first and only then answer a test question...",
-              "...there are two test displays (both equally likely to appear):",
-              "The previous one was based on object positions. The next will be based "\
-                  "on the object count.",
-              "After memorizing and transforming the objects (steps 1-4)...",
-              0.0,
-              "you will see an object category and some integers on the bottom.",
-              1.0,
-              "(5) From the options below, choose how often "\
-                  "this object appears in the scene after the transformation.",
-              "For training purposes you will get immediate feedback:",
-              2.0,
-              "Again, use the following keys for this choice:",
-              0,
-              "Ready?"] 
-
+    
 positionSecond = ["Some magic students tend to cheat on the test above.",
                   "In order to make sure that you transform the objects in your mind "\
                       "first and only then answer a test question...",
@@ -293,33 +279,6 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   0,
                   "Ready?"] 
 
-TestTypesReminder = [0,
-             "You hopefully still remember how you used spells in your first session.",
-             "Just to be safe, here's a reminder:",
-             "You first see a set of objects: (1) Memorize the presented objects.",
-             0.0,
-             "When you are done with memorizing: (2) Press the spacebar.",
-             "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
-             1.0,
-             "When you are done: (4) Press the spacebar.",
-             "Then you can receive one of two possible test displays.",
-             "Counting: You will see an object category and integers on the bottom.",
-             2.0,
-             "(5) From the options below, choose how often "\
-             "this object appears in the scene after the transformation.",
-             "Position query: You will see all the squares on which the objects stood, "\
-                        "one of them will be marked.",
-             3.0,
-             "(5) From the options below, choose the object that would be "\
-                    "on the marked square after the transformation.",
-             "Use the following keys for your choice:",
-             1,
-             "It's important that you understand the instructions, so please go "\
-                 "back and review them if you are unsure. Otherwise click next."
-             ]    
-
-    
-# Primitive Trials
 Primitives = [0,
               "In your examination during the next session, you will encounter tasks"\
                   " which are very similar to the ones you did in the first session.",
@@ -357,40 +316,45 @@ PrimitivesMEG = [0,
               "Be as accurate as possible\n-\nyour reward will depend on it!",
               "Remember to move as little as possible for the helmet.",
               "Ready to begin the exam?"]
-
-# Binary Trials
-Binaries = [0,
-            "Well done!",
-            "Just as a teaser for the next session: Cues for different spells"\
-                " can be combined to produce new spells.",
-            "Essentially, the final result is as if you apply the first spell...",
-            "... take the intermediate result and then apply the second spell on it.",
-            "You will do some exmaples of these 'binary' spells.",
-            "This time there is no minimum score.",
-            "Again, use the following keys for the decision at the end of each trial:",
-                    1,
-            "Ready?"]
-
-BinariesMEG = [0,
-            "Well done, you have finished the first part!",
-            "The second part of the exam is like the first one,\nbut with two spell cues:",
-            "You apply the first spell,\ntake the intermediate result"\
-                "\nand then apply the second spell on it.",
-            "Again, use the following keys:",
-                    1,
-            "Be as accurate as possible.",
-            "Ready?"]
     
-# Bye
-Bye = ["Congrats!",
-       "You are done with your Alteration studies for today.",
-       "See you in your next session!"]
-
-ByeBye = ["Congrats!",
-       "You have finished your exam.",
-       "The magical council will send you your grade and reward soon.",
-       "Farewell on your remaining magical journey. :)"]
+TestTypes = [0,
+             "It is time for some field practice.",
+             "You now know the spell names and symbols\nwhich prompt you to "\
+                 "cast a spell.",
+             "You will now practice applying these spells\nto groups of objects.",
+             "Earlier, you saw what effect alteration spells had.",
+             "For the following trials, you will first see the spell cue "\
+                 "and then the objects you need to transform using it.",       # TODO update order 
+             "It will look like this:",
+             0.0]
     
+TestTypesReminder = [0,
+             "You hopefully still remember how you used spells in your first session.",
+             "Just to be safe, here's a reminder:",
+             "You first see a set of objects: (1) Memorize the presented objects.",
+             0.0,
+             "When you are done with memorizing: (2) Press the spacebar.",
+             "You will then see a spell cue. (3) In your head, apply it to the memorized display.",
+             1.0,
+             "When you are done: (4) Press the spacebar.",
+             "Then you can receive one of two possible test displays.",
+             "Counting: You will see an object category and integers on the bottom.",
+             2.0,
+             "(5) From the options below, choose how often "\
+             "this object appears in the scene after the transformation.",
+             "Position query: You will see all the squares on which the objects stood, "\
+                        "one of them will be marked.",
+             3.0,
+             "(5) From the options below, choose the object that would be "\
+                    "on the marked square after the transformation.",
+             "Use the following keys for your choice:",
+             1,
+             "It's important that you understand the instructions, so please go "\
+                 "back and review them if you are unsure. Otherwise click next."
+             ]    
+
+    
+# ============================================================================
 # Store as Dictionary
 instructions ={  
   "lang": "Eng",  
