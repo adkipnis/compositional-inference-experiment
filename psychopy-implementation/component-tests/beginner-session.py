@@ -10,9 +10,6 @@ Created on Thu Jun  9 15:51:19 2022
 from ExperimentTools import Experiment
 
 # Initialize
-try: Exp.win.close()
-except: True
-
 Exp = Experiment()
 Exp.init_window(screen = 0, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
