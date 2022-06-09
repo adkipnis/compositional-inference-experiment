@@ -352,17 +352,17 @@ class Experiment:
         self.progBack.draw()
         self.progTest.draw()
         
-    def move_prog_bar_step(self, bar_width_step):
+    def move_prog_bar_step(self, bar_width_step, win_flip = True):
         # incrementally increase the bar width
         self.progTest.width += bar_width_step                  
         # re-center it accordingly on X-coordinate                             
         self.progTest.pos[0] = self.left_corner + self.progTest.width/2          
         self.progTest.pos = self.progTest.pos.tolist()                  
         self.draw_background()
-        self.win.flip()
+        if win_flip: self.win.flip()
 
     def move_prog_bar(self, start_width = 0, end_width = 1,
-                      n_steps = 100, wait_s = 0.75):
+                      n_steps = 100, wait_s = 0.75, win_flip = True):
         # Setup starting state of progress bar
         self.progTest.width = start_width * self.progBack.width
         self.progTest.pos[0] = self.left_corner + start_width *\
@@ -371,17 +371,19 @@ class Experiment:
         
         # First display
         self.draw_background()
-        self.win.flip()
-        core.wait(wait_s)
+        if win_flip:
+            self.win.flip()
+            core.wait(wait_s)
         
         # Growing
         while self.progTest.width < self.progBack.width * end_width:
-            self.move_prog_bar_step(bar_width_step)
+            self.move_prog_bar_step(bar_width_step, win_flip = win_flip)
         
         # Last bit for completion
         self.move_prog_bar_step(
-            self.progBack.width * end_width - self.progTest.width)
-        core.wait(1.5 * wait_s)
+            self.progBack.width * end_width - self.progTest.width,
+            win_flip = win_flip)
+        if win_flip: core.wait(1.5 * wait_s)
         return self.progTest.width / self.progBack.width
     
     # Trial Components --------------------------------------------------------
@@ -478,8 +480,8 @@ class Experiment:
         intermediateRT = self.getIR(IRClock)
         return intermediateRT
     
-    def tPause(self): 
-        # self.draw_background() # TODO move progressbar?
+    def tPause(self):
+        self.draw_background()
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
@@ -1002,6 +1004,13 @@ class Experiment:
         df = trial_df[i:i+i_step].copy()
         trials = data.TrialHandler(
             df, 1, method="sequential")
+        
+        # prepare progress bar
+        n_trials = len(trials.trialList)
+        trial_number = 1
+        start_width_initial = self.start_width
+        
+        # init lists
         self.intermediateRTList = []
         self.testRespList = []
         self.testRTList = []
@@ -1076,10 +1085,20 @@ class Experiment:
             if pause_between_runs:
                 trials.addData("intermediateRT", run_number)
                 if timer.getTime() <= 0:
+                    # Update Progress Bar
+                    progbar_inc_tmp = trial_number/n_trials * self.progbar_inc
+                    self.start_width = self.move_prog_bar(
+                        start_width = self.start_width,
+                        end_width = start_width_initial + progbar_inc_tmp,
+                        n_steps = 2, wait_s = 0, win_flip = False)
+                    
+                    # Pause Display
                     self.tPause()
                     timer.reset()
                     run_number += 1
                     
+            trial_number += 1
+            
         # append trial list with collected data 
         if test:
             df["cue_type"] = self.cueTypeList
@@ -1252,8 +1271,7 @@ class Experiment:
         # globalClock = core.Clock()
         self.win.mouseVisible = False
         n_experiment_parts = 5
-        progbar_inc = 1/n_experiment_parts
-        start_width = 0
+        self.progbar_inc = 1/n_experiment_parts
         
         # Navigation
         self.Instructions(part_key = "Navigation1",
@@ -1293,9 +1311,9 @@ class Experiment:
                       args = [self.keyboard_dict["keyBoardSpacebar"]])
         self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
                                     modes = [first_modality, second_modality])           
-        start_width = self.move_prog_bar(
-            start_width = start_width,
-            end_width = start_width + progbar_inc)   
+        self.start_width = self.move_prog_bar(
+            start_width = 0,
+            end_width = self.progbar_inc)   
                      
         self.Instructions(part_key = "Intermezzo1",
                      special_displays = [self.iSingleImage], 
@@ -1304,9 +1322,9 @@ class Experiment:
             self.trials_prim_cue, first_modality, second_modality,
             min_acc = 0.95,
             mode = first_modality)   
-        start_width = self.move_prog_bar(
-            start_width = start_width,
-            end_width = start_width + progbar_inc)
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)
         
         self.Instructions(part_key = "Intermezzo2",
                       special_displays = [self.iSingleImage], 
@@ -1318,8 +1336,9 @@ class Experiment:
             min_acc = 0.95,
             mode = second_modality, 
             i = len(self.df_out_1))
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)         
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)         
         
         # Save cue memory data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
@@ -1391,8 +1410,9 @@ class Experiment:
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)  
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)  
         
         # Second Test-Type
         self.Instructions(part_key = second_test + "Second",
@@ -1415,8 +1435,9 @@ class Experiment:
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)  
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = 1)  
         
         # Save test type data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1433,7 +1454,7 @@ class Experiment:
         # globalClock = core.Clock()
         self.win.mouseVisible = False
         n_experiment_parts = 4
-        progbar_inc = 1/n_experiment_parts
+        self.progbar_inc = 1/n_experiment_parts
         
         # Navigation
         self.Instructions(part_key = "Navigation2",
@@ -1456,8 +1477,8 @@ class Experiment:
         self.df_out_5 = self.CuePracticeLoop(
             self.trials_prim_cue, "visual", "textual",                         # order?
             mode = "random")   
-        start_width = self.move_prog_bar(start_width = 0,
-                                          end_width = 0 + progbar_inc)
+        self.start_width = self.move_prog_bar(start_width = 0,
+                                              end_width = 0 + self.progbar_inc)
                  
         # Save cue memory data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1493,8 +1514,9 @@ class Experiment:
                                 {"trial": demoPosition,
                                   "feedback": False,
                                   "demonstration" : True}])
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)  
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)  
         # ---------------------------------------------------------------------
         # Practice: Primitive
         self.Instructions(part_key = "Primitives",
@@ -1505,8 +1527,9 @@ class Experiment:
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                         end_width = start_width + progbar_inc)  
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)  
         
         # Practice: Binary
         self.Instructions(part_key = "Binaries",
@@ -1517,8 +1540,8 @@ class Experiment:
                                 durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                 self_paced = True,
                                 feedback = True)
-        start_width = self.move_prog_bar(start_width = start_width, 
-                                         end_width = 1)  
+        self.start_width = self.move_prog_bar(start_width = self.start_width, 
+                                              end_width = 1)  
         
         # Save generic data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1534,54 +1557,55 @@ class Experiment:
     def Session3(self):
         self.win.mouseVisible = False
         n_experiment_parts = 3
-        progbar_inc = 1/n_experiment_parts
-        start_width = 0
+        self.progbar_inc = 1/n_experiment_parts
         
-        # # Navigation
-        # self.Instructions(part_key = "Navigation3",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegBF"]],
-        #               font = "mono",
-        #               fontcolor = self.color_dict["mid_grey"],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Navigation
+        self.Instructions(part_key = "Navigation3",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegBF"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Introduction   
-        # self.Instructions(part_key = "IntroMEG",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoardMegNY"]],
-        #               show_background = False)
-        # self.win.flip()
-        # core.wait(2)
+        # Introduction   
+        self.Instructions(part_key = "IntroMEG",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegNY"]],
+                      show_background = False)
+        self.win.flip()
+        core.wait(2)
         
-        # # Localizer Block
-        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-        #                                           durations = [2, 2, 2, 1])
-        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        # Localizer Block
+        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+                                                  durations = [2, 2, 2, 1])
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "localizer_MEG"
             
-        # # Conditionally repeat or stop experiment
-        # if acc < 0.8:
-        #     self.Instructions(part_key = "BadLocalizer",
-        #                   special_displays = [self.iSingleImage], 
-        #                   args = [self.keyboard_dict["keyBoardMegNY"]],
-        #                   show_background = False)
-        #     self.trials_localizer2 = np.random.permutation(
-        #         self.trials_localizer).tolist()
-        #     self.df_out_8_again, acc_2 = self.LocalizerBlock(
-        #         self.trials_localizer2, durations = [2, 2, 2, 1])
-        #     save_object(self.df_out_8 + self.df_out_8_again,
-        #                 fname, ending = 'pkl')
-        #     if acc_2 < 0.8:
-        #         self.Instructions(part_key = "DropOut",
-        #                           show_background = False)
-        #         core.quit()
-        # else:
-        #     save_object(self.df_out_8, fname, ending = 'pkl')
+        # Conditionally repeat or stop experiment
+        if acc < 0.8:
+            self.Instructions(part_key = "BadLocalizer",
+                          special_displays = [self.iSingleImage], 
+                          args = [self.keyboard_dict["keyBoardMegNY"]],
+                          show_background = False)
+            self.trials_localizer2 = np.random.permutation(
+                self.trials_localizer).tolist()
+            self.df_out_8_again, acc_2 = self.LocalizerBlock(
+                self.trials_localizer2, durations = [2, 2, 2, 1])
+            save_object(self.df_out_8 + self.df_out_8_again,
+                        fname, ending = 'pkl')
+            if acc_2 < 0.8:
+                self.Instructions(part_key = "DropOut",
+                                  show_background = False)
+                core.quit()
+        else:
+            save_object(self.df_out_8, fname, ending = 'pkl')
              
-        # start_width = self.move_prog_bar(start_width = start_width,
-        #                                   end_width = 0 + progbar_inc)
+        self.start_width = self.move_prog_bar(
+            start_width = 0,
+            end_width = self.progbar_inc)
+        start_width_before_block = self.start_width.copy()
         
         
         # Primitive trials
@@ -1623,8 +1647,9 @@ class Experiment:
                                           pause_between_runs = True,
                                           runlength = 600,
                                           resp_keys = self.resp_keys_vpixx)
-        start_width = self.move_prog_bar(start_width = start_width,
-                                          end_width = 0 + progbar_inc)
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = start_width_before_block + self.progbar_inc)
         
         # Binary trials
         self.Instructions(part_key = "BinariesMEG",
@@ -1638,7 +1663,7 @@ class Experiment:
                                           pause_between_runs = True,
                                           runlength = 600,
                                           resp_keys = self.resp_keys_vpixx)
-        self.move_prog_bar(start_width = start_width, end_width = 1)
+        self.move_prog_bar(start_width = self.start_width, end_width = 1)
         
         # Finalization
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
