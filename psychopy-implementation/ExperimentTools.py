@@ -601,7 +601,7 @@ class Experiment:
                         TestClock, resp_keys)
                 else:
                     badoptions = np.array(range(4))
-                    np.delete(badoptions, trial.correct_resp)
+                    badoptions = np.delete(badoptions, trial.correct_resp)
                     core.wait(1)
                     testRT, testResp = 0, badoptions[0]
             
@@ -834,12 +834,13 @@ class Experiment:
                     show_background = show_background)
             elif type(page_content) is float:
                 complex_displays[int(page_content)](**kwargs[int(page_content)]) #TODO
-                if complex_displays[int(page_content)].__name__ in \
-                    ["tPosition", "tCount"]:
+                if complex_displays[int(page_content)].__name__ == "tPosition":
                     if "feedback" not in kwargs[int(page_content)].keys():
                         self.win.flip()
                     elif not kwargs[int(page_content)]["feedback"]:
                         self.win.flip()
+                elif complex_displays[int(page_content)].__name__ == "tCount":
+                    self.win.flip()
             page, finished = self.iNavigate(page = page, max_page = len(Part),
                                        proceed_key = proceed_key,
                                        wait_s = proceed_wait)
@@ -1380,42 +1381,42 @@ class Experiment:
                       args = [self.magicWand],
                       complex_displays = [self.GenericBlock],
                       kwargs = [{"trial_df": self.trials_prim_prac_p,
-                                 "durations" : [1, 3, 0.6, 0, 0],
+                                  "durations" : [1, 3, 0.6, 0, 0],
                                   "i_step" : 1,
                                   "test" : False}])    
             
         
         self.Instructions(part_key = first_test + "First",
-                     special_displays = [self.iSingleImage], 
-                     args = [self.keyboard_dict["keyBoard4"]],
-                     complex_displays = [self.GenericBlock, self.GenericBlock,
-                                         tFirst, tFirst],
-                     kwargs = [{"trial_df": trials_test_1,
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoard4"]],
+                      complex_displays = [self.GenericBlock, self.GenericBlock,
+                                          tFirst, tFirst],
+                      kwargs = [{"trial_df": trials_test_1,
                                 "display_this": [2],
                                 "durations" : [0, 0, 0, 0, 0],
                                 "i_step" : 1,
                                 "test" : False},
-                               {"trial_df": trials_test_1,
+                                {"trial_df": trials_test_1,
                                 "display_this": [3],
                                 "durations" : [0, 0, 0, 0, 0],
                                 "i_step" : 1,
                                 "test" : False},
-                               {"trial": demoTrial1,
+                                {"trial": demoTrial1,
                                 "feedback": False,
                                 "demonstration" : True},
-                               {"trial": demoTrial1,
+                                {"trial": demoTrial1,
                                 "feedback": True,
                                 "demonstration" : True}])
         
         
-        self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                    # i_step = 5,
-                                    min_acc = 0.95,
-                                    self_paced = True,
-                                    feedback = True)
-        self.start_width = self.move_prog_bar(
-            start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)  
+        # self.df_out_3 = self.TestPracticeLoop(trials_test_1,
+        #                             # i_step = 5,
+        #                             min_acc = 0.95,
+        #                             self_paced = True,
+        #                             feedback = True)
+        # self.start_width = self.move_prog_bar(
+        #     start_width = self.start_width,
+        #     end_width = self.start_width + self.progbar_inc)  
         
         # Second Test-Type
         self.Instructions(part_key = second_test + "Second",
