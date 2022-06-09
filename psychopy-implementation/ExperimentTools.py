@@ -385,11 +385,11 @@ class Experiment:
         return self.progTest.width / self.progBack.width
     
     # Trial Components --------------------------------------------------------
-    def tFixation(self):
+    def tFixation(self, duration = 0.3, jitter = 0.0):
         if self.use_pp: self.send_trigger("fix")
         self.fixation.draw()
         self.win.flip()
-        core.wait(0.3)
+        core.wait(duration + jitter)
 
 
     def setCue(self, key, mode = "random"):
@@ -990,7 +990,7 @@ class Experiment:
         
     def GenericBlock(self, trial_df, mode = "random", i = 0, i_step = None,
                      self_paced = False, display_this = [1, 2, 3, 4, 5, 6, 7],
-                     durations = [1, 3, 0.6, 1, 0.7],
+                     durations = [1.0, 3.0, 0.6, 1.0, 0.7],
                      test = True, feedback = False,
                      pause_between_runs = True, runlength = 600, 
                      resp_keys = None):
@@ -1011,23 +1011,33 @@ class Experiment:
             run_number = 1
             timer = core.CountdownTimer(runlength)
         
+        # check if jitter is specified
+        if "jitter" not in trials.trialList[0].keys():
+            jitter = [0.0, 0.0, 0.0]
+            add_jitter = False
+        else:
+            add_jitter = True
+        
         for trial in trials:
+            if add_jitter: jitter = trial.jitter
             self.win.flip()
             
             # 1. Fixation
             if 1 in display_this:
-                self.tFixation()
+                self.tFixation(jitter = jitter[0])
             
             # 2. Display Family
             if 2 in display_this:
-                displayRT = self.tDisplay(trial, duration = durations[1],
-                                    self_paced = self_paced)
+                displayRT = self.tDisplay(trial,
+                                          duration = durations[1] + jitter[1],
+                                          self_paced = self_paced)
                 trials.addData("displayRT", displayRT)
+            
             # 3. Map Cue
             if 3 in display_this:
                 self.tFixation()
                 cue_type = self.tMapcue(trial, mode = mode,
-                                        duration = durations[0])
+                                        duration = durations[0] + jitter[2])
             
             if test:
                 # 4. Transformation Display
@@ -1469,12 +1479,12 @@ class Experiment:
                                           self.tCount, self.tPosition],
                       kwargs = [{"trial_df": self.trials_prim_prac_c,
                                   "display_this": [2],
-                                  "durations" : [0, 0, 0, 0, 0],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
                                   "i_step" : 1,
                                   "test" : False},
                                 {"trial_df": self.trials_prim_prac_c,
                                   "display_this": [3],
-                                  "durations" : [0, 0, 0, 0, 0],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
                                   "i_step" : 1,
                                   "test" : False},
                                 {"trial": demoCount,
@@ -1527,51 +1537,51 @@ class Experiment:
         progbar_inc = 1/n_experiment_parts
         start_width = 0
         
-        # Navigation
-        self.Instructions(part_key = "Navigation3",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMegBF"]],
-                      font = "mono",
-                      fontcolor = self.color_dict["mid_grey"],
-                      show_background = False)
-        self.win.flip()
-        core.wait(2)
+        # # Navigation
+        # self.Instructions(part_key = "Navigation3",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardMegBF"]],
+        #               font = "mono",
+        #               fontcolor = self.color_dict["mid_grey"],
+        #               show_background = False)
+        # self.win.flip()
+        # core.wait(2)
         
-        # Introduction   
-        self.Instructions(part_key = "IntroMEG",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMegNY"]],
-                      show_background = False)
-        self.win.flip()
-        core.wait(2)
+        # # Introduction   
+        # self.Instructions(part_key = "IntroMEG",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoardMegNY"]],
+        #               show_background = False)
+        # self.win.flip()
+        # core.wait(2)
         
-        # Localizer Block
-        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-                                                  durations = [2, 2, 2, 1])
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        # # Localizer Block
+        # self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
+        #                                           durations = [2, 2, 2, 1])
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
             
-        # Conditionally repeat or stop experiment
-        if acc < 0.8:
-            self.Instructions(part_key = "BadLocalizer",
-                          special_displays = [self.iSingleImage], 
-                          args = [self.keyboard_dict["keyBoardMegNY"]],
-                          show_background = False)
-            self.trials_localizer2 = np.random.permutation(
-                self.trials_localizer).tolist()
-            self.df_out_8_again, acc_2 = self.LocalizerBlock(
-                self.trials_localizer2, durations = [2, 2, 2, 1])
-            save_object(self.df_out_8 + self.df_out_8_again,
-                        fname, ending = 'pkl')
-            if acc_2 < 0.8:
-                self.Instructions(part_key = "DropOut",
-                                  show_background = False)
-                core.quit()
-        else:
-            save_object(self.df_out_8, fname, ending = 'pkl')
+        # # Conditionally repeat or stop experiment
+        # if acc < 0.8:
+        #     self.Instructions(part_key = "BadLocalizer",
+        #                   special_displays = [self.iSingleImage], 
+        #                   args = [self.keyboard_dict["keyBoardMegNY"]],
+        #                   show_background = False)
+        #     self.trials_localizer2 = np.random.permutation(
+        #         self.trials_localizer).tolist()
+        #     self.df_out_8_again, acc_2 = self.LocalizerBlock(
+        #         self.trials_localizer2, durations = [2, 2, 2, 1])
+        #     save_object(self.df_out_8 + self.df_out_8_again,
+        #                 fname, ending = 'pkl')
+        #     if acc_2 < 0.8:
+        #         self.Instructions(part_key = "DropOut",
+        #                           show_background = False)
+        #         core.quit()
+        # else:
+        #     save_object(self.df_out_8, fname, ending = 'pkl')
              
-        start_width = self.move_prog_bar(start_width = start_width,
-                                          end_width = 0 + progbar_inc)
+        # start_width = self.move_prog_bar(start_width = start_width,
+        #                                   end_width = 0 + progbar_inc)
         
         
         # Primitive trials
@@ -1590,12 +1600,12 @@ class Experiment:
                                           self.tCount, self.tPosition],
                       kwargs = [{"trial_df": self.trials_prim_prac_c,
                                   "display_this": [2],
-                                  "durations" : [0, 0, 0, 0, 0],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
                                   "i_step" : 1,
                                   "test" : False},
                                 {"trial_df": self.trials_prim_prac_c,
                                   "display_this": [3],
-                                  "durations" : [0, 0, 0, 0, 0],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
                                   "i_step" : 1,
                                   "test" : False},
                                 {"trial": demoCount,
@@ -1608,7 +1618,7 @@ class Experiment:
         core.wait(2)
         self.df_out_9 = self.GenericBlock(self.trials_prim_MEG,
                                           mode = "random",
-                                          durations = [1, 3, 0.6, 1, 0.7],
+                                          durations = [1.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
                                           pause_between_runs = True,
                                           runlength = 600,

@@ -397,7 +397,8 @@ def gen_trial_dict_loc(content_list, index, content_type, catch = False):
 
 def gen_trial_dict(stimuli, general_map, resp,
                    resp_list = None, test_type = "count", trial_type = "generic",
-                   p = None, display_size = 5, max_duplicates = 3, sep = '-'):
+                   p = None, display_size = 5, max_duplicates = 3, jitter = 0.0,
+                   sep = '-'):
     
     ''' takes a set of stimuli, a general map and a fixed correct response,
         then generates a dict containing adequate input, output displays,
@@ -458,7 +459,8 @@ def gen_trial_dict(stimuli, general_map, resp,
                    "trans_ub" : past_transforms,
                    "trans_lb" : past_transforms_sparse,
                    "map_type" : map_type,
-                   "arg_set": get_arg_set(general_map, sep = sep)}
+                   "arg_set": get_arg_set(general_map, sep = sep),
+                   "jitter": jitter}
     return output_dict
 
 
@@ -466,7 +468,9 @@ def gen_trials(stimuli, map_list,
                resp_list = list(range(4)),
                test_type = "count",
                trial_type = "generic",
-               display_size = 6, sep='-'):
+               display_size = 6,
+               jitter_interval = [-30, 30],
+               sep='-'):
     ''' takes a list of maps and generates a datafreame (input display, map,
         output display, target, correct response)'''     
     if test_type == "count":
@@ -480,6 +484,9 @@ def gen_trials(stimuli, map_list,
     num_tiles_r = np.ceil(num_trials/len(resp_list)).astype('int')
     resp_sequence = np.random.permutation(np.tile(resp_list, num_tiles_r))
     target_urn = np.tile(num_trials/len(target_list), len(target_list))
+    sample_interval = list(range(jitter_interval[0], jitter_interval[1]+1))
+    jitter = np.random.choice(sample_interval,
+                              replace = True, size = (num_trials,3))/1000
     
     for i in range(num_trials):
         trial_dict = gen_trial_dict(stimuli, map_list[i], resp_sequence[i],
@@ -487,7 +494,9 @@ def gen_trials(stimuli, map_list,
                                     trial_type = trial_type,
                                     resp_list = resp_list,
                                     p = target_urn/sum(target_urn),
-                                    display_size = display_size, sep = sep)
+                                    display_size = display_size,
+                                    jitter = jitter[i,],
+                                    sep = sep)
         if target_urn[target_list == trial_dict["target"]] >= 1:
             target_urn[target_list == trial_dict["target"]] -= 1               #remove instance-specific counter from target urn
         # if sum(target_urn)+i+1 > 90:
