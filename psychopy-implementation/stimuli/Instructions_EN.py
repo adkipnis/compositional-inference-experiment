@@ -123,7 +123,23 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
              "attuned quicker\nthis way.",
          "Ready?"]
 
+BadLocalizer = ["Hm.",
+                "You've answered less than 80%\nof the questions correctly.",
+                "The magical helmet is not satisfied.",
+                "That's okay, you probably just\ndid not pay enough attention.",
+                "To qualify for the exam,\nplease retry with a better score.",
+                "Again, use the following keys:",
+                0,
+                "Try to move as little as possible:\nThe helmet will be "\
+                    "attuned quicker\nthis way.",
+                "Ready?"]
 
+DropOut = ["Luck is not on your side today.",
+           "You've answered less than 80%\nof the questions correctly, again.",
+           "The magical helmet judges that\nyou are not ready.",
+           "Unfortunately this concludes the experiment.",
+           "Your participation will be\ncompensated nonetheless, of course.",
+           "Have a nice day, goodbye!"]
 
 # Learn Cues
 learnCues = ["Each spell has a specific name and symbol. Philbertine provides a"\
@@ -385,6 +401,8 @@ instructions ={
   "Intro": AddProceedKey2All(Intro, '/k'),
   "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
   "IntroMEG": AddProceedKey2All(IntroMEG, '/m'),  
+  "BadLocalizer": AddProceedKey2All(BadLocalizer, '/m'),
+  "DropOut": AddProceedKey2All(DropOut, '/m'),
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),

@@ -1548,12 +1548,30 @@ class Experiment:
         # Localizer Block
         self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
                                                   durations = [2, 2, 2, 1])
-        # if acc < 0.9: # TODO if acc too low, redo or stop experiment?
-        start_width = self.move_prog_bar(start_width = start_width,
-                                          end_width = 0 + progbar_inc)
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
-        save_object(self.df_out_8, fname, ending = 'pkl')
+            
+        # Conditionally repeat or stop experiment
+        if acc < 0.8:
+            self.Instructions(part_key = "BadLocalizer",
+                          special_displays = [self.iSingleImage], 
+                          args = [self.keyboard_dict["keyBoardMegNY"]],
+                          show_background = False)
+            self.trials_localizer2 = np.random.permutation(
+                self.trials_localizer).tolist()
+            self.df_out_8_again, acc_2 = self.LocalizerBlock(
+                self.trials_localizer2, durations = [2, 2, 2, 1])
+            save_object(self.df_out_8 + self.df_out_8_again,
+                        fname, ending = 'pkl')
+            if acc_2 < 0.8:
+                self.Instructions(part_key = "DropOut",
+                                  show_background = False)
+                core.quit()
+        else:
+            save_object(self.df_out_8, fname, ending = 'pkl')
+             
+        start_width = self.move_prog_bar(start_width = start_width,
+                                          end_width = 0 + progbar_inc)
         
         
         # Primitive trials
