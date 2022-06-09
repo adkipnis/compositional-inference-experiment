@@ -1453,16 +1453,14 @@ class Experiment:
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "cueMemoryRefresher.pkl"     
         save_object(self.df_out_5, fname, ending = 'pkl')
-#        
+        
         # Reminder of the test types
-        demoCounts = data.TrialHandler(
-            self.trials_prim_prac_c[0:1], 1,
+        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
             method="sequential")
-        for demoCount in demoCounts: True #awkward way to get the last demoCount
-        demoPositions = data.TrialHandler(
-            self.trials_prim_prac_p[0:1], 1,
+        demoCount = demoCounts.trialList[0]
+        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1,
             method="sequential")
-        for demoPosition in demoPositions: True #see above
+        demoPosition = demoPositions.trialList[0]
         
         self.Instructions(part_key = "TestTypesReminder",                                
                       special_displays = [self.iSingleImage, self.iSingleImage], 
@@ -1487,7 +1485,7 @@ class Experiment:
                                   "demonstration" : True}])
         start_width = self.move_prog_bar(start_width = start_width,
                                          end_width = start_width + progbar_inc)  
-        # ----------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Practice: Primitive
         self.Instructions(part_key = "Primitives",
                       special_displays = [self.iSingleImage, self.iSingleImage], 
@@ -1559,14 +1557,12 @@ class Experiment:
         
         
         # Primitive trials
-        demoCounts = data.TrialHandler(
-            self.trials_prim_prac_c[0:1], 1,
+        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
             method="sequential")
-        for demoCount in demoCounts: True #awkward way to get the last demoCount
-        demoPositions = data.TrialHandler(
-            self.trials_prim_prac_p[0:1], 1,
+        demoCount = demoCounts.trialList[0]
+        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1,
             method="sequential")
-        for demoPosition in demoPositions: True #see above
+        demoPosition = demoPositions.trialList[0]
         
         self.Instructions(part_key = "PrimitivesMEG",                                
                       special_displays = [self.iSingleImage, self.iSingleImage], 
