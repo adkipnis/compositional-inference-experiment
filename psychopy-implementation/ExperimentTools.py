@@ -54,12 +54,12 @@ class Experiment:
         self.vcue_size = [7, 7]
         self.normal_size = [5, 5]
         self.color_dict = {"light_grey": [0.7, 0.7, 0.7],
-                      "mid_grey": [0, 0, 0],
+                      "mid_grey": [0.0, 0.0, 0.0],
                       "dark_grey": [-0.6, -0.6, -0.6],
                       "black": [-0.9, -0.9, -0.9],
-                      "red": [1, 0, 0],
-                      "green": [0, 1, 0],
-                      "blue": [0, 0, 1]
+                      "red": [0.8, 0.0, 0.0],
+                      "green": [0.0, 0.6, 0.0],
+                      "blue": [0.2, 0.6, 1.0]
                       }
 
 
