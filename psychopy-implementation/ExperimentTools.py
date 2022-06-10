@@ -98,19 +98,15 @@ class Experiment:
             dlg = gui.DlgFromDict(dictionary = expInfo,
                                   sortKeys = False,
                                   title = expName)
-            if dlg.OK:
-                toFile(self.data_dir + os.sep + expInfo["participant"] +
-                       "_participantParams.pkl", expInfo)
-            else:
-                core.quit()  # the user hit cancel so exit
-        else:
-            toFile(self.data_dir + os.sep + expInfo["participant"] +
-                   "_participantParams.pkl", expInfo)
-            
+            if not dlg.OK:
+                core.quit()
+        
         # Save data to this file later
         self.fileName = self.main_dir + os.sep +\
-            u"data/%s_%s_%s" % (expInfo["participant"],
-                                expName, expInfo["dateStr"])
+            u"data/%s_%s" % (expInfo["participant"], expName)
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("t0 = " + expInfo["dateStr"] + "\n")
+            f.write("session = " + expInfo["session"] + "\n")
         self.expInfo = expInfo
         
         # Optionally init parallel port
@@ -453,6 +449,8 @@ class Experiment:
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
+                    with open(self.fileName + ".txt", 'a') as f:
+                        f.write("t_a = " + data.getDateStr() + "\n")
                     core.quit() # abort experiment
             event.clearEvents()
         if intermediateResp == None and IRClock.getTime() >= max_s:
@@ -682,6 +680,8 @@ class Experiment:
                         else:
                             testResp = thisKey
                     elif thisKey in ["escape"]:
+                        with open(self.fileName + ".txt", 'a') as f:
+                            f.write("t_a = " + data.getDateStr() + "\n")
                         core.quit()  # abort experiment
                 event.clearEvents()      
         return testRT, testResp
@@ -813,7 +813,8 @@ class Experiment:
                      kwargs = list(),
                      font = "Times New Roman",
                      fontcolor = [-0.9, -0.9, -0.9],
-                     show_background = True):
+                     show_background = True,
+                     loading_time = 2):
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
             
@@ -854,6 +855,8 @@ class Experiment:
             page, finished = self.iNavigate(page = page, max_page = len(Part),
                                        proceed_key = proceed_key,
                                        wait_s = proceed_wait)
+        self.win.flip()
+        core.wait(loading_time)
             
                   
     def LearnCues(self, cue_center_pos = [0, 2], vert_dist = 7,
@@ -1296,8 +1299,6 @@ class Experiment:
                       font = "mono",
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
-        self.win.flip()
-        core.wait(2)
         
         # Introduction
         self.Instructions(part_key = "Intro",
@@ -1312,7 +1313,7 @@ class Experiment:
                               [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
                               [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
         
-        # # ----------------------------------------------------------------------------
+        # -------------------------------------------------------------------
         # Balance out which cue modality is learned first
         if int(self.expInfo["participant"]) % 2 == 0:
             first_modality = "visual"
@@ -1321,16 +1322,19 @@ class Experiment:
             first_modality = "textual"
             second_modality = "visual"
         
-        # Cue Memory
+        # Learn first cue type
         self.Instructions(part_key = "learnCues",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoardSpacebar"]])
         self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
-                                    modes = [first_modality, second_modality])           
+                                    modes = [first_modality, second_modality])
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
         self.start_width = self.move_prog_bar(
             start_width = 0,
             end_width = self.progbar_inc)   
-                     
+        
+        # Test first cue type                     
         self.Instructions(part_key = "Intermezzo1",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
@@ -1342,11 +1346,16 @@ class Experiment:
             start_width = self.start_width,
             end_width = self.start_width + self.progbar_inc)
         
+        # Learn second cue type
         self.Instructions(part_key = "Intermezzo2",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
                                     modes = [first_modality, second_modality])  
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
+        
+        # Test second cue type 
         self.df_out_2 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
             min_acc = 0.95,
@@ -1362,7 +1371,7 @@ class Experiment:
         save_object(self.df_out_1 + self.df_out_2, fname, ending = 'pkl')
         
         
-        # ----------------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Balance out which test type is learned first
         if int(self.expInfo["participant"]) % 2 == 0:
             first_test = "count"
@@ -1395,9 +1404,8 @@ class Experiment:
                       kwargs = [{"trial_df": self.trials_prim_prac_p,
                                   "durations" : [1, 3, 0.6, 0, 0],
                                   "i_step" : 1,
-                                  "test" : False}])    
-            
-        
+                                  "test" : False}],
+                      loading_time = 0)    
         self.Instructions(part_key = first_test + "First",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard4"]],
@@ -1422,7 +1430,7 @@ class Experiment:
         
         start_width_before_block = self.start_width.copy()
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                    # i_step = 5,
+                                    # i_step = 5, # for testing
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
@@ -1449,7 +1457,6 @@ class Experiment:
                                 "feedback": True,
                                 "demonstration" : True}])
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
-                                    # i_step = 5,
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
@@ -1464,13 +1471,14 @@ class Experiment:
         save_object(self.df_out_3 + self.df_out_4, fname, ending = 'pkl')
 
         self.Instructions(part_key = "Bye")
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("t_n = " + data.getDateStr() + "\n")
         self.win.close()
 
     ###########################################################################
     # Training Session
     ###########################################################################
     def Session2(self):
-        # globalClock = core.Clock()
         self.win.mouseVisible = False
         n_experiment_parts = 3
         self.progbar_inc = 1/n_experiment_parts
@@ -1484,15 +1492,13 @@ class Experiment:
                       font = "mono",
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
-        self.win.flip()
-        core.wait(2)
         
         # Introduction   
         self.Instructions(part_key = "IntroAdvanced",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        self.win.flip()
-        core.wait(2)
+        
+        # Cue memory
         self.df_out_5 = self.CuePracticeLoop(
             self.trials_prim_cue, "visual", "textual",                         
             mode = "random")   
@@ -1532,7 +1538,8 @@ class Experiment:
                                   "demonstration" : True},
                                 {"trial": demoPosition,
                                   "feedback": False,
-                                  "demonstration" : True}])
+                                  "demonstration" : True}],
+                      loading_time = 0)
 
         # ---------------------------------------------------------------------
         # Practice: Primitive
@@ -1571,6 +1578,8 @@ class Experiment:
             self.expInfo["dateStr"] + "_" + "generic"
         save_object(self.df_out_6 + self.df_out_7, fname, ending = 'pkl')
         self.Instructions(part_key = "Bye")
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("t_n = " + data.getDateStr() + "\n")
         self.win.close()
         
         
@@ -1589,16 +1598,12 @@ class Experiment:
                       font = "mono",
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
-        self.win.flip()
-        core.wait(2)
         
         # Introduction   
         self.Instructions(part_key = "IntroMEG",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoardMegNY"]],
                       show_background = False)
-        self.win.flip()
-        core.wait(2)
         
         # Localizer Block
         self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
@@ -1621,6 +1626,8 @@ class Experiment:
             if acc_2 < 0.8:
                 self.Instructions(part_key = "DropOut",
                                   show_background = False)
+                with open(self.fileName + ".txt", 'a') as f:
+                    f.write("t_a = " + data.getDateStr() + "\n")
                 core.quit()
         else:
             save_object(self.df_out_8, fname, ending = 'pkl')
@@ -1661,8 +1668,6 @@ class Experiment:
                                 {"trial": demoPosition,
                                   "feedback": False,
                                   "demonstration" : True}])
-        self.win.flip()
-        core.wait(2)
         self.df_out_9 = self.GenericBlock(self.trials_prim_MEG,
                                           mode = "random",
                                           durations = [1.0, 3.0, 0.6, 1.0, 0.7],
@@ -1694,6 +1699,8 @@ class Experiment:
         save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
         
         self.Instructions(part_key = "ByeBye")
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("t_n = " + data.getDateStr() + "\n")
         self.win.close()
         
 # =============================================================================
