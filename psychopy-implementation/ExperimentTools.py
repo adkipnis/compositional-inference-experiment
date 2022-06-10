@@ -128,10 +128,14 @@ class Experiment:
        
         # Trigger codes # TODO
         self.trigger_dict = {"trial": 1,
-                             "fixate": 20, 
-                             "disp": 21,
-                             "cue": 3}
-
+                             "fixate": 2, 
+                             "disp": 3,
+                             "vcue": 40,
+                             "tcue": 41,
+                             "position": 50,
+                             "count": 51,
+                             "identity": 52,
+                             "run": 6}
 
     def send_trigger(self, trigger_type):
         self.port_out.setData(self.trigger_dict[trigger_type])
@@ -432,7 +436,9 @@ class Experiment:
             else:
                 cue.pos = self.center_pos
             cue.draw()
-        if self.use_pp: self.send_trigger("cue")
+        if self.use_pp: 
+            if mode == "visual": self.send_trigger("vcue")
+            elif mode == "textual": self.send_trigger("tcue")
         self.win.flip()
         core.wait(duration)
         return mode
@@ -525,6 +531,7 @@ class Experiment:
             
             # First cycle: Display stimuli
             if inc == 0:
+                if self.use_pp: self.send_trigger("count")
                 self.win.flip()
                 continue
             
@@ -600,6 +607,7 @@ class Experiment:
             
             # First cycle: Display stimuli
             if inc == 0:
+                if self.use_pp: self.send_trigger("position")
                 self.win.flip()
                 continue
             
@@ -845,7 +853,7 @@ class Experiment:
                     args[page_content],
                     show_background = show_background)
             elif type(page_content) is float:
-                complex_displays[int(page_content)](**kwargs[int(page_content)]) #TODO
+                complex_displays[int(page_content)](**kwargs[int(page_content)])
                 if complex_displays[int(page_content)].__name__ in\
                     ["tPosition", "tCount"]:
                     if "feedback" not in kwargs[int(page_content)].keys():
@@ -1034,7 +1042,8 @@ class Experiment:
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(runlength)
-        
+            if self.use_pp: self.send_trigger("run")
+            
         # check if jitter is specified
         if "jitter" not in trials.trialList[0].keys():
             jitter = [0.0, 0.0, 0.0]
@@ -1045,6 +1054,7 @@ class Experiment:
         for trial in trials:
             if add_jitter: jitter = trial.jitter
             self.win.flip()
+            if self.use_pp: self.send_trigger("trial")
             
             # 1. Fixation
             if 1 in display_this:
@@ -1111,6 +1121,7 @@ class Experiment:
                     self.tPause()
                     timer.reset()
                     run_number += 1
+                    if self.use_pp: self.send_trigger("run")
                     
             trial_number += 1
             
@@ -1196,7 +1207,7 @@ class Experiment:
         return df_out    
     
     
-    def LocalizerBlock(self, trial_df, durations = [2, 2, 2, 1]):
+    def LocalizerBlock(self, trial_df, durations = [2.0, 2.0, 2.0, 1.0]):
         # create the trial handler
         trials = data.TrialHandler(
             trial_df, 1, method = "sequential")
@@ -1204,9 +1215,9 @@ class Experiment:
         self.corRespList = []
         self.testRTList = []
         
-        
         for trial in trials:
             self.win.flip()
+            if self.use_pp: self.send_trigger("trial")
             
             # 1. Fixation
             self.tFixation()
@@ -1242,6 +1253,7 @@ class Experiment:
                             wrapWidth = 40)
                 textStim.draw()
                 self.win.flip()
+                if self.use_pp: self.send_trigger("identity")
                 core.wait(durations[2])
                 
                 # For Cue trials, display display cue of other type
