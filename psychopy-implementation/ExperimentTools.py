@@ -63,13 +63,24 @@ class Experiment:
                       }
 
 
-    def init_window(self, screen = 0, fullscr = False):
-        self.win = visual.Window(
-            fullscr = fullscr,
-            color = [0.85, 0.85, 0.85],
-            screen = screen,
-            monitor = "testMonitor",
-            units = "deg")
+    def init_window(self, res = None, screen = 0, fullscr = False):
+        if res is None:
+            self.win = visual.Window(
+                fullscr = fullscr,
+                color = [0.85, 0.85, 0.85],
+                screen = screen,
+                monitor = "testMonitor",
+                units = "deg")
+        else:
+            assert type(res) is list, "res must be list of two integers"
+            self.win = visual.Window(
+                res,
+                fullscr = fullscr,
+                color = [0.85, 0.85, 0.85],
+                screen = screen,
+                monitor = "testMonitor",
+                units = "deg")
+                
 
 
     def dialoguebox(self, participant = "01", session = "1", show = True, 
@@ -1149,7 +1160,8 @@ class Experiment:
     def TestPracticeLoop(self, trial_df, 
                           min_acc = 0.9, mode = "random", i = 0, i_step = None,
                           durations = [1.0, 3.0, 0.6, 1.0, 0.7], 
-                          test = True, feedback = False, self_paced = False):
+                          test = True, feedback = False, self_paced = False,
+                          pause_between_runs = True, runlength = 600):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
@@ -1157,7 +1169,8 @@ class Experiment:
         while mean_acc < min_acc:
             df = self.GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
                       durations = durations, test = test, feedback = feedback,
-                      self_paced = self_paced)
+                      self_paced = self_paced, runlength = runlength,
+                      pause_between_runs = pause_between_runs)
             df_list.append(df)
             errors = (df.correct_resp == df.emp_resp).to_list()
             mean_acc = np.mean(list(map(int, errors))) # convert to integers
@@ -1407,15 +1420,17 @@ class Experiment:
                                 "feedback": True,
                                 "demonstration" : True}])
         
-        
+        start_width_before_block = self.start_width.copy()
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
                                     # i_step = 5,
                                     min_acc = 0.95,
                                     self_paced = True,
-                                    feedback = True)
+                                    feedback = True,
+                                    pause_between_runs = True,
+                                    runlength = 600)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)  
+            end_width = start_width_before_block + self.progbar_inc)  
         
         # Second Test-Type
         self.Instructions(part_key = second_test + "Second",
@@ -1437,10 +1452,11 @@ class Experiment:
                                     # i_step = 5,
                                     min_acc = 0.95,
                                     self_paced = True,
-                                    feedback = True)
-        self.start_width = self.move_prog_bar(
-            start_width = self.start_width,
-            end_width = 1)  
+                                    feedback = True,
+                                    pause_between_runs = True,
+                                    runlength = 600)
+        self.move_prog_bar(start_width = self.start_width,
+                           end_width = 1)  
         
         # Save test type data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
@@ -1524,13 +1540,16 @@ class Experiment:
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
                               self.keyboard_dict["keyBoard4"]])
+        start_width_before_block = self.start_width.copy()
         self.df_out_6 = self.TestPracticeLoop(self.trials_prim,
                                     min_acc = 0.95,
                                     self_paced = True,
-                                    feedback = True)
+                                    feedback = True,
+                                    pause_between_runs = True,
+                                    runlength = 600)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)  
+            end_width = start_width_before_block + self.progbar_inc)  
         
         # Practice: Binary
         self.Instructions(part_key = "Binaries",
@@ -1541,9 +1560,11 @@ class Experiment:
                                 min_acc = 0.75,
                                 durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                 self_paced = True,
-                                feedback = True)
-        self.start_width = self.move_prog_bar(start_width = self.start_width, 
-                                              end_width = 1)  
+                                feedback = True,
+                                pause_between_runs = True,
+                                runlength = 600)
+        self.move_prog_bar(start_width = self.start_width, 
+                           end_width = 1)  
         
         # Save generic data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
