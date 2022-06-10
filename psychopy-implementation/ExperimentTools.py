@@ -126,7 +126,7 @@ class Experiment:
         self.port_out = ParallelPort(address="0xd110")
         self.port_out.setData(0)
        
-        # Trigger codes # TODO
+        # Trigger codes
         self.trigger_dict = {"trial": 1,
                              "fixate": 2, 
                              "disp": 3,
@@ -456,7 +456,7 @@ class Experiment:
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
                     with open(self.fileName + ".txt", 'a') as f:
-                        f.write("t_a = " + data.getDateStr() + "\n")
+                        f.write("t_a = " + data.getDateStr() + "\n\n")
                     core.quit() # abort experiment
             event.clearEvents()
         if intermediateResp == None and IRClock.getTime() >= max_s:
@@ -689,7 +689,7 @@ class Experiment:
                             testResp = thisKey
                     elif thisKey in ["escape"]:
                         with open(self.fileName + ".txt", 'a') as f:
-                            f.write("t_a = " + data.getDateStr() + "\n")
+                            f.write("t_a = " + data.getDateStr() + "\n\n")
                         core.quit()  # abort experiment
                 event.clearEvents()      
         return testRT, testResp
@@ -822,6 +822,7 @@ class Experiment:
                      font = "Times New Roman",
                      fontcolor = [-0.9, -0.9, -0.9],
                      show_background = True,
+                     log_duration = True, #TODO
                      loading_time = 2):
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
@@ -833,6 +834,7 @@ class Experiment:
         if show_background: self.draw_background()
         self.win.flip()
         self.win.flip()
+        if log_duration: instructions_clock = core.Clock()
         while not finished:
             page_content = Part[page][0]
             proceed_key = Part[page][1]
@@ -863,6 +865,10 @@ class Experiment:
             page, finished = self.iNavigate(page = page, max_page = len(Part),
                                        proceed_key = proceed_key,
                                        wait_s = proceed_wait)
+        if log_duration:
+            duration = instructions_clock.getTime()
+            with open(self.fileName + ".txt", 'a') as f:
+                f.write("duration_" + part_key + " = " + str(duration) + "\n")
         self.win.flip()
         core.wait(loading_time)
             
@@ -1017,7 +1023,7 @@ class Experiment:
                      self_paced = False, display_this = [1, 2, 3, 4, 5, 6, 7],
                      durations = [1.0, 3.0, 0.6, 1.0, 0.7],
                      test = True, feedback = False,
-                     pause_between_runs = True, runlength = 600, 
+                     pause_between_runs = True, runlength = 360, 
                      resp_keys = None):
         if resp_keys is None: resp_keys = self.resp_keys
         
@@ -1175,7 +1181,7 @@ class Experiment:
                           min_acc = 0.9, mode = "random", i = 0, i_step = None,
                           durations = [1.0, 3.0, 0.6, 1.0, 0.7], 
                           test = True, feedback = False, self_paced = False,
-                          pause_between_runs = True, runlength = 600):
+                          pause_between_runs = True, runlength = 360):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
@@ -1447,7 +1453,7 @@ class Experiment:
                                     self_paced = True,
                                     feedback = True,
                                     pause_between_runs = True,
-                                    runlength = 600)
+                                    runlength = 360)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)  
@@ -1473,7 +1479,7 @@ class Experiment:
                                     self_paced = True,
                                     feedback = True,
                                     pause_between_runs = True,
-                                    runlength = 600)
+                                    runlength = 360)
         self.move_prog_bar(start_width = self.start_width,
                            end_width = 1)  
         
@@ -1484,7 +1490,7 @@ class Experiment:
 
         self.Instructions(part_key = "Bye")
         with open(self.fileName + ".txt", 'a') as f:
-            f.write("t_n = " + data.getDateStr() + "\n")
+            f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
 
     ###########################################################################
@@ -1565,7 +1571,7 @@ class Experiment:
                                     self_paced = True,
                                     feedback = True,
                                     pause_between_runs = True,
-                                    runlength = 600)
+                                    runlength = 360)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)  
@@ -1581,7 +1587,7 @@ class Experiment:
                                 self_paced = True,
                                 feedback = True,
                                 pause_between_runs = True,
-                                runlength = 600)
+                                runlength = 360)
         self.move_prog_bar(start_width = self.start_width, 
                            end_width = 1)  
         
@@ -1591,7 +1597,7 @@ class Experiment:
         save_object(self.df_out_6 + self.df_out_7, fname, ending = 'pkl')
         self.Instructions(part_key = "Bye")
         with open(self.fileName + ".txt", 'a') as f:
-            f.write("t_n = " + data.getDateStr() + "\n")
+            f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
         
         
@@ -1619,7 +1625,7 @@ class Experiment:
         
         # Localizer Block
         self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-                                                  durations = [2, 2, 2, 1])
+                                                  durations = [2.0, 2.0, 2.0, 1.0])
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
             
@@ -1639,7 +1645,7 @@ class Experiment:
                 self.Instructions(part_key = "DropOut",
                                   show_background = False)
                 with open(self.fileName + ".txt", 'a') as f:
-                    f.write("t_a = " + data.getDateStr() + "\n")
+                    f.write("t_a = " + data.getDateStr() + "\n\n")
                 core.quit()
         else:
             save_object(self.df_out_8, fname, ending = 'pkl')
@@ -1685,7 +1691,7 @@ class Experiment:
                                           durations = [1.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
                                           pause_between_runs = True,
-                                          runlength = 600,
+                                          runlength = 360,
                                           resp_keys = self.resp_keys_vpixx)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
@@ -1701,7 +1707,7 @@ class Experiment:
                                           durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
                                           pause_between_runs = True,
-                                          runlength = 600,
+                                          runlength = 360,
                                           resp_keys = self.resp_keys_vpixx)
         self.move_prog_bar(start_width = self.start_width, end_width = 1)
         
@@ -1712,7 +1718,7 @@ class Experiment:
         
         self.Instructions(part_key = "ByeBye")
         with open(self.fileName + ".txt", 'a') as f:
-            f.write("t_n = " + data.getDateStr() + "\n")
+            f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
         
 # =============================================================================
