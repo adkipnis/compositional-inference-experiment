@@ -359,6 +359,7 @@ class Experiment:
             pos = self.bar_pos, fillColor = self.color_dict["green"])
     
     def draw_background(self):
+        self.progBack.length = self.bar_len
         self.progBack.draw()
         self.progTest.draw()
         
@@ -1188,12 +1189,13 @@ class Experiment:
         if i_step is None:
             i_step = self.n_exposure * self.maxn_blocks # length of one loop
         while mean_acc < min_acc:
-            df = self.GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
+            result = self.GenericBlock(trial_df, mode = mode, i = i, i_step = i_step,
                       durations = durations, test = test, feedback = feedback,
                       self_paced = self_paced, runlength = runlength,
                       pause_between_runs = pause_between_runs)
-            df_list.append(df)
-            errors = (df.correct_resp == df.emp_resp).to_list()
+            df_list.append(result)
+            errors = [trial["correct_resp"] == trial["emp_resp"]
+                      for trial in result]
             mean_acc = np.mean(list(map(int, errors))) # convert to integers
             
             accPrompt = visual.TextStim(
@@ -1325,12 +1327,14 @@ class Experiment:
                                           self.iSingleImage,
                                           self.iTransmutableObjects,
                                           self.iSpellExample,
-                                          self.iSpellExample], 
+                                          self.iSpellExample,
+                                          self.iSingleImage], 
                       args = [self.magicBooks,
                               self.philbertine,
                               None,
                               [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
+                              self.keyboard_dict["keyBoardSpacebar"]])
         
         # -------------------------------------------------------------------
         # Balance out which cue modality is learned first
@@ -1342,9 +1346,6 @@ class Experiment:
             second_modality = "visual"
         
         # Learn first cue type
-        self.Instructions(part_key = "learnCues",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardSpacebar"]])
         self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
                                     modes = [first_modality, second_modality])
         with open(self.fileName + ".txt", 'a') as f:
@@ -1434,7 +1435,7 @@ class Experiment:
                                 "i_step" : 1,
                                 "test" : False},
                                 {"trial_df": trials_test_1,
-                                "display_this": [3],
+                                "display_this": [3,4], #TODO
                                 "durations" : [0, 0, 0, 0, 0],
                                 "i_step" : 1,
                                 "test" : False},
