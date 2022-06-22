@@ -1009,14 +1009,13 @@ class Experiment:
                     self.win.flip()
                     continue
                 else:
-                    self.testRTSuperList.append(testRTList)
-                    self.testRespSuperList.append(testRespList)
+                    trial["emp_resp"] = testRespList
+                    trial["resp_RT"] = testRTList
+                    trial["cue_type"] = cue_type
                     self.win.flip()
                     core.wait(2)
-        trials_prim_cue["emp_resp"] = self.testRespSuperList
-        trials_prim_cue["resp_RT"] = self.testRTSuperList
-        trials_prim_cue["cue_type"] = self.cueTypeList
-        return trials_prim_cue
+
+        return PracticeCueTrials.trialList
                 
         
     def GenericBlock(self, trial_df, mode = "random", i = 0, i_step = None,
@@ -1141,16 +1140,18 @@ class Experiment:
 
 
     def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality,
-                        min_acc = 0.95, mode = "random", i = 0, i_step = None,
+                        min_acc = 0.90, mode = "random", i = 0, i_step = None,
                         show_cheetsheet = True):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
             i_step = self.n_exposure * self.maxn_blocks
-        while mean_acc < min_acc:
+        while mean_acc < min_acc and i+i_step <= len(trials_prim_cue):
             df = trials_prim_cue[i:i+i_step].copy()
-            df_list.append(self.PracticeCues(df, mode = mode))
-            errors = (df.correct_resp == df.emp_resp).to_list()
+            result = self.PracticeCues(df, mode = mode)
+            df_list.append(result)
+            errors = [trial["correct_resp"] == trial["emp_resp"]
+                      for trial in result]
             mean_acc = np.mean(list(map(int, errors))) # convert to integers
             
             accPrompt = visual.TextStim(
@@ -1164,15 +1165,15 @@ class Experiment:
             i += i_step    
             if mean_acc < min_acc:
                 feedbacktype = "Feedback0" 
-                
             else: 
                 feedbacktype = "Feedback1"  
             self.Instructions(part_key = feedbacktype,
                       special_displays = [self.iSingleImage],
-                      args = [[accPrompt]])
+                      args = [accPrompt])
             if show_cheetsheet and mean_acc < min_acc:
                     self.LearnCues(cue_center_pos = [0, 2], 
                               modes = [first_modality, second_modality])
+            core.wait(2)
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
 
@@ -1358,7 +1359,6 @@ class Experiment:
                       args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.df_out_1 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
-            min_acc = 0.95,
             mode = first_modality)   
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
@@ -1376,7 +1376,6 @@ class Experiment:
         # Test second cue type 
         self.df_out_2 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
-            min_acc = 0.95,
             mode = second_modality, 
             i = len(self.df_out_1))
         self.start_width = self.move_prog_bar(

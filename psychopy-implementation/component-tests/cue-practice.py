@@ -11,7 +11,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 1, fullscr = True, res = [2560, 1440])
+Exp.init_window(screen = 0, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
 Exp.load_trials()
 Exp.render_visuals()
@@ -19,5 +19,6 @@ Exp.init_progbar(bar_pos = [0, 15])
 Exp.win.mouseVisible = False
 
 # Run Cue Practice Session task
-Exp.CuePracticeLoop(Exp.trials_prim_cue, "visual", "textual")
+df_out = Exp.CuePracticeLoop(Exp.trials_prim_cue, "visual", "textual",
+                             mode = "textual", i_step = 10)
 Exp.win.close()
