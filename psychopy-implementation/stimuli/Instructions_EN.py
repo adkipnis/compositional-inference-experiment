@@ -145,7 +145,15 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
          3,
          "Note, that these spells have an area effect: If you cast it,"\
              " all susceptible objects will be transformed.",
-         4]
+         4,
+         "Each spell has a specific name and symbol. Philbertine provides a"\
+             " cheat-sheet for the " + str(nMaps) + " beginner spells.",
+         "You need to spend some time to study them really well.",
+             "Specifically, you need to learn the exact name and symbol "\
+         "which are associated with each respective spell.",
+         "When you are done with studying,\nyou may press the spacebar:",
+         5,
+         "Ready?"]
 
 IntroAdvanced = ["Since the last time, you have advanced in your Alteration studies.",
          "Philbertine would be impressed.",
@@ -171,14 +179,6 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
              "attuned quicker\nthis way.",
          "Ready?"]
 
-learnCues = ["Each spell has a specific name and symbol. Philbertine provides a"\
-            " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-            "You need to spend some time to study them really well.",
-            "Specifically, you need to learn the exact name and symbol "\
-                "which are associated with each respective spell.",
-            "When you are done with studying,\nyou may press the spacebar:",
-            0,
-            "Ready?"]   
     
 Navigation1 = [
               # ["For the following displays, you can navigate back and forth"\
@@ -228,15 +228,16 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                    " magical practice board.",
                "You will first see the spell cue.\nThen you need to select the"\
                    " two corresponding objects:",
-               "(1) The object which is susceptible to the spell, and\n(2) the"\
-                   " object into which it is transformed.",
+               "(1) The object which is susceptible to the spell",
+               "...and (2) the object into which it is transformed.",
                "You choose the objects using the marked keys\non your keyboard:",
                0,
                "These keys will correspond to your options\nfrom left to right.",
+               "Place only your index and middle fingers\non the marked keys now."
                "Ready?"]
     
-Intermezzo2 = ["You have mastered the first spell cue type. Congrats!",
-               "Next, you will see if you have correctly learned\nthe second spell cue type.",
+Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
+               "Next, you will see if you have correctly learned\nthe second type of spell cue.",
                 "The following practice board is\ncompletely analogous to the previous"\
                     " one.",
                 "Again, you choose the objects using\nthe marked keys on your keyboard:",
@@ -256,7 +257,7 @@ positionFirst = ["Here is what you do:",
                 "(5) From the options below, choose the object that would be "\
                         "on the marked square after the transformation.",
                 "For training purposes you will get immediate feedback.",
-                "Let's say, you incorrectly chose the following option:",
+                "Let's say, you incorrectly chose the following option,\n feedback would look like this:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
@@ -374,7 +375,6 @@ instructions ={
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),
   "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
-  "learnCues": AddProceedKey2All(learnCues, '/k'),
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),
   "positionFirst": AddProceedKey2All(positionFirst, '/k'),
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
