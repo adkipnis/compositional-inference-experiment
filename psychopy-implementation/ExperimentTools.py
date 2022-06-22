@@ -1386,7 +1386,7 @@ class Experiment:
         # Save cue memory data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
             self.expInfo["dateStr"] + "_" +"cueMemory"
-        save_object(self.df_out_1 + self.df_out_2, fname, ending = 'pkl')
+        save_object(self.df_out_1 + self.df_out_2, fname, ending = 'csv')
         
         
         # ---------------------------------------------------------------------
@@ -1486,7 +1486,7 @@ class Experiment:
         # Save test type data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "testType"
-        save_object(self.df_out_3 + self.df_out_4, fname, ending = 'pkl')
+        save_object(self.df_out_3 + self.df_out_4, fname, ending = 'csv')
 
         self.Instructions(part_key = "Bye")
         with open(self.fileName + ".txt", 'a') as f:
@@ -1525,8 +1525,8 @@ class Experiment:
                  
         # Save cue memory data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "cueMemoryRefresher.pkl"     
-        save_object(self.df_out_5, fname, ending = 'pkl')
+            self.expInfo["dateStr"] + "_" + "cueMemoryRefresher.csv"     
+        save_object(self.df_out_5, fname, ending = 'csv')
         
         # Reminder of the test types
         demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
@@ -1594,7 +1594,7 @@ class Experiment:
         # Save generic data
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "generic"
-        save_object(self.df_out_6 + self.df_out_7, fname, ending = 'pkl')
+        save_object(self.df_out_6 + self.df_out_7, fname, ending = 'csv')
         self.Instructions(part_key = "Bye")
         with open(self.fileName + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
@@ -1640,7 +1640,7 @@ class Experiment:
             self.df_out_8_again, acc_2 = self.LocalizerBlock(
                 self.trials_localizer2, durations = [2, 2, 2, 1])
             save_object(self.df_out_8 + self.df_out_8_again,
-                        fname, ending = 'pkl')
+                        fname, ending = 'csv')
             if acc_2 < 0.8:
                 self.Instructions(part_key = "DropOut",
                                   show_background = False)
@@ -1648,7 +1648,7 @@ class Experiment:
                     f.write("t_a = " + data.getDateStr() + "\n\n")
                 core.quit()
         else:
-            save_object(self.df_out_8, fname, ending = 'pkl')
+            save_object(self.df_out_8, fname, ending = 'csv')
              
         self.start_width = self.move_prog_bar(
             start_width = 0,
@@ -1714,7 +1714,7 @@ class Experiment:
         # Finalization
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "generic_MEG"
-        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'pkl')
+        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'csv')
         
         self.Instructions(part_key = "ByeBye")
         with open(self.fileName + ".txt", 'a') as f:
@@ -1772,7 +1772,23 @@ def readpkl(fname):
 
 
 def listofdicts2csv(listofdicts, fname):
+    # spread dictionary entries which are n-long lists into n separate elements
     keys = listofdicts[0].keys()
+    list_keys = []
+    # find out which keys point to lists
+    for key in keys:
+        if type(listofdicts[0][key]) in [list, np.ndarray]:
+            list_keys.append(key)
+    
+    # for each such key, pop it from the dict and add its elements back to dict        
+    for dictionary in listofdicts:
+        for key in list_keys:
+            items = dictionary.pop(key)
+            newkeys = [key + "_" + str(i) for i in range(len(items))]
+            subdictionary = dict(zip(newkeys, items))
+            dictionary.update(subdictionary)
+            
+    # write to csv
     with open(fname, 'w', newline='') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
