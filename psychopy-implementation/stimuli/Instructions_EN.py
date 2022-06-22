@@ -128,7 +128,7 @@ Feedback0 = ["In this training run, your score was:",
     
 Feedback1 = ["In this training run, your score was:", 
              0, 
-             "This is good, you are confident to make the next step..."]
+             "This is good, you are confident to continue..."]
 
 Intro = ["You are a magic novice, preparing for your Alteration studies.",
          "As you may know, Alteration spells change the world around you.",
@@ -267,7 +267,7 @@ positionFirst = ["Here is what you do:",
 positionSecond = ["Some magic students tend to cheat on the test above.",
                   "In order to make sure\nthat you transform the objects in your mind "\
                       "first\nand only then answer a test question...",
-                  "...there are two test displays\n(both equally likely to appear):",
+                  "...there are two test displays\n(both equally likely to appear).",
                   "The previous one was based on object count.\nThe next will be based "\
                       "on the object positions.",
                   "After memorizing and transforming the objects\n(steps 1-4)...",

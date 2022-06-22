@@ -1304,72 +1304,72 @@ class Experiment:
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
         
-        # # Introduction
-        # self.Instructions(part_key = "Intro",
-        #               special_displays = [self.iSingleImage,
-        #                                   self.iSingleImage,
-        #                                   self.iTransmutableObjects,
-        #                                   self.iSpellExample,
-        #                                   self.iSpellExample,
-        #                                   self.iSingleImage], 
-        #               args = [self.magicBooks,
-        #                       self.philbertine,
-        #                       None,
-        #                       [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-        #                       [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
-        #                       self.keyboard_dict["keyBoardSpacebar"]])
+        # Introduction
+        self.Instructions(part_key = "Intro",
+                      special_displays = [self.iSingleImage,
+                                          self.iSingleImage,
+                                          self.iTransmutableObjects,
+                                          self.iSpellExample,
+                                          self.iSpellExample,
+                                          self.iSingleImage], 
+                      args = [self.magicBooks,
+                              self.philbertine,
+                              None,
+                              [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
+                              self.keyboard_dict["keyBoardSpacebar"]])
         
-        # # -------------------------------------------------------------------
-        # # Balance out which cue modality is learned first
-        # if int(self.expInfo["participant"]) % 2 == 0:
-        #     first_modality = "visual"
-        #     second_modality = "textual"
-        # else:
-        #     first_modality = "textual"
-        #     second_modality = "visual"
+        # -------------------------------------------------------------------
+        # Balance out which cue modality is learned first
+        if int(self.expInfo["participant"]) % 2 == 0:
+            first_modality = "visual"
+            second_modality = "textual"
+        else:
+            first_modality = "textual"
+            second_modality = "visual"
         
-        # # Learn first cue type
-        # self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
-        #                             modes = [first_modality, second_modality])
-        # with open(self.fileName + ".txt", 'a') as f:
-        #     f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
+        # Learn first cue type
+        self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
+                                    modes = [first_modality, second_modality])
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
         self.start_width = self.move_prog_bar(
             start_width = 0,
             end_width = self.progbar_inc)   
         
-        # # Test first cue type                     
-        # self.Instructions(part_key = "Intermezzo1",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        # self.df_out_1 = self.CuePracticeLoop(
-        #     self.trials_prim_cue, first_modality, second_modality,
-        #     mode = first_modality)   
-        # self.start_width = self.move_prog_bar(
-        #     start_width = self.start_width,
-        #     end_width = self.start_width + self.progbar_inc)
+        # Test first cue type                     
+        self.Instructions(part_key = "Intermezzo1",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+        self.df_out_1 = self.CuePracticeLoop(
+            self.trials_prim_cue, first_modality, second_modality,
+            mode = first_modality)   
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)
         
-        # # Learn second cue type
-        # self.Instructions(part_key = "Intermezzo2",
-        #               special_displays = [self.iSingleImage], 
-        #               args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        # self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
-        #                             modes = [first_modality, second_modality])  
-        # with open(self.fileName + ".txt", 'a') as f:
-        #     f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
+        # Learn second cue type
+        self.Instructions(part_key = "Intermezzo2",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+        self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
+                                    modes = [first_modality, second_modality])  
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
         
-        # # Test second cue type 
-        # self.df_out_2 = self.CuePracticeLoop(
-        #     self.trials_prim_cue, first_modality, second_modality,
-        #     mode = second_modality, 
-        #     i = len(self.df_out_1))
-        # self.start_width = self.move_prog_bar(
-        #     start_width = self.start_width,
-        #     end_width = self.start_width + self.progbar_inc)         
+        # Test second cue type 
+        self.df_out_2 = self.CuePracticeLoop(
+            self.trials_prim_cue, first_modality, second_modality,
+            mode = second_modality, 
+            i = len(self.df_out_1))
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.start_width + self.progbar_inc)         
         
-        # # Save cue memory data
-        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
-        #     self.expInfo["dateStr"] + "_" +"cueMemory"
-        # save_object(self.df_out_1 + self.df_out_2, fname, ending = 'csv')
+        # Save cue memory data
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
+            self.expInfo["dateStr"] + "_" +"cueMemory"
+        save_object(self.df_out_1 + self.df_out_2, fname, ending = 'csv')
         
         
         # ---------------------------------------------------------------------
@@ -1431,7 +1431,7 @@ class Experiment:
         
         start_width_before_block = self.start_width.copy()
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                    i_step = 5, # for testing
+                                    # i_step = 5, # for testing
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
@@ -1458,7 +1458,7 @@ class Experiment:
                                 "feedback": True,
                                 "demonstration" : True}])
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
-                                    i_step = 5, # for testing
+                                    # i_step = 5, # for testing
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
