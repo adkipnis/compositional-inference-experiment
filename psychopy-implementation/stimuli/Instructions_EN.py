@@ -257,10 +257,11 @@ positionFirst = ["Here is what you do:",
                 "(5) From the options below, choose the object that would be "\
                         "on the marked square after the transformation.",
                 "For training purposes you will get immediate feedback.",
-                "Let's say, you incorrectly chose the following option,\n feedback would look like this:",
+                "Let's say, you incorrectly chose the following option -\nthen feedback would look like this:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
+                "Place only the corresponding index and middle fingers\nand one thumb on the marked keys.",
                 "Ready?"]
     
 positionSecond = ["Some magic students tend to cheat on the test above.",

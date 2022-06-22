@@ -926,13 +926,10 @@ class Experiment:
             elif self.n_cats == 6: resp_keys = self.resp_keys_wide
                 
         # create the trial handler
-        PracticeCueTrials = data.TrialHandler(
+        trials = data.TrialHandler(
             trials_prim_cue, 1, method="sequential")
-        self.testRespSuperList = []
-        self.testRTSuperList = []
-        self.cueTypeList = []
         
-        for trial in PracticeCueTrials:
+        for trial in trials:
             num_cr = len(trial.correct_resp)
             testRespList = []
             testRTList = []
@@ -1016,7 +1013,7 @@ class Experiment:
                     self.win.flip()
                     core.wait(2)
 
-        return PracticeCueTrials.trialList
+        return trials.trialList
                 
         
     def GenericBlock(self, trial_df, mode = "random", i = 0, i_step = None,
@@ -1038,12 +1035,6 @@ class Experiment:
         n_trials = len(trials.trialList)
         trial_number = 1
         start_width_initial = self.start_width
-        
-        # init lists
-        self.intermediateRTList = []
-        self.testRespList = []
-        self.testRTList = []
-        self.cueTypeList = []
         
         if pause_between_runs:
             run_number = 1
@@ -1071,7 +1062,6 @@ class Experiment:
                 displayRT = self.tDisplay(trial,
                                           duration = durations[1] + jitter[1],
                                           self_paced = self_paced)
-                trials.addData("displayRT", displayRT)
             
             # 3. Map Cue
             if 3 in display_this:
@@ -1083,7 +1073,6 @@ class Experiment:
                 # 4. Transformation Display
                 if 4 in display_this:
                     intermediateRT = self.tEmpty(trial, core.Clock())
-                    trials.addData("intermediateRT", intermediateRT)
             
                 # 5. Empty Display
                 if 5 in display_this:
@@ -1102,10 +1091,12 @@ class Experiment:
                                                           resp_keys = resp_keys)
                     
                     # Save data
-                    self.intermediateRTList.append(intermediateRT)
-                    self.testRespList.append(testResp)
-                    self.testRTList.append(testRT)
-                    self.cueTypeList.append(cue_type)
+                    trial["run_number"] = run_number
+                    trial["display_RT"] = displayRT
+                    trial["inter_RT"] = intermediateRT
+                    trial["emp_resp"] = testResp
+                    trial["resp_RT"] = testRT
+                    trial["cue_type"] = cue_type
                     core.wait(durations[3])
             
             if 7 in display_this:
@@ -1114,7 +1105,6 @@ class Experiment:
                 core.wait(durations[4])
                 
             if pause_between_runs:
-                trials.addData("intermediateRT", run_number)
                 if timer.getTime() <= 0:
                     # Update Progress Bar
                     progbar_inc_tmp = trial_number/n_trials * self.progbar_inc
@@ -1130,14 +1120,7 @@ class Experiment:
                     if self.use_pp: self.send_trigger("run")
                     
             trial_number += 1
-            
-        # append trial list with collected data 
-        if test:
-            df["cue_type"] = self.cueTypeList
-            df["inter_RT"] = self.intermediateRTList
-            df["emp_resp"] = self.testRespList
-            df["resp_RT"] = self.testRTList
-        return df
+        return trials.trialList
 
 
     def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality,
@@ -1211,7 +1194,7 @@ class Experiment:
                 feedbacktype = "Feedback1"  
             self.Instructions(part_key = feedbacktype,
                               special_displays = [self.iSingleImage],
-                              args = [[accPrompt]])            
+                              args = [accPrompt])        
         df_out = [item for sublist in df_list for item in sublist]
         return df_out    
     
@@ -1284,22 +1267,22 @@ class Experiment:
                     testResp = False
                 elif testResp == 5:
                     testResp = True
-                
-                # Save data
-                self.corRespList.append(trial.correct_resp)
-                self.testRespList.append(testResp)
-                self.testRTList.append(testRT)
+                    
                 core.wait(durations[3])
-            
-        trial_df["emp_resp"] = np.array(self.testRespList)
-        trial_df["cor_resp"] = np.array(self.corRespList)
-        trial_df["resp_RT"] = np.array(self.testRTList)
-        
+            else:
+                testResp = None
+                testRT = None
+                
+            # Save data
+            trial["emp_resp"] = testResp
+            trial["resp_RT"] = testRT
+    
         # calculate accuracy
-        accuracy = sum(trial_df["emp_resp"] == trial_df["cor_resp"])\
-            / len(trial_df["cor_resp"])
+        correct_responses = [trial["emp_resp"] == trial["cor_resp"]
+                             for trial in trials if trial.catch]
+        accuracy = sum(correct_responses) / len(correct_responses)
         
-        return trial_df, accuracy
+        return trials.triallist, accuracy
     
 
     ###########################################################################
@@ -1321,72 +1304,72 @@ class Experiment:
                       fontcolor = self.color_dict["mid_grey"],
                       show_background = False)
         
-        # Introduction
-        self.Instructions(part_key = "Intro",
-                      special_displays = [self.iSingleImage,
-                                          self.iSingleImage,
-                                          self.iTransmutableObjects,
-                                          self.iSpellExample,
-                                          self.iSpellExample,
-                                          self.iSingleImage], 
-                      args = [self.magicBooks,
-                              self.philbertine,
-                              None,
-                              [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
-                              self.keyboard_dict["keyBoardSpacebar"]])
+        # # Introduction
+        # self.Instructions(part_key = "Intro",
+        #               special_displays = [self.iSingleImage,
+        #                                   self.iSingleImage,
+        #                                   self.iTransmutableObjects,
+        #                                   self.iSpellExample,
+        #                                   self.iSpellExample,
+        #                                   self.iSingleImage], 
+        #               args = [self.magicBooks,
+        #                       self.philbertine,
+        #                       None,
+        #                       [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+        #                       [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
+        #                       self.keyboard_dict["keyBoardSpacebar"]])
         
-        # -------------------------------------------------------------------
-        # Balance out which cue modality is learned first
-        if int(self.expInfo["participant"]) % 2 == 0:
-            first_modality = "visual"
-            second_modality = "textual"
-        else:
-            first_modality = "textual"
-            second_modality = "visual"
+        # # -------------------------------------------------------------------
+        # # Balance out which cue modality is learned first
+        # if int(self.expInfo["participant"]) % 2 == 0:
+        #     first_modality = "visual"
+        #     second_modality = "textual"
+        # else:
+        #     first_modality = "textual"
+        #     second_modality = "visual"
         
-        # Learn first cue type
-        self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
-                                    modes = [first_modality, second_modality])
-        with open(self.fileName + ".txt", 'a') as f:
-            f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
+        # # Learn first cue type
+        # self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
+        #                             modes = [first_modality, second_modality])
+        # with open(self.fileName + ".txt", 'a') as f:
+        #     f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
         self.start_width = self.move_prog_bar(
             start_width = 0,
             end_width = self.progbar_inc)   
         
-        # Test first cue type                     
-        self.Instructions(part_key = "Intermezzo1",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        self.df_out_1 = self.CuePracticeLoop(
-            self.trials_prim_cue, first_modality, second_modality,
-            mode = first_modality)   
-        self.start_width = self.move_prog_bar(
-            start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)
+        # # Test first cue type                     
+        # self.Instructions(part_key = "Intermezzo1",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+        # self.df_out_1 = self.CuePracticeLoop(
+        #     self.trials_prim_cue, first_modality, second_modality,
+        #     mode = first_modality)   
+        # self.start_width = self.move_prog_bar(
+        #     start_width = self.start_width,
+        #     end_width = self.start_width + self.progbar_inc)
         
-        # Learn second cue type
-        self.Instructions(part_key = "Intermezzo2",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
-                                    modes = [first_modality, second_modality])  
-        with open(self.fileName + ".txt", 'a') as f:
-            f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
+        # # Learn second cue type
+        # self.Instructions(part_key = "Intermezzo2",
+        #               special_displays = [self.iSingleImage], 
+        #               args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+        # self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
+        #                             modes = [first_modality, second_modality])  
+        # with open(self.fileName + ".txt", 'a') as f:
+        #     f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
         
-        # Test second cue type 
-        self.df_out_2 = self.CuePracticeLoop(
-            self.trials_prim_cue, first_modality, second_modality,
-            mode = second_modality, 
-            i = len(self.df_out_1))
-        self.start_width = self.move_prog_bar(
-            start_width = self.start_width,
-            end_width = self.start_width + self.progbar_inc)         
+        # # Test second cue type 
+        # self.df_out_2 = self.CuePracticeLoop(
+        #     self.trials_prim_cue, first_modality, second_modality,
+        #     mode = second_modality, 
+        #     i = len(self.df_out_1))
+        # self.start_width = self.move_prog_bar(
+        #     start_width = self.start_width,
+        #     end_width = self.start_width + self.progbar_inc)         
         
-        # Save cue memory data
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
-            self.expInfo["dateStr"] + "_" +"cueMemory"
-        save_object(self.df_out_1 + self.df_out_2, fname, ending = 'csv')
+        # # Save cue memory data
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
+        #     self.expInfo["dateStr"] + "_" +"cueMemory"
+        # save_object(self.df_out_1 + self.df_out_2, fname, ending = 'csv')
         
         
         # ---------------------------------------------------------------------
@@ -1435,7 +1418,7 @@ class Experiment:
                                 "i_step" : 1,
                                 "test" : False},
                                 {"trial_df": trials_test_1,
-                                "display_this": [3,4], #TODO
+                                "display_this": [3, 4],
                                 "durations" : [0, 0, 0, 0, 0],
                                 "i_step" : 1,
                                 "test" : False},
@@ -1448,7 +1431,7 @@ class Experiment:
         
         start_width_before_block = self.start_width.copy()
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                    # i_step = 5, # for testing
+                                    i_step = 5, # for testing
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
@@ -1475,6 +1458,7 @@ class Experiment:
                                 "feedback": True,
                                 "demonstration" : True}])
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
+                                    i_step = 5, # for testing
                                     min_acc = 0.95,
                                     self_paced = True,
                                     feedback = True,
