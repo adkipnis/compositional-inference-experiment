@@ -5,7 +5,9 @@ Created on Fri Jun 10 14:31:39 2022
 
 @author: alex
 """
-# from psychopy import core
+
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ExperimentTools import Experiment
 
 # Initialize
@@ -21,7 +23,7 @@ Exp.progbar_inc = 1/2
 
 # Run test practice loop
 df_out_3 = Exp.TestPracticeLoop(
-    Exp.trials_prim_prac_c,
+    Exp.trials_prim_prac_p,
     min_acc = 0.95,
     self_paced = True,
     feedback = True,

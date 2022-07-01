@@ -6,7 +6,8 @@ Created on Fri May 27 11:03:16 2022
 @author: alex
 """
 
-# from psychopy import core
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ExperimentTools import Experiment
 from psychopy import core
 
