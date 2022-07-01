@@ -55,7 +55,8 @@ Binaries = [0,
             "You will now practice these 'composed' spells.",
             "This time you need to get at least 75% of them right.",
             "Again, use the following keys for the decision at the end of each trial:",
-                    1,
+            1,
+            "If you don't know the answer, press the red key.",
             "Ready?"]
 
 BinariesMEG = [0,
@@ -64,7 +65,8 @@ BinariesMEG = [0,
             "You apply the first spell,\ntake the intermediate result"\
                 "\nand then apply the second spell on it.",
             "Again, use the following keys:",
-                    1,
+            1,
+            "If you don't know the answer, press the red key.",
             "Be as accurate as possible.",
             "Ready?"]
     
@@ -81,10 +83,10 @@ ByeBye = ["Congrats!",
 countFirst = ["Here is what you do:",
                 "(1) Memorize the presented objects:",
                 0.0,
-                "When you are done with memorizing:\n(2) Press the spacebar.",
+                "When you are done with memorizing:\n(2) Press the red key.",
                 "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
                 1.0,
-                "When you are done:\n(4) Press the spacebar.",
+                "When you are done:\n(4) Press the red key.",
                 "You will now see an object category\nand some integers on the bottom",
                 2.0,
                 "(5) From the options below, choose how often "\
@@ -94,6 +96,7 @@ countFirst = ["Here is what you do:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
+                "If you don't know the answer, press the red key.",
                 "Ready?"]
 
 countSecond = ["Some magic students tend to cheat on the test above.",
@@ -180,46 +183,34 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
          "Ready?"]
 
     
-Navigation1 = [
-              # ["For the following displays, you can navigate back and forth"\
-              #      " using the arrow keys:", "/e", 4],
-              0,
+Navigation1 = [0,
               "Don't worry, there is no shame in going back pages.",
               "In this first session, you will prepare the basics of the task"\
                   " which you will later perform in the MEG.",
-              # "You can press the spacebar to skip to the next section:",
-              # 1,
               "If for some reason\nyou need to abort the experiment,\nyou can"\
                   " do so by pressing Esc:",
               1,
               "Please be careful not to press this key by accident!",
               "Finally, if you have any questions, please ask the examiner.",
               "Now, the experiment begins..."
-              # ["", "/t", 2]
               ]
 
-Navigation2 = [
-              0,
+Navigation2 = [0,
               "In this second session, you will train the actual task"\
                   " which you will perform in the MEG.",
-              # "You can press the spacebar to skip to the next section:",
-              # 1,
               "If for some reason you need to abort the experiment, you can"\
                   " do so by pressing Esc:",
               1,
               "Please be careful not to press this key by accident!",
               "Finally, if you have any questions, please ask the examiner.",
               "Now, the experiment begins..."
-              # ["", "/t", 2]
               ]
 
-Navigation3 = [
-              0,
+Navigation3 = [0,
               "This is the third and final session of the experiment.",
               "If you need to abort the experiment,\nor you have any questions,\n"\
                   "please ask the examiner.",
               "Now, the experiment begins..."
-              # ["", "/t", 2]
               ]
     
 Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
@@ -233,7 +224,8 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                "You choose the objects using the marked keys\non your keyboard:",
                0,
                "These keys will correspond to your options\nfrom left to right.",
-               "Place only your index and middle fingers\non the marked keys now."
+               "If you don't know the answer, press the red key.",
+               "Place your fingers\non only the marked keys now.",
                "Ready?"]
     
 Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
@@ -242,15 +234,16 @@ Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
                     " one.",
                 "Again, you choose the objects using\nthe marked keys on your keyboard:",
                 0,
+                "If you don't know the answer, press the red key.",
                 "Just as a refresher you get a second look\nat Philbertines cheet sheet before you continue."]
 
 positionFirst = ["Here is what you do:",
                 "(1) Memorize the presented objects:",
                 0.0,
-                "When you are done with memorizing:\n(2) Press the spacebar.",
+                "When you are done with memorizing:\n(2) Press the red keys.",
                 "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
                 1.0,
-                "When you are done:\n(4) Press the spacebar.",
+                "When you are done:\n(4) Press the red key.",
                 "You will see all the squares on which the objects stood, "\
                     "one of them will be marked.",
                 2.0,
@@ -261,7 +254,8 @@ positionFirst = ["Here is what you do:",
                 3.0,
                 "Use the following keys for this choice:",
                 0,
-                "Place only the corresponding index and middle fingers\nand one thumb on the marked keys.",
+                "If you don't know the answer, press the red key.",
+                "Place your fingers\non only the marked keys now.",
                 "Ready?"]
     
 positionSecond = ["Some magic students tend to cheat on the test above.",
@@ -281,6 +275,7 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   2.0,
                   "Again, use the following keys for this choice:",
                   0,
+                  "If you don't know the answer, press the red key.",
                   "Ready?"] 
     
 Primitives = [0,
@@ -291,7 +286,8 @@ Primitives = [0,
               "To ensure that you achieve your study goals,\nyou practice this scenario now.",
               "You need to get at least 95% of all practice trials right.",
               "Again, use the following keys for the decision\nat the end of each trial:",
-                    1,
+              1,
+              "If you don't know the answer, press the red key.",
               "Ready?"]
     
 PrimitivesMEG = [0,
@@ -318,6 +314,7 @@ PrimitivesMEG = [0,
                      "on the marked square after the transformation.",
               "Use the following keys:",
               1,
+              "If you don't know the answer, press the red key.",
               "Be as accurate as possible\n-\nyour reward will depend on it!",
               "Remember to move as little as possible for the helmet.",
               "Ready to begin the exam?"]
@@ -338,10 +335,10 @@ TestTypesReminder = [0,
              "Just to be safe, here's a reminder:",
              "You first see a set of objects:\n(1) Memorize the presented objects.",
              0.0,
-             "When you are done with memorizing:\n(2) Press the spacebar.",
+             "When you are done with memorizing:\n(2) Press the red key.",
              "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
              1.0,
-             "When you are done:\n(4) Press the spacebar.",
+             "When you are done:\n(4) Press the red key.",
              "Then you can receive one of two possible test displays.",
              "Counting: You will see an object category and integers on the bottom.",
              2.0,
@@ -354,6 +351,7 @@ TestTypesReminder = [0,
                     "on the marked square after the transformation.",
              "Use the following keys for your choice:",
              1,
+             "If you don't know the answer, press the red key.",
              "It's important that you understand the instructions, so please go "\
                  "back and review them if you are unsure. Otherwise click next."
              ]    
