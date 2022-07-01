@@ -42,9 +42,9 @@ class Experiment:
             os.makedirs(self.data_dir)
             
         # inputs and dimensions
-        self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
+        self.resp_keys = np.array(["s", "d", "num_4", "num_5", "right"])
         self.resp_keys_wide = np.array(
-            ["a", "s", "d", "num_4", "num_5", "num_6"])
+            ["a", "s", "d", "num_4", "num_5", "num_6", "right"])
         self.resp_keys_vpixx = np.array(
                 ["2", "1", "up", "left", "4", "right"])
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
@@ -550,16 +550,17 @@ class Experiment:
             # Third cycle: Feedback                                                     
             # immedeate feedback
             if feedback:
-                self.rect.pos = self.resp_pos[testResp]
-                if trial.correct_resp == testResp:
-                    self.rect.lineColor = self.color_dict["green"]
-                else:
-                    self.rect.lineColor = self.color_dict["red"]
-                self.rect.draw()
-                self.rect.lineColor = self.color_dict["dark_grey"]
-                resp = self.count_dict[str(testResp)]
-                resp.pos = self.resp_pos[testResp]
-                resp.draw()
+                if type(testResp) is int:
+                    self.rect.pos = self.resp_pos[testResp]
+                    if trial.correct_resp == testResp:
+                        self.rect.lineColor = self.color_dict["green"]
+                    else:
+                        self.rect.lineColor = self.color_dict["red"]
+                    self.rect.draw()
+                    self.rect.lineColor = self.color_dict["dark_grey"]
+                    resp = self.count_dict[str(testResp)]
+                    resp.pos = self.resp_pos[testResp]
+                    resp.draw()
                 if inc == 1:
                     self.win.flip()
                     continue
@@ -626,16 +627,17 @@ class Experiment:
             # Third cycle: Feedback                                                     
             # immedeate feedback
             if feedback:
-                self.rect.pos = self.resp_pos[testResp]
-                if trial.correct_resp == testResp:
-                    self.rect.lineColor = self.color_dict["green"]
-                else:
-                    self.rect.lineColor = self.color_dict["red"]
-                self.rect.draw()
-                self.rect.lineColor = self.color_dict["dark_grey"]
-                resp = self.stim_dict.copy()[trial.resp_options[testResp]]
-                resp.pos = self.resp_pos[testResp]
-                resp.draw()
+                if type(testResp) is int:
+                    self.rect.pos = self.resp_pos[testResp]
+                    if trial.correct_resp == testResp:
+                        self.rect.lineColor = self.color_dict["green"]
+                    else:
+                        self.rect.lineColor = self.color_dict["red"]
+                    self.rect.draw()
+                    self.rect.lineColor = self.color_dict["dark_grey"]
+                    resp = self.stim_dict.copy()[trial.resp_options[testResp]]
+                    resp.pos = self.resp_pos[testResp]
+                    resp.draw()
                 if inc == 1:
                     self.win.flip()
                     continue
@@ -684,6 +686,8 @@ class Experiment:
                 for thisKey in allKeys:
                     if thisKey in respKeys: 
                         testRT = TestClock.getTime()
+                        if thisKey == "right":
+                            testResp = "NA"
                         if return_numeric:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
