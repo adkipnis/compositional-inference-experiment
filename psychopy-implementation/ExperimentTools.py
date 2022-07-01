@@ -198,6 +198,7 @@ class Experiment:
         self.n_resp = len(self.trials_prim[0]["resp_options"])
         self.map_names = np.unique([trial["map"]
                                    for trial in self.trials_prim])
+        self.n_primitives = len(self.map_names)
         self.n_exposure = 5  # this value should match in GenerateTrialLists
         self.maxn_blocks = 6  # this too
         
@@ -281,9 +282,14 @@ class Experiment:
         
         # Cue Dictionaries
         tcue_list = self.mappinglists["tcue"]
-        assert len(tcue_list) >= len(self.map_names)
+        
+        # use latter half of cues for MEG-Session
+        if self.expInfo["session"] == "3":
+            tcue_list = tcue_list[self.n_primitives:] + tcue_list[:self.n_primitives]
+            
+        assert len(tcue_list) >= 2*self.n_primitives
         tcue_dict = {}
-        for i in range(len(self.map_names)):
+        for i in range(self.n_primitives):
             cue_name = self.map_names[i]
             tcue_dict.update({cue_name: visual.TextStim(
                 self.win,
@@ -295,9 +301,11 @@ class Experiment:
         
         # Visual cues
         vcue_list = self.mappinglists["vcue"]
-        assert len(vcue_list) >= len(self.map_names)
+        if self.expInfo["session"] == "3":
+            vcue_list = vcue_list[self.n_primitives:] + vcue_list[:self.n_primitives]
+        assert len(vcue_list) >= 2*self.n_primitives
         vcue_dict = {}
-        for i in range(len(self.map_names)):
+        for i in range(self.n_primitives):
             cue_name = self.map_names[i]
             vcue_dict.update({cue_name: visual.ImageStim(
                 self.win,
@@ -309,11 +317,13 @@ class Experiment:
         
         # Stimuli
         stim_list = self.mappinglists["stim"]
-        assert len(stim_list) >= self.n_cats
+        assert len(stim_list) >= 2*self.n_cats
+        stim_names = ascii_uppercase[0:self.n_cats]
+        if self.expInfo["session"] == "3":
+            stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
         stim_dict = {}
         for i in range(self.n_cats):
-            stim_name = ascii_uppercase[i]
-            stim_dict.update({stim_name: visual.ImageStim(
+            stim_dict.update({stim_names[i]: visual.ImageStim(
                 self.win,
                 image = stim_list[i],
                 size = self.normal_size,
@@ -913,7 +923,7 @@ class Experiment:
             core.wait(0.2)
             
             page, finished = self.iNavigate(
-                page = page, max_page = len(self.map_names),
+                page = page, max_page = self.n_primitives,
                 continue_after_last_page = False)  
         # Save learning duration
         learnDuration = LearnClock.getTime()       
@@ -1766,7 +1776,7 @@ def listofdicts2csv(listofdicts, fname):
     list_keys = []
     # find out which keys point to lists
     for key in keys:
-        if type(listofdicts[0][key]) in [list, np.ndarray]:
+        if type(listofdicts[0][key]) in [set, list, np.ndarray]:
             list_keys.append(key)
     
     # for each such key, pop it from the dict and add its elements back to dict        
