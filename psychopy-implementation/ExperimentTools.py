@@ -688,7 +688,7 @@ class Experiment:
                         testRT = TestClock.getTime()
                         if thisKey == "right":
                             testResp = "NA"
-                        if return_numeric:
+                        elif return_numeric:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
@@ -940,7 +940,6 @@ class Experiment:
             j = 0
             cue, cue_type = self.setCue(trial.map[0], mode = mode)
             cue.pos = cue_pos
-            self.cueTypeList.append(cue_type)
             
             # Incrementally display stuff
             for inc in range(3 + 2 * num_cr): 
@@ -979,16 +978,18 @@ class Experiment:
                     testRespList.append(testResp)
                 for i in range(len(testRespList)):
                     testResp = testRespList[i]
-                    self.rect.pos = self.cuepractice_pos[testResp]
-                    if trial.correct_resp[i] == testResp:
-                        self.rect.lineColor = self.color_dict["green"]
-                    else:
-                        self.rect.lineColor = self.color_dict["red"]
-                    self.rect.draw()
-                    self.rect.lineColor = self.color_dict["dark_grey"]
-                    resp = self.stim_dict.copy()[trial.resp_options[testResp]]
-                    resp.pos = self.cuepractice_pos[testResp]
-                    resp.draw()
+                    self.testResp = testResp
+                    if testResp != "NA":
+                        self.rect.pos = self.cuepractice_pos[testResp]
+                        if trial.correct_resp[i] == testResp:
+                            self.rect.lineColor = self.color_dict["green"]
+                        else:
+                            self.rect.lineColor = self.color_dict["red"]
+                        self.rect.draw()
+                        self.rect.lineColor = self.color_dict["dark_grey"]
+                        resp = self.stim_dict.copy()[trial.resp_options[testResp]]
+                        resp.pos = self.cuepractice_pos[testResp]
+                        resp.draw()
                 
                 if inc in list(range(3, 3 + num_cr)):
                     self.win.flip()
