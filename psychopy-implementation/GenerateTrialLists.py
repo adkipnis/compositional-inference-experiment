@@ -600,6 +600,7 @@ n_primitives = 3
 min_type = np.floor(n_primitives/3) #minimal number of instances per composition type
 n_exposure = 5 # get tested on each map n times per block
 maxn_blocks = 6
+n_exposure_prim_dec = 30
 n_exposure_loc = 30 # present each entity n times for the localizer task
 percentage_catch = 0.1 # p * 100% of the trials will contain catch trials
 n_exposure_loc_quick = round(n_exposure_loc * (1-percentage_catch))
@@ -795,6 +796,42 @@ for i in range(1, n_participants+1): #TODO
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_localizer"
     save_object(trials_localizer, fname, ending = ending)
     
+    # 4. Primitive Decoder blocks
+    df_list = []
+    # input_stimuli = [selection_prim[i][0] for i in range(len(selection_prim))]
+    jitter_interval = range(-30, 30)
+    n_prim_decoder_trials = int(np.ceil(n_exposure_prim_dec/(display_size * 4)))
+    for i in range(n_prim_decoder_trials):
+        for prim in selection_prim:
+            for pos in range(display_size):
+                for correct_resp in [0, 1, 2, 3]:
+                    # TODO
+                    input_disp = [None] * display_size
+                    input_disp[pos] = prim[0]
+                    resp_options = np.random.permutation(stimuli)
+                    # if the desired response is not at the correct location
+                    # swap the two response options
+                    if resp_options[correct_resp] != prim[2]:
+                        idx = np.where(resp_options == prim[2])[0][0]
+                        resp_options[idx] = resp_options[correct_resp]
+                        resp_options[correct_resp] = prim[2]
+                    
+                    trial = {'trial_type': 'prim_decoder',
+                              'input_disp': np.array(input_disp),
+                              'map': prim,
+                              'test_type': 'position',
+                              'resp_options': resp_options,
+                              'correct_resp': correct_resp,
+                              'map_type': 'primitive',
+                              'jitter': np.random.choice(
+                                  jitter_interval, 3, replace = True)
+                              }
+                    df_list.append(trial)
+    trials_prim_decoder = np.random.permutation(df_list)
+    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_dec"
+    save_object(trials_localizer, fname, ending = ending)
+            
+
 
 
 # # 3. Conjugate blocks
