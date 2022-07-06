@@ -42,11 +42,11 @@ class Experiment:
             os.makedirs(self.data_dir)
             
         # inputs and dimensions
-        self.resp_keys = np.array(["s", "d", "num_4", "num_5", "right"])
+        self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
-            ["a", "s", "d", "num_4", "num_5", "num_6", "right"])
+            ["a", "s", "d", "num_4", "num_5", "num_6"])
         self.resp_keys_vpixx = np.array(
-                ["2", "1", "up", "left", "4", "right"])
+                ["2", "1", "up", "left", "4", "right"]) #TODO right as NA answer
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
         self.center_pos = [0, 5]
@@ -151,6 +151,10 @@ class Experiment:
         self.trials_localizer = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
                               "_trials_localizer.pkl"), "rb"))
+        
+        self.trials_prim_dec = pickle.load(
+            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
+                              "_trials_prim_dec.pkl"), "rb"))
         
         self.trials_prim_cue = pickle.load(
             open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
@@ -282,10 +286,10 @@ class Experiment:
         
         # Cue Dictionaries
         tcue_list = self.mappinglists["tcue"]
-        
         # use latter half of cues for MEG-Session
         if self.expInfo["session"] == "3":
-            tcue_list = tcue_list[self.n_primitives:] + tcue_list[:self.n_primitives]
+            tcue_list = np.concatenate((tcue_list[self.n_primitives:],
+                                        tcue_list[:self.n_primitives]))
             
         assert len(tcue_list) >= 2*self.n_primitives
         tcue_dict = {}
@@ -301,8 +305,10 @@ class Experiment:
         
         # Visual cues
         vcue_list = self.mappinglists["vcue"]
+        # use latter half of cues for MEG-Session
         if self.expInfo["session"] == "3":
-            vcue_list = vcue_list[self.n_primitives:] + vcue_list[:self.n_primitives]
+            vcue_list = np.concatenate((vcue_list[self.n_primitives:],
+                                        vcue_list[:self.n_primitives]))
         assert len(vcue_list) >= 2*self.n_primitives
         vcue_dict = {}
         for i in range(self.n_primitives):
@@ -318,11 +324,11 @@ class Experiment:
         # Stimuli
         stim_list = self.mappinglists["stim"]
         assert len(stim_list) >= 2*self.n_cats
-        stim_names = ascii_uppercase[0:self.n_cats]
+        stim_names = ascii_uppercase[0:len(stim_list)]
         if self.expInfo["session"] == "3":
             stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
         stim_dict = {}
-        for i in range(self.n_cats):
+        for i in range(len(stim_list)):
             stim_dict.update({stim_names[i]: visual.ImageStim(
                 self.win,
                 image = stim_list[i],
@@ -484,9 +490,11 @@ class Experiment:
         
         # draw stimuli
         for i in range(self.set_size):
-            stim = self.stim_dict.copy()[trial.input_disp[i]]
-            stim.pos = self.rect_pos[i]
-            stim.draw()
+            stim_name = trial.input_disp[i]
+            if stim_name is not None:
+                stim = self.stim_dict.copy()[stim_name]
+                stim.pos = self.rect_pos[i]
+                stim.draw()
         if self.use_pp: self.send_trigger("disp")
         self.win.flip()
         if self_paced:
@@ -689,20 +697,20 @@ class Experiment:
         testResp = None
         testRT = None
         while testResp is None:
-            allKeys = event.waitKeys(maxWait = max_wait)
-            if allKeys is None and max_wait < np.inf:
+            pressedKeys = event.waitKeys(maxWait = max_wait)
+            if pressedKeys is None and max_wait < np.inf:
                 break
             else:
-                for thisKey in allKeys:
+                for thisKey in pressedKeys:
+                    testRT = TestClock.getTime()
                     if thisKey in respKeys: 
-                        testRT = TestClock.getTime()
-                        if thisKey == "right":
-                            testResp = "NA"
-                        elif return_numeric:
+                        if return_numeric:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
-                    elif thisKey in ["escape"]:
+                    elif thisKey == "right":
+                        testResp = "NA"
+                    elif thisKey == "escape":
                         with open(self.fileName + ".txt", 'a') as f:
                             f.write("t_a = " + data.getDateStr() + "\n\n")
                         core.quit()  # abort experiment
@@ -723,16 +731,18 @@ class Experiment:
     def iTransmutableObjects(self, *args, show_background = True):
         if show_background: self.draw_background()
         categories = list(self.stim_dict.keys())
-        if len(categories) > 4:
-            dim = [2, np.ceil(len(categories)/2)]
+        categories.sort()
+        n_cats = self.n_cats # alternatively show all using len(categories)
+        if n_cats > 4:
+            dim = [2, np.ceil(n_cats/2)]
         else:
-            dim = [1, len(categories)]
+            dim = [1, n_cats]
             
         category_pos = rectangularGrindPositions(
             center_pos = [0, 0], h_dist = 10, dim = dim)
 
         # draw categories
-        for i in range(len(categories)):
+        for i in range(n_cats):
             self.rect.pos = category_pos[i]
             self.rect.draw()
             stim = self.stim_dict.copy()[categories[i]]
@@ -1605,9 +1615,10 @@ class Experiment:
     ###########################################################################
     def Session3(self):
         self.win.mouseVisible = False
-        n_experiment_parts = 3
+        n_experiment_parts = 4
         self.progbar_inc = 1/n_experiment_parts
         
+        ### Part 1
         # Navigation
         self.Instructions(part_key = "Navigation3",
                       special_displays = [self.iSingleImage], 
@@ -1618,8 +1629,10 @@ class Experiment:
         
         # Introduction   
         self.Instructions(part_key = "IntroMEG",
-                      special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMegNY"]],
+                      special_displays = [self.iTransmutableObjects,
+                                          self.iSingleImage],
+                      args = [None,
+                              self.keyboard_dict["keyBoardMegNY"]],
                       show_background = False)
         
         # Localizer Block
@@ -1654,7 +1667,14 @@ class Experiment:
             end_width = self.progbar_inc)
         start_width_before_block = self.start_width.copy()
         
+        ### Part 2 #TODO
+        # Primitive Decoder Block
+        self.Instructions(part_key = "PrimDecMEG",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMeg0123"]],
+                      show_background = False)
         
+        ### Part 3
         # Primitive trials
         demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
             method="sequential")
@@ -1696,6 +1716,7 @@ class Experiment:
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)
         
+        ### Part 4
         # Binary trials
         self.Instructions(part_key = "BinariesMEG",
                       special_displays = [self.iSingleImage, self.iSingleImage], 
