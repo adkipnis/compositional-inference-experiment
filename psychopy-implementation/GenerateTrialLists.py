@@ -805,29 +805,33 @@ for i in range(1, n_participants+1): #TODO
         for prim in selection_prim:
             for pos in range(display_size):
                 for correct_resp in [0, 1, 2, 3]:
-                    # TODO
+                    output = prim[2]
                     input_disp = [None] * display_size
                     input_disp[pos] = prim[0]
+                    output_disp = input_disp.copy()
+                    output_disp[pos] = output
                     resp_options = np.random.permutation(stimuli)
                     # if the desired response is not at the correct location
                     # swap the two response options
-                    if resp_options[correct_resp] != prim[2]:
-                        idx = np.where(resp_options == prim[2])[0][0]
+                    if resp_options[correct_resp] != output:
+                        idx = np.where(resp_options == output)[0][0]
                         resp_options[idx] = resp_options[correct_resp]
-                        resp_options[correct_resp] = prim[2]
+                        resp_options[correct_resp] = output
                     
                     trial = {'trial_type': 'prim_decoder',
                               'input_disp': np.array(input_disp),
-                              'map': prim,
+                              'output_disp': np.array(output_disp),
+                              'map': [prim],
                               'test_type': 'position',
                               'resp_options': resp_options,
                               'correct_resp': correct_resp,
+                              'target': pos,
                               'map_type': 'primitive',
                               'jitter': np.random.choice(
-                                  jitter_interval, 3, replace = True)
+                                  jitter_interval, 3, replace = True)/1000
                               }
                     df_list.append(trial)
-    trials_prim_decoder = np.random.permutation(df_list)
+    trials_prim_decoder = np.random.permutation(df_list).tolist()
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_dec"
     save_object(trials_prim_decoder, fname, ending = ending)
             
