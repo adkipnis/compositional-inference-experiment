@@ -173,11 +173,12 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
          "You have trained hard to get here.",
          "The (very large) magical helmet above you\nreads your spellcasting.",
          "Everyone's mind is special,\nso before the exam...",
-         "...it has to be attuned to yours:",
-         "For this, you will view familiar images.",
+         "...it has to be attuned to yours.",
+         "For this, you will first view the objects\nwhich will be used in the exam:",
+         0,
          "After some of them, you have\nto answer a yes/no question.",
          "Use the following keys:",
-         0,
+         1,
          "Try to move as little as possible:\nThe helmet will be "\
              "attuned quicker\nthis way.",
          "Ready?"]
@@ -277,6 +278,22 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   0,
                   "If you don't know the answer, press the red key.",
                   "Ready?"] 
+
+# TODO
+PrimDecMEG1 = [0,
+              "Now that you have familiarized yourself with the new objects,...",
+              "...you probably know what comes next.",
+              "Next come three new spells,\nwhich are very similar to the ones\nyou have practiced earlier.",
+              "Have a look..."]
+PrimDecMEG2 = ["You get a chance to practice applying the spells.",
+               "This time, only one object will be presented to you each trial.",
+               "Apply the cued spell on it and choose the object\ninto which you have transformed it."
+               "Use the following keys:",
+               0,
+               "This will also help to fine-tune the magical helmet.",
+               "Try to move as little as possible:\nThe helmet will be "\
+                   "attuned quicker\nthis way.",
+               "Ready?"]    
     
 Primitives = [0,
               "In your examination during the next session, you will perform tasks"\
