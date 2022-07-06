@@ -21,12 +21,7 @@ Exp.win.mouseVisible = False
 
 # Run Cue Practice Session task
 Exp.start_width = 0
-df_out = Exp.GenericBlock(Exp.trials_prim_dec,
-                          mode = "random",
-                          durations = [1.0, 3.0, 0.6, 1.0, 0.7],
-                          self_paced = True,
-                          pause_between_runs = True,
-                          feedback = True,
-                          runlength = 360,
-                          resp_keys = Exp.resp_keys)
+df_out, accuracy = Exp.LocalizerBlock(
+    Exp.trials_localizer,
+    durations = [2.0, 2.0, 2.0, 1.0])
 Exp.win.close()
