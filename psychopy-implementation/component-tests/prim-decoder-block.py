@@ -12,7 +12,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(res = [1900, 1080], screen = 1, fullscr = False)
+Exp.init_window(screen = 1, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
 Exp.load_trials()
 Exp.render_visuals()
@@ -21,6 +21,12 @@ Exp.win.mouseVisible = False
 
 # Run Cue Practice Session task
 Exp.start_width = 0
-df_out = Exp.GenericBlock(Exp.trials_prim, mode = "random", i_step = 5,
-                 self_paced = True, feedback = True)
+Exp.GenericBlock(Exp.trials_prim_dec,
+                 mode = "random",
+                 durations = [1.0, 3.0, 0.6, 1.0, 0.7],
+                 self_paced = True,
+                 pause_between_runs = True,
+                 feedback = True,
+                 runlength = 360,
+                 resp_keys = Exp.resp_keys)
 Exp.win.close()
