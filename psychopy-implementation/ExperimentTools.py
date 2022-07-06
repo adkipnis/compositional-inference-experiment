@@ -1661,18 +1661,35 @@ class Experiment:
                 core.quit()
         else:
             save_object(self.df_out_8, fname, ending = 'csv')
-             
         self.start_width = self.move_prog_bar(
             start_width = 0,
             end_width = self.progbar_inc)
-        start_width_before_block = self.start_width.copy()
         
         ### Part 2 #TODO
         # Primitive Decoder Block
-        self.Instructions(part_key = "PrimDecMEG",
+        self.Instructions(part_key = "PrimDecMEG1",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.magicWand],
+                      show_background = False)
+        self.learnDuration_3 = self.LearnCues(cue_center_pos = [0, 2])
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("learnDuration_3= " + str(self.learnDuration_3) + "\n")          
+        self.Instructions(part_key = "PrimDecMEG2",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoardMeg0123"]],
                       show_background = False)
+        start_width_before_block = self.start_width.copy()
+        self.df_out_9 = self.GenericBlock(self.trials_prim_dec,
+                                          mode = "random",
+                                          self_paced = True,
+                                          pause_between_runs = True,
+                                          runlength = 360,
+                                          feedback = True,
+                                          resp_keys = self.resp_keys_vpixx)
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = start_width_before_block + self.progbar_inc)
+        save_object(self.df_out_9, fname, ending = 'csv')
         
         ### Part 3
         # Primitive trials
@@ -1705,7 +1722,8 @@ class Experiment:
                                 {"trial": demoPosition,
                                   "feedback": False,
                                   "demonstration" : True}])
-        self.df_out_9 = self.GenericBlock(self.trials_prim_MEG,
+        start_width_before_block = self.start_width.copy()
+        self.df_out_10 = self.GenericBlock(self.trials_prim_MEG,
                                           mode = "random",
                                           durations = [1.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
@@ -1722,7 +1740,7 @@ class Experiment:
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
                               self.keyboard_dict["keyBoardMeg0123"]])
-        self.df_out_10 = self.GenericBlock(self.trials_bin_MEG,
+        self.df_out_11 = self.GenericBlock(self.trials_bin_MEG,
                                           mode = "random",
                                           durations = [2.0, 3.0, 0.6, 1.0, 0.7],
                                           self_paced = True,
@@ -1734,7 +1752,7 @@ class Experiment:
         # Finalization
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "generic_MEG"
-        save_object(self.df_out_9 + self.df_out_10, fname, ending = 'csv')
+        save_object(self.df_out_10 + self.df_out_11, fname, ending = 'csv')
         
         self.Instructions(part_key = "ByeBye")
         with open(self.fileName + ".txt", 'a') as f:
