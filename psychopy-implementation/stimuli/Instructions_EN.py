@@ -281,17 +281,17 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
 
 # TODO
 PrimDecMEG1 = [0,
-              "Now that you have familiarized yourself with the new objects,...",
+              "Now that you have familiarized yourself\nwith the new objects,...",
               "...you probably know what comes next.",
               "Next come three new spells,\nwhich are very similar to the ones\nyou have practiced earlier.",
-              "Have a look..."]
+              "Memorize them and press the spacebar, when you are done."]
 PrimDecMEG2 = ["You get a chance to practice applying the spells.",
-               "This time, only one object will be presented to you each trial.",
-               "Apply the cued spell on it and choose the object\ninto which you have transformed it."
+               "This time, only one object will be presented\nto you on each trial.",
+               "Apply the cued spell on it and choose the object\ninto which you have transformed it.",
                "Use the following keys:",
                0,
                "This will also help to fine-tune the magical helmet.",
-               "Try to move as little as possible:\nThe helmet will be "\
+               "Therefore, try to move as little as possible.\nThe helmet will be "\
                    "attuned quicker\nthis way.",
                "Ready?"]    
     
@@ -397,6 +397,8 @@ instructions ={
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
   "TestTypesReminder": AddProceedKey2All(TestTypesReminder, '/k'),
+  "PrimDecMEG1": AddProceedKey2All(PrimDecMEG1, '/k'),
+  "PrimDecMEG2": AddProceedKey2All(PrimDecMEG2, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
   "PrimitivesMEG": AddProceedKey2All(PrimitivesMEG, '/m'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),

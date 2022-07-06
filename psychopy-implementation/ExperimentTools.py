@@ -1669,15 +1669,13 @@ class Experiment:
         # Primitive Decoder Block
         self.Instructions(part_key = "PrimDecMEG1",
                       special_displays = [self.iSingleImage], 
-                      args = [self.magicWand],
-                      show_background = False)
+                      args = [self.magicWand])
         self.learnDuration_3 = self.LearnCues(cue_center_pos = [0, 2])
         with open(self.fileName + ".txt", 'a') as f:
             f.write("learnDuration_3= " + str(self.learnDuration_3) + "\n")          
         self.Instructions(part_key = "PrimDecMEG2",
                       special_displays = [self.iSingleImage], 
-                      args = [self.keyboard_dict["keyBoardMeg0123"]],
-                      show_background = False)
+                      args = [self.keyboard_dict["keyBoardMeg0123"]])
         start_width_before_block = self.start_width.copy()
         self.df_out_9 = self.GenericBlock(self.trials_prim_dec,
                                           mode = "random",
