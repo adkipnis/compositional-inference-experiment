@@ -829,7 +829,7 @@ for i in range(1, n_participants+1): #TODO
                     df_list.append(trial)
     trials_prim_decoder = np.random.permutation(df_list)
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_dec"
-    save_object(trials_localizer, fname, ending = ending)
+    save_object(trials_prim_decoder, fname, ending = ending)
             
 
 
