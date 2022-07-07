@@ -726,8 +726,8 @@ for i in range(1, n_participants+1): #TODO
     # then randomly permute both generated lists
     test_types = ["count", "position"]
     use_cases = ["", "_MEG"]
-    df_list = []
     for use_case in use_cases:
+        df_list = []
         for test_type in test_types:
             for j in range(maxn_blocks):
                 map_list_prim = select_sans_repeats(selection_prim,
@@ -751,8 +751,8 @@ for i in range(1, n_participants+1): #TODO
 
 
     # 2. Compositional blocks
-    df_list = []
     for use_case in use_cases:
+        df_list = []
         for test_type in test_types:
             for j in range(maxn_blocks):
                 map_list_binary = select_sans_repeats(selection_binary,
@@ -778,13 +778,13 @@ for i in range(1, n_participants+1): #TODO
     # 3. Functional Localizer blocks
     df_list = []
     
-    # cue trials
-    for cue_type in ["visual", "textual"]:
-        for j in range(len(selection_prim_loc)):
-            df_list.append(gen_trial_dict_loc(selection_prim_loc, j, cue_type))
-        for j in range(len(selection_prim_loc_query)):
-            df_list.append(gen_trial_dict_loc(selection_prim_loc_query,
-                                              j, cue_type, catch = True))
+    # # cue trials
+    # for cue_type in ["visual", "textual"]:
+    #     for j in range(len(selection_prim_loc)):
+    #         df_list.append(gen_trial_dict_loc(selection_prim_loc, j, cue_type))
+    #     for j in range(len(selection_prim_loc_query)):
+    #         df_list.append(gen_trial_dict_loc(selection_prim_loc_query,
+    #                                           j, cue_type, catch = True))
     
     # item trials
     for j in range(len(stimuli_loc)):
