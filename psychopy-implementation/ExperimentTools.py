@@ -568,7 +568,7 @@ class Experiment:
             # Third cycle: Feedback                                                     
             # immedeate feedback
             if feedback:
-                if type(testResp) is int:
+                if type(testResp) in [int, np.int64]:
                     self.rect.pos = self.resp_pos[testResp]
                     if trial.correct_resp == testResp:
                         self.rect.lineColor = self.color_dict["green"]
@@ -645,7 +645,7 @@ class Experiment:
             # Third cycle: Feedback                                                     
             # immedeate feedback
             if feedback:
-                if type(testResp) is int:
+                if type(testResp) in [int, np.int64]:
                     self.rect.pos = self.resp_pos[testResp]
                     if trial.correct_resp == testResp:
                         self.rect.lineColor = self.color_dict["green"]
@@ -1417,10 +1417,10 @@ class Experiment:
         # Get Demo trials
         demoTrials1 = data.TrialHandler(
             trials_test_1[0:1], 1, method="sequential")
-        for demoTrial1 in demoTrials1: True
+        demoTrial1 = demoTrials1.trialList[0]
         demoTrials2 = data.TrialHandler(
             trials_test_2[0:1], 1, method="sequential")
-        for demoTrial2 in demoTrials2: True
+        demoTrial2 = demoTrials2.trialList[0]
             
         # First Test-Type
         self.Instructions(part_key = "TestTypes",
