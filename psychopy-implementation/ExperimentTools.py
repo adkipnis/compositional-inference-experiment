@@ -461,7 +461,7 @@ class Experiment:
         return mode
 
 
-    def getIR(self, IRClock, min_s = 0.1, max_s = 60):
+    def getIR(self, IRClock, min_s = 0.1, max_s = 10):
         # get intermediate response
         intermediateResp = None
         core.wait(min_s)
@@ -497,7 +497,7 @@ class Experiment:
                 stim.draw()
         if self.use_pp: self.send_trigger("disp")
         self.win.flip()
-        if self_paced:
+        if self_paced: 
             intermediateRT = self.getIR(core.Clock())
         else:
             core.wait(duration)
@@ -518,7 +518,7 @@ class Experiment:
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
-        intermediateRT = self.getIR(core.Clock())
+        intermediateRT = self.getIR(core.Clock(), max_s = 360) #max 6 min break
         self.win.flip()
         return intermediateRT
 
@@ -847,7 +847,7 @@ class Experiment:
                      font = "Times New Roman",
                      fontcolor = [-0.9, -0.9, -0.9],
                      show_background = True,
-                     log_duration = True, #TODO
+                     log_duration = True,
                      loading_time = 2):
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
@@ -1687,7 +1687,7 @@ class Experiment:
             start_width = 0,
             end_width = self.progbar_inc)
         
-        ### Part 2 #TODO
+        ### Part 2 #TODO Make practice loop out of this?
         # Primitive Decoder Block
         self.Instructions(part_key = "PrimDecMEG1",
                       special_displays = [self.iSingleImage], 
