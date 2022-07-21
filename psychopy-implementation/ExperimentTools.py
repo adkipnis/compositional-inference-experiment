@@ -1309,6 +1309,41 @@ class Experiment:
         
         return trials.triallist, accuracy
     
+    
+    def LocalizerLoop(self, durations = [2.0, 2.0, 2.0, 1.0], min_acc = 0.8):
+        # Localizer Block
+        df_out, acc = self.LocalizerBlock(self.trials_localizer,
+                                                  durations = durations)
+        # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+        #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
+            
+        # Conditionally repeat or stop experiment
+        if acc < min_acc:
+            self.Instructions(part_key = "BadLocalizer",
+                          special_displays = [self.iSingleImage], 
+                          args = [self.keyboard_dict["keyBoardMegNY"]],
+                          show_background = False)
+            self.trials_localizer2 = np.random.permutation(
+                self.trials_localizer).tolist()
+            df_out_again, acc_2 = self.LocalizerBlock(
+                self.trials_localizer2, durations = [2, 2, 2, 1])
+            # save_object(self.df_out_8 + self.df_out_8_again,
+            #             fname, ending = 'csv')
+            if acc_2 < min_acc:
+                self.Instructions(part_key = "DropOut",
+                                  show_background = False)
+                with open(self.fileName + ".txt", 'a') as f:
+                    f.write("t_a = " + data.getDateStr() + "\n\n")
+                core.quit()
+            else:
+                df_out = df_out + df_out_again
+        # else:
+            # save_object(self.df_out_8, fname, ending = 'csv')
+        self.start_width = self.move_prog_bar(
+            start_width = 0,
+            end_width = self.progbar_inc)
+        
+        return df_out
 
     ###########################################################################
     # Introduction Session
@@ -1658,34 +1693,12 @@ class Experiment:
                       show_background = False)
         
         # Localizer Block
-        self.df_out_8, acc = self.LocalizerBlock(self.trials_localizer,
-                                                  durations = [2.0, 2.0, 2.0, 1.0])
+        self.df_out_8 = self.LocalizerLoop(durations = [2.0, 2.0, 2.0, 1.0],
+                                           min_acc = 0.8)
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
-            
-        # Conditionally repeat or stop experiment
-        if acc < 0.8:
-            self.Instructions(part_key = "BadLocalizer",
-                          special_displays = [self.iSingleImage], 
-                          args = [self.keyboard_dict["keyBoardMegNY"]],
-                          show_background = False)
-            self.trials_localizer2 = np.random.permutation(
-                self.trials_localizer).tolist()
-            self.df_out_8_again, acc_2 = self.LocalizerBlock(
-                self.trials_localizer2, durations = [2, 2, 2, 1])
-            save_object(self.df_out_8 + self.df_out_8_again,
-                        fname, ending = 'csv')
-            if acc_2 < 0.8:
-                self.Instructions(part_key = "DropOut",
-                                  show_background = False)
-                with open(self.fileName + ".txt", 'a') as f:
-                    f.write("t_a = " + data.getDateStr() + "\n\n")
-                core.quit()
-        else:
-            save_object(self.df_out_8, fname, ending = 'csv')
-        self.start_width = self.move_prog_bar(
-            start_width = 0,
-            end_width = self.progbar_inc)
+        save_object(self.df_out_8, fname, ending = 'csv')
+        
         
         ### Part 2 #TODO Make practice loop out of this?
         # Primitive Decoder Block
@@ -1784,7 +1797,119 @@ class Experiment:
         with open(self.fileName + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
+
+    ###########################################################################
+    # MEG Session (Version 2)
+    ###########################################################################
+    def Session3R(self):
+        self.win.mouseVisible = False
+        n_experiment_parts = 4
+        self.progbar_inc = 1/n_experiment_parts
         
+        ### Part 1
+        # Navigation
+        self.Instructions(part_key = "Navigation3",
+                      special_displays = [self.iSingleImage], 
+                      args = [self.keyboard_dict["keyBoardMegBF"]],
+                      font = "mono",
+                      fontcolor = self.color_dict["mid_grey"],
+                      show_background = False)
+        
+        # Introduction   
+        self.Instructions(part_key = "IntroMEG",
+                      special_displays = [self.iTransmutableObjects,
+                                          self.iSingleImage],
+                      args = [None,
+                              self.keyboard_dict["keyBoardMegNY"]],
+                      show_background = False)
+        
+        # Localizer Block
+        self.df_out_8 = self.LocalizerLoop(durations = [2.0, 2.0, 2.0, 1.0],
+                                           min_acc = 0.8)
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "localizer_MEG"
+        save_object(self.df_out_8, fname, ending = 'csv')
+        
+        
+        ### Part 2
+        # Primitive trials
+        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
+            method="sequential")
+        demoCount = demoCounts.trialList[0]
+        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1,
+            method="sequential")
+        demoPosition = demoPositions.trialList[0]
+        
+        self.Instructions(part_key = "PrimitivesMEG",                                
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoardMeg0123"]],
+                      complex_displays = [self.GenericBlock, self.GenericBlock,
+                                          self.GenericBlock, self.tCount, self.tPosition],
+                      kwargs = [{"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [2],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [3,7],
+                                  "durations" : [1.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_prim_prac_c,
+                                  "display_this": [4],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : True},
+                                {"trial": demoCount,
+                                  "feedback": False,
+                                  "demonstration" : True},
+                                {"trial": demoPosition,
+                                  "feedback": False,
+                                  "demonstration" : True}])
+        
+        start_width_before_block = self.start_width.copy()
+        self.df_out_10 = self.TestPracticeLoop(self.trials_prim_MEG,
+                                    mode = "random",
+                                    min_acc = 0.95,
+                                    durations = [1.0, 3.0, 0.6, 1.0, 0.7],
+                                    self_paced = True,
+                                    feedback = True,
+                                    pause_between_runs = True,
+                                    runlength = 360,
+                                    resp_keys = self.resp_keys_vpixx)
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = start_width_before_block + self.progbar_inc)
+        
+        ### Part 3
+        # Binary trials
+        self.Instructions(part_key = "BinariesMEG",
+                      special_displays = [self.iSingleImage, self.iSingleImage], 
+                      args = [self.magicWand,
+                              self.keyboard_dict["keyBoardMeg0123"]])
+        self.df_out_11 = self.TestPracticeLoop(self.trials_bin_MEG,
+                                    mode = "random",
+                                    min_acc = 0.75,
+                                    durations = [2.0, 3.0, 0.6, 1.0, 0.7],
+                                    self_paced = True,
+                                    feedback = True,
+                                    pause_between_runs = True,
+                                    runlength = 360,
+                                    resp_keys = self.resp_keys_vpixx)
+        self.move_prog_bar(start_width = self.start_width, end_width = 1)
+        
+        # Finalization
+        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
+            self.expInfo["dateStr"] + "_" + "generic_MEG"
+        save_object(self.df_out_10 + self.df_out_11, fname, ending = 'csv')
+        
+        self.Instructions(part_key = "ByeBye")
+        with open(self.fileName + ".txt", 'a') as f:
+            f.write("t_n = " + data.getDateStr() + "\n\n")
+        self.win.close()
+                
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
