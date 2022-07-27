@@ -45,6 +45,8 @@ class Experiment:
         self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
+        self.resp_keys_alt = np.array(
+            ["s", "d", "j", "k", "left", "right"])
         self.resp_keys_vpixx = np.array(
                 ["2", "1", "up", "left", "4", "right"]) #TODO right as NA answer
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
@@ -708,7 +710,7 @@ class Experiment:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
-                    elif thisKey == "right":
+                    elif thisKey in ["right", "space"]:
                         testResp = "NA"
                     elif thisKey == "escape":
                         with open(self.fileName + ".txt", 'a') as f:
@@ -1224,15 +1226,13 @@ class Experiment:
         return df_out    
     
     
-    def LocalizerBlock(self, trial_df, durations = [2.0, 2.0, 2.0, 1.0]):
+    def LocalizerBlock(self, trial_df, durations = [2.0, 2.0, 2.0, 1.0],
+                       resp_keys = []):
         # create the trial handler
-        trials = data.TrialHandler(
+        self.trials = data.TrialHandler(
             trial_df, 1, method = "sequential")
-        self.testRespList = []
-        self.corRespList = []
-        self.testRTList = []
         
-        for trial in trials:
+        for trial in self.trials:
             self.win.flip()
             if self.use_pp: self.send_trigger("trial")
             
@@ -1253,7 +1253,7 @@ class Experiment:
                 # Prepare query
                 if trial.type == "item":
                     # transform alphabetical to numeric
-                    name_index = ord(trial.content) - 65 
+                    name_index = ord(trial.query_stim) - 65 
                     name = self.item_names[name_index]
                     text = "Was the previous item a\n" + name +"?"
                 else:
@@ -1284,10 +1284,10 @@ class Experiment:
                 # Get response
                 TestClock = core.Clock()
                 testRT, testResp = self.tTestresponse(
-                    TestClock, self.resp_keys_vpixx)
+                    TestClock, resp_keys)
                 self.win.flip()
                 
-                # Interpret response according to mapping in self.resp_keys_vpixx
+                # Interpret response according to mapping in self.resp_keys_vpixx / self.resp_keys_alt
                 if testResp == 4:
                     testResp = False
                 elif testResp == 5:
@@ -1304,16 +1304,18 @@ class Experiment:
     
         # calculate accuracy
         correct_responses = [trial["emp_resp"] == trial["cor_resp"]
-                             for trial in trials if trial.catch]
+                             for trial in self.trials if trial.catch]
         accuracy = sum(correct_responses) / len(correct_responses)
         
-        return trials.triallist, accuracy
+        return self.trials.triallist, accuracy
     
     
-    def LocalizerLoop(self, durations = [2.0, 2.0, 2.0, 1.0], min_acc = 0.8):
+    def LocalizerLoop(self, durations = [2.0, 2.0, 2.0, 1.0], min_acc = 0.8,
+                      resp_keys = []):
         # Localizer Block
         df_out, acc = self.LocalizerBlock(self.trials_localizer,
-                                                  durations = durations)
+                                          durations = durations,
+                                          resp_keys = resp_keys)
         # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
         #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
             
@@ -1325,8 +1327,9 @@ class Experiment:
                           show_background = False)
             self.trials_localizer2 = np.random.permutation(
                 self.trials_localizer).tolist()
-            df_out_again, acc_2 = self.LocalizerBlock(
-                self.trials_localizer2, durations = [2, 2, 2, 1])
+            df_out_again, acc_2 = self.LocalizerBlock(self.trials_localizer2,
+                                                      durations = durations,
+                                                      resp_keys = resp_keys)
             # save_object(self.df_out_8 + self.df_out_8_again,
             #             fname, ending = 'csv')
             if acc_2 < min_acc:
@@ -1670,10 +1673,11 @@ class Experiment:
     ###########################################################################
     # MEG Session
     ###########################################################################
-    def Session3(self):
+    def Session3(self, resp_keys = "resp_keys_vpixx"):
         self.win.mouseVisible = False
         n_experiment_parts = 4
         self.progbar_inc = 1/n_experiment_parts
+        resp_keys = eval("self." + resp_keys)
         
         ### Part 1
         # Navigation
@@ -1694,7 +1698,8 @@ class Experiment:
         
         # Localizer Block
         self.df_out_8 = self.LocalizerLoop(durations = [2.0, 2.0, 2.0, 1.0],
-                                           min_acc = 0.8)
+                                           min_acc = 0.8,
+                                           resp_keys = resp_keys)
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
         save_object(self.df_out_8, fname, ending = 'csv')
@@ -1718,7 +1723,7 @@ class Experiment:
                                           pause_between_runs = True,
                                           runlength = 360,
                                           feedback = True,
-                                          resp_keys = self.resp_keys_vpixx)
+                                          resp_keys = resp_keys)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)
@@ -1768,7 +1773,7 @@ class Experiment:
                                           self_paced = True,
                                           pause_between_runs = True,
                                           runlength = 360,
-                                          resp_keys = self.resp_keys_vpixx)
+                                          resp_keys = resp_keys)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)
@@ -1801,10 +1806,11 @@ class Experiment:
     ###########################################################################
     # MEG Session (Version 2)
     ###########################################################################
-    def Session3R(self):
+    def Session3R(self, resp_keys = "resp_keys_vpixx"):
         self.win.mouseVisible = False
         n_experiment_parts = 4
         self.progbar_inc = 1/n_experiment_parts
+        resp_keys = eval("self." + resp_keys)
         
         ### Part 1
         # Navigation
@@ -1825,7 +1831,8 @@ class Experiment:
         
         # Localizer Block
         self.df_out_8 = self.LocalizerLoop(durations = [2.0, 2.0, 2.0, 1.0],
-                                           min_acc = 0.8)
+                                           min_acc = 0.8,
+                                           resp_keys = resp_keys)
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
         save_object(self.df_out_8, fname, ending = 'csv')
@@ -1840,7 +1847,7 @@ class Experiment:
             method="sequential")
         demoPosition = demoPositions.trialList[0]
         
-        self.Instructions(part_key = "PrimitivesMEG",                                
+        self.Instructions(part_key = "PrimitivesMEGR",                                
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
                               self.keyboard_dict["keyBoardMeg0123"]],
@@ -1877,7 +1884,7 @@ class Experiment:
                                     feedback = True,
                                     pause_between_runs = True,
                                     runlength = 360,
-                                    resp_keys = self.resp_keys_vpixx)
+                                    resp_keys = resp_keys)
         self.start_width = self.move_prog_bar(
             start_width = self.start_width,
             end_width = start_width_before_block + self.progbar_inc)
@@ -1896,7 +1903,7 @@ class Experiment:
                                     feedback = True,
                                     pause_between_runs = True,
                                     runlength = 360,
-                                    resp_keys = self.resp_keys_vpixx)
+                                    resp_keys = resp_keys)
         self.move_prog_bar(start_width = self.start_width, end_width = 1)
         
         # Finalization
