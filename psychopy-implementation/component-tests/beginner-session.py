@@ -12,13 +12,12 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(res = [1900, 1080], screen = 1, fullscr = False)
+Exp.init_window(screen = 1, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
 Exp.load_trials()
-Exp.render_visuals()
+Exp.render_visuals(check_similarity = True)
 Exp.init_progbar(bar_pos = [0, 15])
-Exp.win.mouseVisible = False
 
 # Run MEG Session task
-Exp.Session1()
+Exp.Session1(check_similarity = True)
 Exp.win.close()
