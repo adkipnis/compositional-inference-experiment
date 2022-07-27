@@ -218,7 +218,7 @@ class Experiment:
             center_pos = [0, -8], h_dist = 8, dim = (1, self.n_cats))
 
 
-    def render_visuals(self):
+    def render_visuals(self, check_similarity = False):
         self.rect = visual.Rect(
             win = self.win,
             units="deg",
@@ -317,6 +317,20 @@ class Experiment:
                 color = self.color_dict["black"])})
         self.tcue_dict = tcue_dict
         
+        # Render all textual cues for similarity check
+        if check_similarity:
+            tcue_full = {}
+            for i in range(len(tcue_list)):
+                cue_name = tcue_list[i] # tcue identifier
+                tcue_full.update({cue_name: visual.TextStim(
+                    self.win,
+                    text = tcue_list[i],
+                    pos = self.center_pos,
+                    height = 4,
+                    color = self.color_dict["black"])})
+            self.tcue_full = tcue_full
+            
+    
         # Visual cues
         vcue_list = self.mappinglists["vcue"]
         # use latter half of cues for MEG-Session
@@ -335,6 +349,20 @@ class Experiment:
                 interpolate = True)})
         self.vcue_dict = vcue_dict
         
+        # Render all visual cues for similarity check
+        if check_similarity:
+            vcue_full = {}
+            for i in range(len(vcue_list)):
+                cue_name = vcue_list[i][-5] # vcue identifier
+                vcue_full.update({cue_name: visual.ImageStim(
+                    self.win,
+                    image=vcue_list[i],
+                    pos = self.center_pos,
+                    size = self.vcue_size,
+                    interpolate = True)})
+            self.vcue_full = vcue_full
+            
+    
         # Stimuli
         stim_list = self.mappinglists["stim"]
         assert len(stim_list) >= 2*self.n_cats
