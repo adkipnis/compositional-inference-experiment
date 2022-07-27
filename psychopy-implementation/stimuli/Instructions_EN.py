@@ -219,12 +219,12 @@ Navigation2 = [0,
               ]
 
 Navigation3 = [0,
-              "This is the third and final session of the experiment.",
+              "This is the final session of the experiment.",
               "If you need to abort the experiment,\nor you have any questions,\n"\
                   "please ask the examiner.",
               "Now, the experiment begins..."
               ]
-    
+
 Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
                    " want to make sure\nyou remember them correctly.",
                "In her wise anticipation, Philbertine provides you\nwith a"\
@@ -322,8 +322,41 @@ PrimitivesMEG = [0,
               "The magical helmet is now accustomed\nto your thought patterns.",
               "It says, you have a beautiful mind. :)",
               "You will surely put it to good use in the exam.",
-              "In the first of two parts,\nyour task is the one you practices in the last sessions.",
+              "In the first of two exam parts,\nyour task is the one you practiced in the last session.",
               "You hopefully still remember it, but here's a reminder:",
+              "You first see a set of objects:\n(1) Memorize the presented objects.",
+              0.0,
+              "When you are done with memorizing:\n(2) Press the right thumb button.",
+              "You will then see a spell cue.",
+              1.0,
+              "(3) In your head, apply it to the memorized display.",
+              "When you are done:\n(4) Press the right thumb button.",
+              2.0,
+              "Then you can receive one of two possible test displays:\nCounting or Position.",
+              "Type 1 - Counting: You will see an object category and integers on the bottom.",
+              3.0,
+              "(5) From the options below, choose how often "\
+              "this object appears in the scene after the transformation.",
+              "Type 2 - Position query: You will see all the squares on which the objects stood, "\
+                         "one of them will be marked.",
+              4.0,
+              "(5) From the options below, choose the object that would be "\
+                     "on the marked square after the transformation.",
+              "Use the following keys:",
+              1,
+              "If you don't know the answer, press the (red) 'next/halt' key.",
+              "Be as accurate as possible\n-\nyour reward will depend on it!",
+              "Remember to move as little as possible for the helmet.",
+              "Ready to begin the exam?"]
+
+PrimitivesMEGR = [0,
+              "The magical helmet is now accustomed\nto your thought patterns.",
+              "It says, you have a beautiful mind. :)",
+              "You will surely put it to good use in the exam.",
+              "In the first of two exam parts,\nyour task is the one you practiced in the last session.",
+              "One important difference: You will not know"\
+                  "\nwhich of the two tests comes at the end of any trial.",
+              "You hopefully still remember the procedure, but here's a reminder:",
               "You first see a set of objects:\n(1) Memorize the presented objects.",
               0.0,
               "When you are done with memorizing:\n(2) Press the right thumb button.",
@@ -396,12 +429,16 @@ instructions ={
   "exp": "CompInf",
   "Navigation1": AddProceedKey2All(Navigation1, '/k'),
   "Navigation2": AddProceedKey2All(Navigation2, '/k'),
-  "Navigation3": AddProceedKey2All(Navigation3, '/m'),
+  # "Navigation3": AddProceedKey2All(Navigation3, '/m'),
+  "Navigation3": AddProceedKey2All(Navigation3, '/k'),
   "Intro": AddProceedKey2All(Intro, '/k'),
   "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
-  "IntroMEG": AddProceedKey2All(IntroMEG, '/m'),  
-  "BadLocalizer": AddProceedKey2All(BadLocalizer, '/m'),
-  "DropOut": AddProceedKey2All(DropOut, '/m'),
+  # "IntroMEG": AddProceedKey2All(IntroMEG, '/m'),  
+  "IntroMEG": AddProceedKey2All(IntroMEG, '/k'),  
+  # "BadLocalizer": AddProceedKey2All(BadLocalizer, '/m'),
+  "BadLocalizer": AddProceedKey2All(BadLocalizer, '/k'),
+  # "DropOut": AddProceedKey2All(DropOut, '/m'),
+  "DropOut": AddProceedKey2All(DropOut, '/k'),
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),
@@ -415,11 +452,14 @@ instructions ={
   "PrimDecMEG1": AddProceedKey2All(PrimDecMEG1, '/k'),
   "PrimDecMEG2": AddProceedKey2All(PrimDecMEG2, '/k'),
   "Primitives": AddProceedKey2All(Primitives, '/k'),
-  "PrimitivesMEG": AddProceedKey2All(PrimitivesMEG, '/m'),
+  # "PrimitivesMEG": AddProceedKey2All(PrimitivesMEG, '/m'),
+  "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEG, '/k'),
   "Binaries": AddProceedKey2All(Binaries, '/k'),
-  "BinariesMEG": AddProceedKey2All(BinariesMEG, '/m'),
+  # "BinariesMEG": AddProceedKey2All(BinariesMEG, '/m'),
+  "BinariesMEG": AddProceedKey2All(BinariesMEG, '/k'),
   "Bye": AddProceedKey2All(Bye, '/k'),
-  "ByeBye": AddProceedKey2All(ByeBye, '/m'),
+  # "ByeBye": AddProceedKey2All(ByeBye, '/m'),
+  "ByeBye": AddProceedKey2All(ByeBye, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
