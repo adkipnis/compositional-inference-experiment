@@ -21,5 +21,5 @@ Exp.win.mouseVisible = False
 
 # Run Cue Practice Session task
 df_out = Exp.CuePracticeLoop(Exp.trials_prim_cue, "visual", "textual",
-                             mode = "textual", i_step = 10)
+                             i_step = 10)
 Exp.win.close()

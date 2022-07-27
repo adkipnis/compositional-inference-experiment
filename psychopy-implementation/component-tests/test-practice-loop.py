@@ -12,7 +12,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(res = [1900, 1080], screen = 1, fullscr = False)
+Exp.init_window(screen = 1, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
 Exp.load_trials()
 Exp.render_visuals()
@@ -23,7 +23,8 @@ Exp.progbar_inc = 1/2
 
 # Run test practice loop
 df_out_3 = Exp.TestPracticeLoop(
-    Exp.trials_prim_prac_p,
+    Exp.trials_prim,
+    durations = [2.0, 3.0, 0.6, 1.0, 0.7],
     min_acc = 0.95,
     self_paced = True,
     feedback = True,

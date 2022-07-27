@@ -14,6 +14,7 @@ from ExperimentTools import Experiment
 Exp = Experiment()
 Exp.init_window(screen = 1, fullscr = True)
 Exp.dialoguebox(show = False, session = "1")
+Exp.expInfo["session"] = "3"
 Exp.load_trials()
 Exp.render_visuals()
 Exp.init_progbar(bar_pos = [0, 15])

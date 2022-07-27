@@ -20,5 +20,5 @@ Exp.init_progbar(bar_pos = [0, 15])
 Exp.win.mouseVisible = False
 
 # Run localizer task
-Exp.LocalizerBlock(Exp.trials_localizer)
+Exp.LocalizerBlock(Exp.trials_localizer, resp_keys = Exp.resp_keys_alt)
 Exp.win.close()
