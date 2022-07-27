@@ -289,13 +289,16 @@ class Experiment:
         self.ratingScale = visual.RatingScale(
             self.win,
             low = 0, high = 10,
+            pos = [0.0, -0.2],
             marker = "slider",
             markerStart = None,
+            lineColor = "white",
             labels = ["0: identical", "10: fully opposing"],
-            stretch = 1.5,
+            stretch = 1.25,
             textSize = 0.75,
             textFont = "mono",
-            mouseOnly = True,
+            mouseOnly = False,
+            acceptKeys = 'space',
             scale = None)
         
         # Cue Dictionaries
@@ -733,6 +736,18 @@ class Experiment:
         self.win.flip()
         core.wait(duration)
 
+    def tSimilarity(self, stim_1, stim_2, pos_1, pos_2):
+        self.ratingScale.reset()
+        while self.ratingScale.noResponse:
+            stim_1.pos = pos_1
+            stim_1.draw()
+            stim_2.pos = pos_2
+            stim_2.draw()
+            self.ratingScale.draw()
+            self.win.flip()
+        rating = self.ratingScale.getRating()
+        RT = self.ratingScale.getRT()
+        return rating, RT
 
     def tTestresponse(self, TestClock, respKeys, return_numeric = True, 
                       max_wait = np.inf):
@@ -1390,17 +1405,56 @@ class Experiment:
             end_width = self.progbar_inc)
         
         return df_out
-
+    
+    def CueSimilarityTest(self, cue_dict, pos_1 = [-5,0], pos_2 = [5,0]):
+        # Prepare visual comparisons
+        stim_names = list(cue_dict.keys())
+        unique_pairs = []
+        for i in range(len(stim_names)):
+            for j in range(i, len(stim_names)):
+                unique_pairs.append((stim_names[i], stim_names[j]))
+        unique_pairs = np.random.permutation(unique_pairs)
+        
+        # Perform visual comparisons
+        triallist = []
+        for pair in unique_pairs:
+            stim_1 = cue_dict[pair[0]]
+            stim_2 = cue_dict[pair[1]]
+            rating, RT = self.tSimilarity(stim_1, stim_2, pos_1, pos_2)
+            triallist.append({"cue_1": pair[0],
+                              "cue_2": pair[1],
+                              "dissimilarity": rating,
+                              "RT": RT})
+            self.win.flip()
+            core.wait(0.5)
+        return triallist
+    
     ###########################################################################
     # Introduction Session
     ###########################################################################
-    def Session1(self):
+    def Session1(self, check_similarity = False):
         # globalClock = core.Clock()
-        self.win.mouseVisible = False
         n_experiment_parts = 5
         self.progbar_inc = 1/n_experiment_parts
         
+        # Similarity Task
+        if check_similarity:
+            self.df_sim1 = self.CueSimilarityTest(
+                self.vcue_full,
+                pos_1 = [-5, self.center_pos[1]],
+                pos_2 = [5, self.center_pos[1]]) 
+            core.wait(1)
+            self.df_sim2 = self.CueSimilarityTest(
+                self.tcue_full,
+                pos_1 = [sum(x) for x in zip(self.center_pos, [0, 6])],
+                pos_2 = [sum(x) for x in zip(self.center_pos, [0, 0])])
+            
+            fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
+                self.expInfo["dateStr"] + "_" +"similarity"
+            save_object(self.df_sim1 + self.df_sim2, fname, ending = 'csv')
+        
         # Navigation
+        self.win.mouseVisible = False
         self.Instructions(part_key = "Navigation1",
                       special_displays = [self.iSingleImage,
                                           self.iSingleImage], 
