@@ -286,6 +286,17 @@ class Experiment:
             units="pix",
             size=[640, 575], interpolate=True)
         
+        self.ratingScale = visual.RatingScale(
+            self.win,
+            low = 0, high = 10,
+            marker = "slider",
+            markerStart = None,
+            labels = ["0: identical", "10: fully opposing"],
+            stretch = 1.5,
+            textSize = 0.75,
+            textFont = "mono",
+            mouseOnly = True,
+            scale = None)
         
         # Cue Dictionaries
         tcue_list = self.mappinglists["tcue"]
