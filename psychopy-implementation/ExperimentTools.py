@@ -1271,7 +1271,7 @@ class Experiment:
                 textStim.draw()
                 self.win.flip()
                 if self.use_pp: self.send_trigger("identity")
-                core.wait(durations[2])
+                # core.wait(durations[2])
                 
                 # For Cue trials, display display cue of other type
                 if trial.type != "item":
@@ -1677,6 +1677,7 @@ class Experiment:
         self.win.mouseVisible = False
         n_experiment_parts = 4
         self.progbar_inc = 1/n_experiment_parts
+        self.start_width = 0
         resp_keys = eval("self." + resp_keys)
         
         ### Part 1
@@ -1808,8 +1809,9 @@ class Experiment:
     ###########################################################################
     def Session3R(self, resp_keys = "resp_keys_vpixx"):
         self.win.mouseVisible = False
-        n_experiment_parts = 4
+        n_experiment_parts = 3
         self.progbar_inc = 1/n_experiment_parts
+        self.start_width = 0
         resp_keys = eval("self." + resp_keys)
         
         ### Part 1
@@ -1833,6 +1835,9 @@ class Experiment:
         self.df_out_8 = self.LocalizerLoop(durations = [2.0, 2.0, 2.0, 1.0],
                                            min_acc = 0.8,
                                            resp_keys = resp_keys)
+        self.start_width = self.move_prog_bar(
+            start_width = self.start_width,
+            end_width = self.progbar_inc)
         fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
             self.expInfo["dateStr"] + "_" + "localizer_MEG"
         save_object(self.df_out_8, fname, ending = 'csv')
@@ -1891,10 +1896,27 @@ class Experiment:
         
         ### Part 3
         # Binary trials
-        self.Instructions(part_key = "BinariesMEG",
+        self.Instructions(part_key = "BinariesMEGR",
                       special_displays = [self.iSingleImage, self.iSingleImage], 
                       args = [self.magicWand,
-                              self.keyboard_dict["keyBoardMeg0123"]])
+                              self.keyboard_dict["keyBoardMeg0123"]],
+                      complex_displays = [self.GenericBlock, self.GenericBlock,
+                                          self.GenericBlock],
+                      kwargs = [{"trial_df": self.trials_bin_MEG,
+                                  "display_this": [2],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_bin_MEG,
+                                  "display_this": [3,7],
+                                  "durations" : [1.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : False},
+                                {"trial_df": self.trials_bin_MEG,
+                                  "display_this": [4],
+                                  "durations" : [0.0, 0.0, 0.0, 0.0, 0.0],
+                                  "i_step" : 1,
+                                  "test" : True}])
         self.df_out_11 = self.TestPracticeLoop(self.trials_bin_MEG,
                                     mode = "random",
                                     min_acc = 0.75,
