@@ -110,6 +110,7 @@ class Experiment:
             f.write("t0 = " + expInfo["dateStr"] + "\n")
             f.write("session = " + expInfo["session"] + "\n")
         self.expInfo = expInfo
+        self.exp_clock = core.Clock()
         
         # Optionally init parallel port
         if not dev and expInfo["session"] == "3":
@@ -956,6 +957,7 @@ class Experiment:
             trials_prim_cue, 1, method="sequential")
         
         for trial in trials:
+            trial["start_time"] = self.exp_clock.getTime()
             num_cr = len(trial.correct_resp)
             testRespList = []
             testRTList = []
@@ -1078,6 +1080,7 @@ class Experiment:
         for trial in trials:
             if add_jitter: jitter = trial.jitter
             self.win.flip()
+            trial["start_time"] = self.exp_clock.getTime()
             if self.use_pp: self.send_trigger("trial")
             
             # 1. Fixation
@@ -1235,6 +1238,7 @@ class Experiment:
         for trial in self.trials:
             self.win.flip()
             if self.use_pp: self.send_trigger("trial")
+            trial["start_time"] = self.exp_clock.getTime()
             
             # 1. Fixation
             self.tFixation()
