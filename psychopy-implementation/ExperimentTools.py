@@ -42,7 +42,7 @@ class Experiment:
             os.makedirs(self.data_dir)
             
         # inputs and dimensions
-        self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
+        self.resp_keys = np.array(["s", "d", "j", "k"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
         self.resp_keys_alt = np.array(
@@ -241,7 +241,7 @@ class Experiment:
 
         self.nextPrompt = visual.TextStim(
             self.win,
-            text = "Go back if you are not finished,\notherwise press 'next' to continue.",
+            text = "Navigate 'left' if you are not finished,\notherwise navigate 'right' to continue.",
             height = 1.5,
             wrapWidth = 40,
             font = "mono",
