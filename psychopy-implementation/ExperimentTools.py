@@ -1236,8 +1236,7 @@ class Experiment:
                       special_displays = [self.iSingleImage],
                       args = [accPrompt])
             if show_cheetsheet and mean_acc < min_acc:
-                    self.LearnCues(cue_center_pos = [0, 2], 
-                              modes = [first_modality, second_modality])
+                    self.LearnCues()
             core.wait(2)
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
@@ -1270,12 +1269,12 @@ class Experiment:
             # repeat or wrap up
             i += i_step    
             if mean_acc < min_acc:
-                feedbacktype = "Feedback0" 
+                feedbacktype = "Feedback0Test" 
             else: 
                 feedbacktype = "Feedback1"  
             self.Instructions(part_key = feedbacktype,
                               special_displays = [self.iSingleImage],
-                              args = [accPrompt])        
+                              args = [accPrompt])    
         df_out = [item for sublist in df_list for item in sublist]
         return df_out    
     
@@ -1484,8 +1483,7 @@ class Experiment:
             second_modality = "visual"
         
         # Learn first cue type
-        self.learnDuration_1 = self.LearnCues(cue_center_pos = [0, 2], 
-                                    modes = [first_modality, second_modality])
+        self.learnDuration_1 = self.LearnCues()
         with open(self.fileName + ".txt", 'a') as f:
             f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")          
         self.start_width = self.move_prog_bar(
@@ -1507,8 +1505,7 @@ class Experiment:
         self.Instructions(part_key = "Intermezzo2",
                       special_displays = [self.iSingleImage], 
                       args = [self.keyboard_dict["keyBoard" + str(self.n_cats)]])
-        self.learnDuration_2 = self.LearnCues(cue_center_pos = [0, 2], 
-                                    modes = [first_modality, second_modality])  
+        self.learnDuration_2 = self.LearnCues()  
         with open(self.fileName + ".txt", 'a') as f:
             f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
         
@@ -1803,7 +1800,7 @@ class Experiment:
         self.Instructions(part_key = "PrimDecMEG1",
                       special_displays = [self.iSingleImage], 
                       args = [self.magicWand])
-        self.learnDuration_3 = self.LearnCues(cue_center_pos = [0, 2])
+        self.learnDuration_3 = self.LearnCues()
         with open(self.fileName + ".txt", 'a') as f:
             f.write("learnDuration_3= " + str(self.learnDuration_3) + "\n")          
         self.Instructions(part_key = "PrimDecMEG2",
