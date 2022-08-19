@@ -48,7 +48,7 @@ class Experiment:
         self.resp_keys_alt = np.array(
             ["s", "d", "j", "k", "left", "right"])
         self.resp_keys_vpixx = np.array(
-                ["2", "1", "up", "left", "4", "right"]) #TODO right as NA answer
+                ["2", "1", "up", "left", "4", "right"])
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
         self.center_pos = [0, 5]
@@ -241,10 +241,9 @@ class Experiment:
 
         self.nextPrompt = visual.TextStim(
             self.win,
-            text = "Press Spacebar to go back \nor press the Enter key to"\
-                " continue to next section.",
+            text = "Go back if you are not finished,\notherwise press 'next' to continue.",
             height = 1.5,
-            wrapWidth = 30,
+            wrapWidth = 40,
             font = "mono",
             color = self.color_dict["mid_grey"])
 
@@ -513,7 +512,7 @@ class Experiment:
         while intermediateResp == None and IRClock.getTime() < max_s:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-                if thisKey in ["space", "right"]:  
+                if thisKey in ["right"]:  
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -765,7 +764,7 @@ class Experiment:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
-                    elif thisKey in ["right", "space"]:
+                    elif thisKey in ["right"]:
                         testResp = "NA"
                     elif thisKey == "escape":
                         with open(self.fileName + ".txt", 'a') as f:
@@ -859,7 +858,7 @@ class Experiment:
         # get response or wait or something in between
         if proceed_key == "/k": #keypress
             _, testResp = self.tTestresponse(
-                TestClock, ["left", "right", "space"],
+                TestClock, ["left", "right"],
                 return_numeric = False)
         if proceed_key == "/m": #meg keypress
             _, testResp = self.tTestresponse(
@@ -870,7 +869,7 @@ class Experiment:
             testResp = "right"
         elif proceed_key == "/e": #either
             _, testResp = self.tTestresponse(
-                TestClock, ["left", "right", "space"],
+                TestClock, ["left", "right"],
                 return_numeric = False,
                 max_wait = wait_s)
             if testResp is None:
@@ -882,17 +881,15 @@ class Experiment:
                 page +=1
             elif continue_after_last_page:
                 finished = True
+            else:
+                self.nextPrompt.draw()
+                self.win.flip()
+                _, contResp = self.tTestresponse(TestClock, ["left", "right"],
+                                                 return_numeric = False)
+                if contResp == "right": finished = True
         elif testResp in ["left", self.resp_keys_vpixx[-2]] and page > 0:
             page -= 1
-        elif testResp == "space":
-            self.nextPrompt.draw()
-            self.win.flip()
-            _, contResp = self.tTestresponse(TestClock, ["return", "space"],
-                                        return_numeric = False)
-            if contResp == "space":
-                finished = False
-            elif  contResp == "return":
-                finished = True  
+        
         return page, finished 
     
     # Blocks and Loops---------------------------------------------------------
@@ -1470,14 +1467,12 @@ class Experiment:
                                           self.iSingleImage,
                                           self.iTransmutableObjects,
                                           self.iSpellExample,
-                                          self.iSpellExample,
-                                          self.iSingleImage], 
+                                          self.iSpellExample], 
                       args = [self.magicBooks,
                               self.philbertine,
                               None,
                               [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]],
-                              self.keyboard_dict["keyBoardSpacebar"]])
+                              [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
         
         # -------------------------------------------------------------------
         # Balance out which cue modality is learned first

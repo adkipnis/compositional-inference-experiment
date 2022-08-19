@@ -162,7 +162,7 @@ DropOut = ["Luck is not on your side today.",
 Feedback0 = ["In this training run, your score was:",
              0,
              "You feel like you can do better, so you decide to have another "\
-                 "look at the cheet sheet and then train a little more."]
+                 "look at the cheat sheet and then train a little more."]
     
 Feedback1 = ["In this training run, your score was:", 
              0, 
@@ -189,8 +189,7 @@ Intro = ["You are a magic novice, preparing for your Alteration studies.",
          "You need to spend some time to study them really well.",
              "Specifically, you need to learn the exact name and symbol "\
          "which are associated with each respective spell.",
-         "When you are done with studying,\nyou may press the spacebar:",
-         5,
+         "You may go back across the cheat sheet pages.",
          "Ready?"]
 
 IntroAdvanced = ["Since the last time, you have advanced in your Alteration studies.",
@@ -271,7 +270,7 @@ Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
                 "Again, you choose the objects using\nthe marked keys on your keyboard:",
                 0,
                 "If you don't know the answer, press the (red) 'next/halt' key.",
-                "Just as a refresher you get a second look\nat Philbertines cheet sheet before you continue."]
+                "Just as a refresher you get a second look\nat Philbertines cheat sheet before you continue."]
 
 positionFirst = ["Here is what you do:",
                 "(1) Memorize the presented objects:",
@@ -319,7 +318,7 @@ PrimDecMEG1 = [0,
               "Now that you have familiarized yourself\nwith the new objects,...",
               "...you probably know what comes next.",
               "Next come three new spells,\nwhich are very similar to the ones\nyou have practiced earlier.",
-              "Memorize them and press the spacebar, when you are done."]
+              "Memorize them."]
 PrimDecMEG2 = ["You get a chance to practice applying the spells.",
                "This time, only one object will be presented\nto you on each trial.",
                "Apply the cued spell on it and choose the object\ninto which you have transformed it.",
