@@ -12,7 +12,7 @@ import pandas as pd
 stim_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(stim_dir)
 tcue_list = pd.read_csv(stim_dir + os.sep + "spell_names.csv").columns.tolist()
-nMaps = len(tcue_list)
+nMaps = round(len(tcue_list)/2)
 
 def AddProceedKey(instruction_list, proceed_key, indices, wait_s = 3):
     instruction_list_new = instruction_list.copy()
@@ -260,8 +260,8 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                "...and (2) the object into which it is transformed.",
                "You choose the two objects using the marked keys\non your keyboard:",
                0,
-               "These keys will correspond to your options\nfrom left to right.",
-               "If you don't know the answer, press the (red) 'next/halt' key.",
+               "The blue keys will correspond to your options\nfrom left to right.",
+               "If you don't know the answer,\npress the (red) 'next/halt' key.",
                "Place your fingers\non only the marked keys now.",
                "Ready?"]
     
