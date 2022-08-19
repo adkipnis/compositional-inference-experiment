@@ -163,7 +163,9 @@ Feedback0 = ["In this training run, your score was:",
              0,
              "You feel like you can do better, so you decide to have another "\
                  "look at the cheat sheet and then train a little more."]
-    
+Feedback0Test =  ["In this training run, your score was:",
+                  0,
+                  "You feel like you can do better."]   
 Feedback1 = ["In this training run, your score was:", 
              0, 
              "This is good, you are confident to continue..."]
@@ -256,7 +258,7 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                    " two corresponding objects:",
                "(1) The object which is susceptible to the spell",
                "...and (2) the object into which it is transformed.",
-               "You choose the objects using the marked keys\non your keyboard:",
+               "You choose the two objects using the marked keys\non your keyboard:",
                0,
                "These keys will correspond to your options\nfrom left to right.",
                "If you don't know the answer, press the (red) 'next/halt' key.",
@@ -465,6 +467,7 @@ instructions ={
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   "Feedback0": AddProceedKey2All(Feedback0, '/k'),
+  "Feedback0Test": AddProceedKey2All(Feedback0Test, '/k'),
   "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),
   "positionFirst": AddProceedKey2All(positionFirst, '/k'),
