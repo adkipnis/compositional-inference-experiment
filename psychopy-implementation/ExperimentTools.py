@@ -42,7 +42,7 @@ class Experiment:
             os.makedirs(self.data_dir)
             
         # inputs and dimensions
-        self.resp_keys = np.array(["s", "d", "j", "k"])
+        self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
         self.resp_keys_alt = np.array(
@@ -85,9 +85,14 @@ class Experiment:
                 
 
 
-    def dialoguebox(self, participant = "01", session = "1", show = True, 
+    def dialoguebox(self, participant = None, session = "1", show = True, 
                     dev = False):
         # Store info about the experiment session
+        if participant is None:
+            savefiles = glob.glob(self.data_dir + os.sep + "*.txt")
+            names = [int(os.path.basename(x)[:2]) for x in savefiles]
+            participant = str(max(names)+1).zfill(2)
+        
         psychopyVersion = __version__
         expName = "CompositionalInference"
         expInfo = {"participant": participant, "session": session}
@@ -292,7 +297,7 @@ class Experiment:
             marker = "slider",
             markerStart = None,
             lineColor = "white",
-            labels = ["0: identical", "10: fully opposing"],
+            labels = ["0: very similar", "10: very different"],
             stretch = 1.25,
             textSize = 0.75,
             textFont = "mono",
