@@ -8,11 +8,11 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 1)
-Exp.dialoguebox(show = False)
+Exp.init_window(screen=1)
+Exp.dialoguebox(show=True)
 Exp.load_trials()
 Exp.render_visuals()
-Exp.init_progbar(bar_pos = [0, 15])
+Exp.init_progbar(bar_pos=[0, 15])
 
 # Start Experiment
 if Exp.expInfo["session"] in ['1', '2', '3']:
