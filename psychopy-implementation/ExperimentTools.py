@@ -74,37 +74,35 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
 
-    def dialoguebox(self, participant=None, session="1", show=True,
-                    dev=False):
+    def dialogue_box(self, participant=None, session="1", show=True, dev=False):
         # Store info about the experiment session
         if participant is None:
-            savefiles = glob.glob(self.data_dir + os.sep + "*.txt")
-            names = [int(os.path.basename(x)[:2]) for x in savefiles]
-            if len(names) == 0:
-                names = [0]
+            savefiles = glob.glob(f"{self.data_dir}{os.sep}*.txt")
+            names = [0] + [int(os.path.basename(file)[:2])
+                           for file in savefiles]
             participant = str(max(names)+1).zfill(2)
 
-        psychopyVersion = __version__
-        expName = "CompositionalInference"
-        expInfo = {"participant": participant, "session": session}
-        expInfo["dateStr"] = data.getDateStr()  # add the current time
-        expInfo["psychopyVersion"] = psychopyVersion
-        expInfo["frameRate"] = self.win.getActualFrameRate()
+        expName = "Alteration Magic Experiment"
+        expInfo = {"participant": participant,
+                   "session": session,
+                   "dateStr": data.getDateStr(),
+                   "psychopyVersion": __version__,
+                   "frameRate": self.win.getActualFrameRate()}
 
         # Dialogue Box
         if show:
             dlg = gui.DlgFromDict(dictionary=expInfo,
                                   sortKeys=False,
-                                  title=expName)
+                                  title=expName,
+                                  fixed=["dateStr", "psychopyVersion", "frameRate"])
             if not dlg.OK:
                 core.quit()
 
         # Save data to this file later
-        self.fileName = self.main_dir + os.sep +\
-            u"data/%s_%s" % (expInfo["participant"], expName)
-        with open(self.fileName + ".txt", 'a') as f:
-            f.write("t0 = " + expInfo["dateStr"] + "\n")
-            f.write("session = " + expInfo["session"] + "\n")
+        self.file_name = f"{self.data_dir}{os.sep}{expInfo['participant']}_{expName}"
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"t0 = {expInfo['dateStr']}\n")
+            f.write(f"session = {expInfo['session']}\n")
         self.expInfo = expInfo
         self.exp_clock = core.Clock()
 
@@ -508,7 +506,7 @@ class Experiment:
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
-                    with open(self.fileName + ".txt", 'a') as f:
+                    with open(self.file_name + ".txt", 'a') as f:
                         f.write("t_a = " + data.getDateStr() + "\n\n")
                     core.quit()  # abort experiment
             event.clearEvents()
@@ -760,7 +758,7 @@ class Experiment:
                     elif thisKey in ["right"]:
                         testResp = "NA"
                     elif thisKey == "escape":
-                        with open(self.fileName + ".txt", 'a') as f:
+                        with open(self.file_name + ".txt", 'a') as f:
                             f.write("t_a = " + data.getDateStr() + "\n\n")
                         core.quit()  # abort experiment
                 event.clearEvents()
@@ -945,7 +943,7 @@ class Experiment:
                                             wait_s=proceed_wait)
         if log_duration:
             duration = instructions_clock.getTime()
-            with open(self.fileName + ".txt", 'a') as f:
+            with open(self.file_name + ".txt", 'a') as f:
                 f.write("duration_" + part_key + " = " + str(duration) + "\n")
         self.win.flip()
         core.wait(loading_time)
@@ -1391,7 +1389,7 @@ class Experiment:
             if acc_2 < min_acc:
                 self.Instructions(part_key="DropOut",
                                   show_background=False)
-                with open(self.fileName + ".txt", 'a') as f:
+                with open(self.file_name + ".txt", 'a') as f:
                     f.write("t_a = " + data.getDateStr() + "\n\n")
                 core.quit()
             else:
@@ -1486,7 +1484,7 @@ class Experiment:
 
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")
         self.start_width = self.move_prog_bar(
             start_width=0,
@@ -1508,7 +1506,7 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard" + str(self.n_cats)]])
         self.learnDuration_2 = self.LearnCues()
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
 
         # Test second cue type
@@ -1627,7 +1625,7 @@ class Experiment:
         save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
 
         self.Instructions(part_key="Bye")
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
 
@@ -1760,7 +1758,7 @@ class Experiment:
             self.expInfo["dateStr"] + "_" + "generic"
         save_object(self.df_out_6 + self.df_out_7, fname, ending='csv')
         self.Instructions(part_key="Bye")
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
 
@@ -1806,7 +1804,7 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.magicWand])
         self.learnDuration_3 = self.LearnCues()
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("learnDuration_3= " + str(self.learnDuration_3) + "\n")
         self.Instructions(part_key="PrimDecMEG2",
                           special_displays=[self.iSingleImage],
@@ -1896,7 +1894,7 @@ class Experiment:
         save_object(self.df_out_10 + self.df_out_11, fname, ending='csv')
 
         self.Instructions(part_key="ByeBye")
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
 
@@ -2033,7 +2031,7 @@ class Experiment:
         save_object(self.df_out_10 + self.df_out_11, fname, ending='csv')
 
         self.Instructions(part_key="ByeBye")
-        with open(self.fileName + ".txt", 'a') as f:
+        with open(self.file_name + ".txt", 'a') as f:
             f.write("t_n = " + data.getDateStr() + "\n\n")
         self.win.close()
 
