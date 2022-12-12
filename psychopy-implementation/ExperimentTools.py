@@ -209,6 +209,13 @@ class Experiment:
 
     def render_visuals(self, check_similarity=False):
         print("Rendering unique visual objects...")
+
+        self.instruct_stim = visual.TextStim(
+            self.win,
+            text='',
+            height=1.8,
+            wrapWidth=40)
+
         self.rect = visual.Rect(
             win=self.win,
             units="deg",
@@ -286,7 +293,7 @@ class Experiment:
         }
 
         # Keyboard prompts
-        keyboard_list = glob.glob(f"{self.stim_dir}{os.sep}keyboard*.png")
+        keyboard_list = glob.glob(f"{self.stim_dir}{os.sep}keyBoard*.png")
         self.keyboard_dict = {
             os.path.basename(os.path.normpath(keyboard_list[i])).split(".")[0]: visual.ImageStim(
                 self.win,
@@ -897,6 +904,9 @@ class Experiment:
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
 
+        self.instruct_stim.font = font
+        self.instruct_stim.color = fontcolor
+
         # Initialize parameters
         finished = False
         Part = self.instructions[part_key]
@@ -908,26 +918,21 @@ class Experiment:
         if log_duration:
             instructions_clock = core.Clock()
         while not finished:
-            page_content = Part[page][0]
-            proceed_key = Part[page][1]
-            proceed_wait = Part[page][2]
-            if type(page_content) is str:
-                textStim = visual.TextStim(
-                    self.win,
-                    text=page_content,
-                    font=font,
-                    height=1.8,
-                    wrapWidth=40,
-                    color=fontcolor)
-                textStim.draw()
+            page_content, proceed_key, proceed_wait = Part[page]
+            # page_content = Part[page][0]
+            # proceed_key = Part[page][1]
+            # proceed_wait = Part[page][2]
+            if isinstance(page_content, str):
+                self.instruct_stim.text = page_content
+                self.instruct_stim.draw()
                 if show_background:
                     self.draw_background()
                 self.win.flip()
-            elif type(page_content) is int:
+            elif isinstance(page_content, int):
                 special_displays[page_content](
                     args[page_content],
                     show_background=show_background)
-            elif type(page_content) is float:
+            elif isinstance(page_content, float):
                 complex_displays[int(page_content)](
                     **kwargs[int(page_content)])
                 if complex_displays[int(page_content)].__name__ in\
@@ -941,8 +946,8 @@ class Experiment:
                                             wait_s=proceed_wait)
         if log_duration:
             duration = instructions_clock.getTime()
-            with open(self.file_name + ".txt", 'a') as f:
-                f.write("duration_" + part_key + " = " + str(duration) + "\n")
+            with open(f"{self.file_name}.txt", 'a') as f:
+                f.write(f"duration_{part_key} = {duration}\n")
         self.win.flip()
         core.wait(loading_time)
 
