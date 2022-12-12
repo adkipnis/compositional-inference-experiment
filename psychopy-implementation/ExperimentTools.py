@@ -63,6 +63,7 @@ class Experiment:
                            }
 
     def init_window(self, res=None, screen=0, fullscr=False):
+        ''' Initialize window '''
         if res is None:
             res = [1920, 1080]
         assert isinstance(res, list), "res must be list of two integers"
@@ -75,15 +76,15 @@ class Experiment:
             units="deg")
 
     def dialogue_box(self, participant=None, session="1", show=True, dev=False):
-        # Store info about the experiment session
+        ''' Show dialogue box to get participant info '''
         if participant is None:
             savefiles = glob.glob(f"{self.data_dir}{os.sep}*.txt")
             names = [0] + [int(os.path.basename(file)[:2])
                            for file in savefiles]
-            participant = str(max(names)+1).zfill(2)
+            participant = max(names)+1
 
         expName = "Alteration Magic Experiment"
-        expInfo = {"participant": participant,
+        expInfo = {"participant": str(participant).zfill(2),
                    "session": session,
                    "dateStr": data.getDateStr(),
                    "psychopyVersion": __version__,
@@ -114,6 +115,7 @@ class Experiment:
             self.use_pp = False
 
     def init_interface(self):
+        ''' Initialize parallel port for sending MEG triggers '''
         # set pp to base state
         self.port_out2 = ParallelPort(address="0xd112")
         self.port_out2.setData(8)
@@ -138,64 +140,61 @@ class Experiment:
         self.port_out.setData(0)
 
     def load_trials(self):
+        print("Loading trials...")
+        pid = self.expInfo["participant"]
+
         # Instructions
         self.instructions = pickle.load(
-            open(self.stim_dir + os.sep + "instructions_en.pkl", "rb"))
+            open(f"{self.stim_dir}{os.sep}instructions_en.pkl", "rb"))
 
-        # Load triallists and adapt setup to their parameters
+        #  Localizer trials
         self.trials_localizer = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_localizer.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_localizer.pkl", "rb"))
 
         self.trials_prim_dec = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim_dec.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_dec.pkl", "rb"))
 
+        #  Practice trials
         self.trials_prim_cue = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim_cue.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_cue.pkl", "rb"))
 
         self.trials_prim_prac_c = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim_prac_c.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_prac_c.pkl", "rb"))
 
         self.trials_prim_prac_p = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim_prac_p.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_prac_p.pkl", "rb"))
 
+        # Main trials # TODO make this dependent on session
         self.trials_prim = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim.pkl"), "rb"))
-
-        self.trials_prim_MEG = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_prim_MEG.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim.pkl", "rb"))
 
         self.trials_bin = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_bin.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_bin.pkl", "rb"))
+
+        # MEG trials
+        self.trials_prim_MEG = pickle.load(
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_MEG.pkl", "rb"))
 
         self.trials_bin_MEG = pickle.load(
-            open(os.path.join(self.trial_list_dir, self.expInfo["participant"] +
-                              "_trials_bin_MEG.pkl"), "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_bin_MEG.pkl", "rb"))
 
-        # individual mappings for each participant
+        # Individual mappings for each participant
         self.mappinglists = pickle.load(
-            open(self.trial_list_dir + os.sep + self.expInfo["participant"] +
-                 "_mappinglists.pkl", "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_mappinglists.pkl", "rb"))
         self.item_names = [name[2:] for name in self.mappinglists["stim"]]
+
         # convert mappinglists to file links
-        self.mappinglists["stim"] = [self.stim_dir + os.sep + name + ".png"
+        self.mappinglists["stim"] = [f"{self.stim_dir}{os.sep}{name}.png"
                                      for name in self.mappinglists["stim"]]
-        self.mappinglists["vcue"] = [self.stim_dir + os.sep + name + ".png"
+        self.mappinglists["vcue"] = [f"{self.stim_dir}{os.sep}{name}.png"
                                      for name in self.mappinglists["vcue"]]
 
         self.set_size = len(self.trials_prim[0]["input_disp"])
         self.n_cats = len(np.unique([trial["input_disp"]
-                          for trial in self.trials_prim]))
+                                     for trial in self.trials_prim]))
         self.n_resp = len(self.trials_prim[0]["resp_options"])
         self.map_names = np.unique([trial["map"]
-                                   for trial in self.trials_prim])
+                                    for trial in self.trials_prim])
         self.n_primitives = len(self.map_names)
         self.n_exposure = 5  # this value should match in GenerateTrialLists
         self.maxn_blocks = 6  # this too
@@ -209,6 +208,7 @@ class Experiment:
             center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
 
     def render_visuals(self, check_similarity=False):
+        print("Rendering visual objects...")
         self.rect = visual.Rect(
             win=self.win,
             units="deg",
