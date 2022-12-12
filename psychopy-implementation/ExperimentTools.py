@@ -208,7 +208,7 @@ class Experiment:
             center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
 
     def render_visuals(self, check_similarity=False):
-        print("Rendering visual objects...")
+        print("Rendering unique visual objects...")
         self.rect = visual.Rect(
             win=self.win,
             units="deg",
@@ -239,17 +239,17 @@ class Experiment:
 
         self.leftArrow = visual.ImageStim(
             self.win,
-            image=glob.glob(self.stim_dir + os.sep + "leftArrow.png")[0],
+            image=glob.glob(f"{self.stim_dir}{os.sep}leftArrow.png")[0],
             size=self.normal_size, interpolate=True)
 
         self.magicWand = visual.ImageStim(
             self.win,
-            image=glob.glob(self.stim_dir + os.sep + "magicWand.png")[0],
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0],
             size=self.normal_size, interpolate=True)
 
         self.pauseClock = visual.ImageStim(
             self.win,
-            image=glob.glob(self.stim_dir + os.sep + "pauseClock.png")[0],
+            image=glob.glob(f"{self.stim_dir}{os.sep}pauseClock.png")[0],
             pos=self.center_pos,
             size=self.center_size,
             interpolate=True)
@@ -264,132 +264,124 @@ class Experiment:
             color=[-0.9, -0.9, -0.9])
 
         self.philbertine = visual.ImageStim(
-            self.win, image=glob.glob(self.stim_dir + os.sep +
-                                      "philbertine.png")[0],
+            self.win, image=glob.glob(
+                f"{self.stim_dir}{os.sep}philbertine.png")[0],
             units="pix",
-            size=[400, 400], interpolate=True)
+            size=[512, 512], interpolate=True)
 
         self.magicBooks = visual.ImageStim(
             self.win,
-            image=glob.glob(self.stim_dir + os.sep + "magicBooks.png")[0],
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0],
             units="pix",
-            size=[640, 575], interpolate=True)
+            size=[512, 512], interpolate=True)
 
-        self.ratingScale = visual.RatingScale(
-            self.win,
-            low=0, high=10,
-            pos=[0.0, -0.2],
-            marker="slider",
-            markerStart=None,
-            lineColor="white",
-            labels=["0: very similar", "10: very different"],
-            stretch=1.25,
-            textSize=0.75,
-            textFont="mono",
-            mouseOnly=False,
-            acceptKeys='space',
-            scale=None)
+        # Count responses
+        self.count_dict = {
+            str(i): visual.TextStim(
+                self.win,
+                text=str(i),
+                height=4,
+                color=self.color_dict["black"])
+            for i in range(self.n_resp)
+        }
 
-        # Cue Dictionaries
+        # Keyboard prompts
+        keyboard_list = glob.glob(f"{self.stim_dir}{os.sep}keyboard*.png")
+        self.keyboard_dict = {
+            os.path.basename(os.path.normpath(keyboard_list[i])).split(".")[0]: visual.ImageStim(
+                self.win,
+                image=keyboard_list[i],
+                size=[40, 20],
+                interpolate=True)
+            for i in range(len(keyboard_list))
+        }
+
+        print("Rendering cues...")
+        # Text cues
         tcue_list = self.mappinglists["tcue"]
+        assert len(tcue_list) >= 2*self.n_primitives
+        vcue_list = self.mappinglists["vcue"]
+        assert len(vcue_list) >= 2*self.n_primitives
+
         # use latter half of cues for MEG-Session
         if self.expInfo["session"] == "3":
             tcue_list = np.concatenate((tcue_list[self.n_primitives:],
                                         tcue_list[:self.n_primitives]))
+            vcue_list = np.concatenate((vcue_list[self.n_primitives:],
+                                        vcue_list[:self.n_primitives]))
 
-        assert len(tcue_list) >= 2*self.n_primitives
-        tcue_dict = {}
-        for i in range(self.n_primitives):
-            cue_name = self.map_names[i]
-            tcue_dict.update({cue_name: visual.TextStim(
+        self.tcue_dict = {
+            self.map_names[i]: visual.TextStim(
                 self.win,
                 text=tcue_list[i],
                 pos=self.center_pos,
                 height=4,
-                color=self.color_dict["black"])})
-        self.tcue_dict = tcue_dict
+                color=self.color_dict["black"])
+            for i in range(self.n_primitives)
+        }
 
-        # Render all textual cues for similarity check
-        if check_similarity:
-            tcue_full = {}
-            for i in range(len(tcue_list)):
-                cue_name = tcue_list[i]  # tcue identifier
-                tcue_full.update({cue_name: visual.TextStim(
-                    self.win,
-                    text=tcue_list[i],
-                    pos=self.center_pos,
-                    height=4,
-                    color=self.color_dict["black"])})
-            self.tcue_full = tcue_full
-
-        # Visual cues
-        vcue_list = self.mappinglists["vcue"]
-        # use latter half of cues for MEG-Session
-        if self.expInfo["session"] == "3":
-            vcue_list = np.concatenate((vcue_list[self.n_primitives:],
-                                        vcue_list[:self.n_primitives]))
-        assert len(vcue_list) >= 2*self.n_primitives
-        vcue_dict = {}
-        for i in range(self.n_primitives):
-            cue_name = self.map_names[i]
-            vcue_dict.update({cue_name: visual.ImageStim(
+        self.vcue_dict = {
+            self.map_names[i]: visual.ImageStim(
                 self.win,
                 image=vcue_list[i],
                 pos=self.center_pos,
                 size=self.vcue_size,
-                interpolate=True)})
-        self.vcue_dict = vcue_dict
+                interpolate=True)
+            for i in range(self.n_primitives)
+        }
 
-        # Render all visual cues for similarity check
+        print("Rendering stimuli...")
+        # Stimuli
+        stim_list = self.mappinglists["stim"]
+        assert len(stim_list) >= 2*self.n_cats, "Not enough stimuli"
+        stim_names = ascii_uppercase[0:len(stim_list)]
+        if self.expInfo["session"] == "3":
+            stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
+        self.stim_dict = {
+            stim_names[i]: visual.ImageStim(
+                self.win,
+                image=stim_list[i],
+                size=self.normal_size,
+                interpolate=True)
+            for i in range(len(stim_list))
+        }
+
         if check_similarity:
-            vcue_full = {}
-            for i in range(len(vcue_list)):
-                cue_name = vcue_list[i][-5]  # vcue identifier
-                vcue_full.update({cue_name: visual.ImageStim(
+            print("Rendering stimuli for similarity check...")
+            self.ratingScale = visual.RatingScale(
+                self.win,
+                low=0, high=10,
+                pos=[0.0, -0.2],
+                marker="slider",
+                markerStart=None,
+                lineColor="white",
+                labels=["0: very similar", "10: very different"],
+                stretch=1.25,
+                textSize=0.75,
+                textFont="mono",
+                mouseOnly=False,
+                acceptKeys='space',
+                scale=None)
+
+            self.tcue_full = {
+                tcue_list[i]: visual.TextStim(
+                    self.win,
+                    text=tcue_list[i],
+                    pos=self.center_pos,
+                    height=4,
+                    color=self.color_dict["black"])
+                for i in range(len(tcue_list))
+            }
+
+            self.vcue_full = {
+                vcue_list[i][-5]: visual.ImageStim(
                     self.win,
                     image=vcue_list[i],
                     pos=self.center_pos,
                     size=self.vcue_size,
-                    interpolate=True)})
-            self.vcue_full = vcue_full
-
-        # Stimuli
-        stim_list = self.mappinglists["stim"]
-        assert len(stim_list) >= 2*self.n_cats
-        stim_names = ascii_uppercase[0:len(stim_list)]
-        if self.expInfo["session"] == "3":
-            stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
-        stim_dict = {}
-        for i in range(len(stim_list)):
-            stim_dict.update({stim_names[i]: visual.ImageStim(
-                self.win,
-                image=stim_list[i],
-                size=self.normal_size,
-                interpolate=True)})
-        self.stim_dict = stim_dict
-
-        # Count responses
-        count_dict = {}
-        for i in range(self.n_resp):
-            count_dict.update({str(i): visual.TextStim(
-                self.win,
-                text=str(i),
-                height=4,
-                color=self.color_dict["black"])})
-        self.count_dict = count_dict
-
-        # Keyboard prompts
-        keyboard_dict = {}
-        keyboard_list = glob.glob(self.stim_dir + os.sep + "keyBoard*.png")
-        for i in range(len(keyboard_list)):
-            key_name = os.path.basename(
-                os.path.normpath(keyboard_list[i])).split(".")[0]
-            keyboard_dict.update({key_name: visual.ImageStim(
-                self.win,
-                image=keyboard_list[i],
-                size=[40, 20],
-                interpolate=True)})
-        self.keyboard_dict = keyboard_dict
+                    interpolate=True)
+                for i in range(len(vcue_list))
+            }
 
     # Background Components --------------------------------------------------------
 
@@ -400,11 +392,17 @@ class Experiment:
         # self.bar_pos = self.center_pos
         self.left_corner = self.bar_pos[0] - self.bar_len/2
         self.progBack = visual.Rect(
-            self.win, width=self.bar_len, height=self.bar_height,
-            pos=self.bar_pos, fillColor=self.color_dict["light_grey"])
+            self.win,
+            width=self.bar_len,
+            height=self.bar_height,
+            pos=self.bar_pos,
+            fillColor=self.color_dict["light_grey"])
         self.progTest = visual.Rect(
-            self.win, width=0.01, height=self.bar_height,
-            pos=self.bar_pos, fillColor=self.color_dict["green"])
+            self.win,
+            width=0.01,
+            height=self.bar_height,
+            pos=self.bar_pos,
+            fillColor=self.color_dict["green"])
 
     def draw_background(self):
         self.progBack.length = self.bar_len
