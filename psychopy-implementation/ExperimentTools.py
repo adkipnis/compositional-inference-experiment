@@ -9,10 +9,8 @@ import pickle
 import sys
 import csv
 from string import ascii_uppercase
-from pathlib import Path
 import numpy as np
 from psychopy import __version__, core, event, visual, gui, data
-from psychopy.tools.filetools import toFile
 from psychopy.parallel import ParallelPort
 
 
@@ -41,7 +39,7 @@ class Experiment:
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
 
-        # inputs and dimensions
+        # inputs and dimensions #TODO
         self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
         self.resp_keys_wide = np.array(
             ["a", "s", "d", "num_4", "num_5", "num_6"])
@@ -66,21 +64,15 @@ class Experiment:
 
     def init_window(self, res=None, screen=0, fullscr=False):
         if res is None:
-            self.win = visual.Window(
-                fullscr=fullscr,
-                color=[0.85, 0.85, 0.85],
-                screen=screen,
-                monitor="testMonitor",
-                units="deg")
-        else:
-            assert type(res) is list, "res must be list of two integers"
-            self.win = visual.Window(
-                res,
-                fullscr=fullscr,
-                color=[0.85, 0.85, 0.85],
-                screen=screen,
-                monitor="testMonitor",
-                units="deg")
+            res = [1920, 1080]
+        assert isinstance(res, list), "res must be list of two integers"
+        self.win = visual.Window(
+            res,
+            fullscr=fullscr,
+            color=[0.85, 0.85, 0.85],
+            screen=screen,
+            monitor="testMonitor",
+            units="deg")
 
     def dialoguebox(self, participant=None, session="1", show=True,
                     dev=False):
