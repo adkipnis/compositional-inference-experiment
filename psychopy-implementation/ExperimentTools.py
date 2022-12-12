@@ -1122,11 +1122,11 @@ class Experiment:
                 self.send_trigger("run")
 
         # check if jitter is specified
-        if "jitter" not in trials.trialList[0].keys():
+        if "jitter" in trials.trialList[0]:
+            add_jitter = True
+        else:
             jitter = [0.0, 0.0, 0.0]
             add_jitter = False
-        else:
-            add_jitter = True
 
         for trial in trials:
             if add_jitter:
@@ -1190,11 +1190,13 @@ class Experiment:
             if pause_between_runs:
                 if timer.getTime() <= 0:
                     # Update Progress Bar
-                    progbar_inc_tmp = trial_number/n_trials * self.progbar_inc
+                    progbar_inc_tmp = trial_number / n_trials * self.progbar_inc
                     self.start_width = self.move_prog_bar(
                         start_width=self.start_width,
                         end_width=start_width_initial + progbar_inc_tmp,
-                        n_steps=2, wait_s=0, win_flip=False)
+                        n_steps=2,
+                        wait_s=0,
+                        win_flip=False)
 
                     # Pause Display
                     self.tPause()
@@ -1213,7 +1215,7 @@ class Experiment:
         df_list = []
         if i_step is None:
             i_step = self.n_exposure * self.maxn_blocks
-        while mean_acc < min_acc and i+i_step <= len(trials_prim_cue):
+        while mean_acc < min_acc and i + i_step <= len(trials_prim_cue):
             df = trials_prim_cue[i:i+i_step].copy()
             result = self.PracticeCues(df, mode=mode)
             df_list.append(result)
@@ -1445,8 +1447,7 @@ class Experiment:
                 pos_1=[sum(x) for x in zip(self.center_pos, [0, 6])],
                 pos_2=[sum(x) for x in zip(self.center_pos, [0, 0])])
 
-            fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
-                self.expInfo["dateStr"] + "_" + "similarity"
+            fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_similarity"
             save_object(self.df_sim1 + self.df_sim2, fname, ending='csv')
 
         # Navigation
@@ -1484,8 +1485,8 @@ class Experiment:
 
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
-        with open(self.file_name + ".txt", 'a') as f:
-            f.write("learnDuration_1 = " + str(self.learnDuration_1) + "\n")
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
         self.start_width = self.move_prog_bar(
             start_width=0,
             end_width=self.progbar_inc)
@@ -1493,7 +1494,8 @@ class Experiment:
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
+                          )
         self.df_out_1 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
             mode=first_modality)
@@ -1504,10 +1506,11 @@ class Experiment:
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard" + str(self.n_cats)]])
+                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
+                          )
         self.learnDuration_2 = self.LearnCues()
-        with open(self.file_name + ".txt", 'a') as f:
-            f.write("learnDuration_2 = " + str(self.learnDuration_2) + "\n")
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
         # Test second cue type
         self.df_out_2 = self.CuePracticeLoop(
@@ -1519,8 +1522,7 @@ class Experiment:
             end_width=self.start_width + self.progbar_inc)
 
         # Save cue memory data
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" + \
-            self.expInfo["dateStr"] + "_" + "cueMemory"
+        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
         save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
         # ---------------------------------------------------------------------
@@ -1620,13 +1622,12 @@ class Experiment:
                            end_width=1)
 
         # Save test type data
-        fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-            self.expInfo["dateStr"] + "_" + "testType"
+        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
         save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
 
         self.Instructions(part_key="Bye")
-        with open(self.file_name + ".txt", 'a') as f:
-            f.write("t_n = " + data.getDateStr() + "\n\n")
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"t_n = {data.getDateStr()}\n\n")
         self.win.close()
 
     ###########################################################################
