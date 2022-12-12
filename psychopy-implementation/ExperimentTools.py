@@ -919,9 +919,6 @@ class Experiment:
             instructions_clock = core.Clock()
         while not finished:
             page_content, proceed_key, proceed_wait = Part[page]
-            # page_content = Part[page][0]
-            # proceed_key = Part[page][1]
-            # proceed_wait = Part[page][2]
             if isinstance(page_content, str):
                 self.instruct_stim.text = page_content
                 self.instruct_stim.draw()
@@ -967,17 +964,17 @@ class Experiment:
             map_name = self.map_names[page]
             categories = map_name.split("-")
 
-            for j in range(len(modes)):
-                cue, _ = self.setCue(map_name, mode=modes[j])
+            for j, mode in enumerate(modes):
+                cue, _ = self.setCue(map_name, mode=mode)
                 cue.pos = [sum(x) for x in
                            zip(cue_center_pos, [0, (1-j)*vert_dist])]
                 cue.draw()
 
             # Draw corresponding explicit map
-            for i in range(len(categories)):
+            for i, category in enumerate(categories):
                 self.rect.pos = category_pos[i]
                 self.rect.draw()
-                cat = self.stim_dict.copy()[categories[i]]
+                cat = self.stim_dict.copy()[category]
                 cat.pos = category_pos[i]
                 cat.draw()
             self.leftArrow.pos = cat_center_pos
@@ -988,6 +985,7 @@ class Experiment:
             page, finished = self.iNavigate(
                 page=page, max_page=self.n_primitives,
                 continue_after_last_page=False)
+
         # Save learning duration
         learnDuration = LearnClock.getTime()
         return learnDuration
@@ -1045,14 +1043,13 @@ class Experiment:
                     continue
 
                 # 3. - 3 + num_cr: Immediate Feedback
-                if inc in list(range(3, 3 + num_cr)):
+                if inc in range(3, 3 + num_cr):
                     TestClock = core.Clock()
                     testRT, testResp = self.tTestresponse(
                         TestClock, resp_keys)
                     testRTList.append(testRT)
                     testRespList.append(testResp)
-                for i in range(len(testRespList)):
-                    testResp = testRespList[i]
+                for i, testResp in enumerate(testRespList):
                     self.testResp = testResp
                     if testResp != "NA":
                         self.rect.pos = self.cuepractice_pos[testResp]
@@ -1067,7 +1064,7 @@ class Experiment:
                         resp.pos = self.cuepractice_pos[testResp]
                         resp.draw()
 
-                if inc in list(range(3, 3 + num_cr)):
+                if inc in range(3, 3 + num_cr):
                     self.win.flip()
                     continue
 
@@ -1084,7 +1081,7 @@ class Experiment:
                         )[trial.resp_options[corResp]]
                         resp.pos = self.cuepractice_pos[corResp]
                         resp.draw()
-                if inc in list(range(3 + num_cr, 3 + 2 * num_cr - 1)):
+                if inc in range(3 + num_cr, 3 + 2 * num_cr - 1):
                     j += 1
                     self.win.flip()
                     continue
