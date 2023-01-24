@@ -1,1 +1,12 @@
+<<<<<<< HEAD
 psychopy-testing/testing.py
+=======
+psychopy-implementation/.*
+archive/*
+psychopy-implementation/__pycache__/*
+psychopy-implementation/stimuli/__pycache__/*
+psychopy-implementation/stimuli/stimulus_archive/*
+psychopy-implementation/data/*
+psychopy-implementation/data-pilot/*
+psychopy-implementation/trial-lists/*
+>>>>>>> af3fd2c (gitignore)
