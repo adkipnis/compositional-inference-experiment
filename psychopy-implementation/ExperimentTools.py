@@ -460,9 +460,15 @@ class Experiment:
             self.win_flip()
             core.wait(wait_s)
 
-        # Growing
-        while self.progTest.width < self.progBack.width * end_width:
-            self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
+        if end_width > start_width:
+            # Growing
+            while self.progTest.width < self.progBack.width * end_width:
+                self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
+        else:
+            # Waning
+            while self.progTest.width > self.progBack.width * end_width:
+                self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
+            
 
         # Last bit for completion
         self.move_prog_bar_step(
@@ -1256,13 +1262,15 @@ class Experiment:
             i += i_step
             if mean_acc < min_acc:
                 feedbacktype = "Feedback0"
-                self.start_width = start_width_initial # reset progress bar
+                
             else:
                 feedbacktype = "Feedback1"
             self.Instructions(part_key=feedbacktype,
                               special_displays=[self.iSingleImage],
                               args=[accPrompt])
             if show_cheetsheet and mean_acc < min_acc:
+                # reset progress bar
+                self.move_prog_bar(end_width=start_width_initial)
                 self.LearnCues()
             core.wait(2)
         df_out = [item for sublist in df_list for item in sublist]
@@ -1278,6 +1286,7 @@ class Experiment:
         if i_step is None:
             i_step = self.n_exposure * self.maxn_blocks  # length of one loop
         while mean_acc < min_acc:
+            start_width_initial = self.start_width
             result = self.GenericBlock(trial_df, mode=mode, i=i, i_step=i_step,
                                        durations=durations, test=test, feedback=feedback,
                                        self_paced=self_paced, runlength=runlength,
@@ -1301,6 +1310,9 @@ class Experiment:
             self.Instructions(part_key=feedbacktype,
                               special_displays=[self.iSingleImage],
                               args=[accPrompt])
+            if mean_acc < min_acc:
+                # reset progress bar
+                self.move_prog_bar(end_width=start_width_initial)
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
 
@@ -1475,27 +1487,27 @@ class Experiment:
 
         # Navigation
         self.win.mouseVisible = False
-        self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardArrows"],
-                                self.keyboard_dict["keyBoardEsc"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+        # self.Instructions(part_key="Navigation1",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardArrows"],
+        #                         self.keyboard_dict["keyBoardEsc"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"],
+        #                   show_background=False)
 
-        # Introduction
-        self.Instructions(part_key="Intro",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
-                                            self.iTransmutableObjects,
-                                            self.iSpellExample,
-                                            self.iSpellExample],
-                          args=[self.magicBooks,
-                                self.philbertine,
-                                None,
-                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # # Introduction
+        # self.Instructions(part_key="Intro",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage,
+        #                                     self.iTransmutableObjects,
+        #                                     self.iSpellExample,
+        #                                     self.iSpellExample],
+        #                   args=[self.magicBooks,
+        #                         self.philbertine,
+        #                         None,
+        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
         # -------------------------------------------------------------------
         # Balance out which cue modality is learned first
