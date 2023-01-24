@@ -6,20 +6,19 @@ Created on Fri May 27 11:03:16 2022
 @author: alex
 """
 
-import os, sys
+from psychopy import core
+import os
+import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ExperimentTools import Experiment
-from psychopy import core
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 0)
-Exp.dialoguebox(show = False)
-Exp.load_trials()
-Exp.render_visuals()
-Exp.init_progbar(bar_pos = [0, 15])
+Exp.init_window(screen=1)
+Exp.init_progbar()
 
-# Prorgbar shenanigans
+
+# Progbar shenanigans
 Exp.draw_background()
 Exp.win.flip()
 core.wait(2)
