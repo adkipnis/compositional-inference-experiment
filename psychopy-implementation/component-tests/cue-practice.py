@@ -12,11 +12,11 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen = 0, fullscr = True)
-Exp.dialoguebox(show = False, session = "1")
+Exp.init_window(screen = 1, fullscr = False)
+Exp.dialogue_box(show = False, participant=1, session = "1")
 Exp.load_trials()
 Exp.render_visuals()
-Exp.init_progbar(bar_pos = [0, 15])
+Exp.init_progbar()
 Exp.win.mouseVisible = False
 
 # Run Cue Practice Session task
