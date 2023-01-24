@@ -416,6 +416,8 @@ class Experiment:
             height=self.bar_height,
             pos=self.bar_pos,
             fillColor=self.color_dict["green"])
+        self.start_width = 0.0
+        self.progbar_inc = 0.01 # 1% of bar length
 
     def draw_background(self):
         self.progBack.length = self.bar_len
@@ -432,13 +434,17 @@ class Experiment:
         if win_flip:
             self.win.flip()
 
-    def move_prog_bar(self, start_width=0, end_width=1,
-                      n_steps=100, wait_s=0.75, win_flip=True):
+    def move_prog_bar(self, start_width=None, end_width=1.0,
+                      n_steps=20, wait_s=0.75, win_flip=True):
+        if start_width is None:
+            start_width = self.start_width
+        
         # Setup starting state of progress bar
         self.progTest.width = start_width * self.progBack.width
         self.progTest.pos[0] = self.left_corner + start_width *\
             self.progBack.width/2
-        bar_width_step = self.bar_len/n_steps
+        total_increment = (end_width - start_width) * self.progBack.width
+        bar_width_step = total_increment/n_steps
 
         # First display
         self.draw_background()
@@ -456,7 +462,7 @@ class Experiment:
             win_flip=win_flip)
         if win_flip:
             core.wait(1.5 * wait_s)
-        return self.progTest.width / self.progBack.width
+        self.start_width = self.progTest.width / self.progBack.width
 
     # Trial Components --------------------------------------------------------
     def tFixation(self, duration=0.3, jitter=0.0):
@@ -997,7 +1003,7 @@ class Experiment:
         return learnDuration
 
     def PracticeCues(self, trials_prim_cue, mode="visual", cue_pos=[0, 5],
-                     resp_keys=None):
+                     resp_keys=None, show_progress=True):
 
         assert self.n_cats in [4, 6], "unusual number of unique objects,"\
             "cannot set response keys"
@@ -1023,12 +1029,15 @@ class Experiment:
             # Incrementally display stuff
             for inc in range(3 + 2 * num_cr):
 
+                if show_progress:
+                    self.draw_background()
+                    
                 # 0. Fixation
                 if inc == 0:
                     self.tFixation()
                     self.win.flip()
                     continue
-
+                    
                 # 1. Map Cue
                 cue.draw()
                 if inc == 1:
@@ -1097,7 +1106,9 @@ class Experiment:
                     trial["cue_type"] = cue_type
                     self.win.flip()
                     core.wait(2)
-
+                    
+            if show_progress:
+                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
         return trials.trialList
 
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
@@ -1225,8 +1236,7 @@ class Experiment:
             df = trials_prim_cue[i:i+i_step].copy()
             result = self.PracticeCues(df, mode=mode)
             df_list.append(result)
-            errors = [trial["correct_resp"] == trial["emp_resp"]
-                      for trial in result]
+            errors = [trial["correct_resp"] == trial["emp_resp"] for trial in result]
             mean_acc = np.mean(list(map(int, errors)))  # convert to integers
 
             accPrompt = visual.TextStim(
@@ -1404,7 +1414,7 @@ class Experiment:
                 df_out = df_out + df_out_again
         # else:
             # save_object(self.df_out_8, fname, ending = 'csv')
-        self.start_width = self.move_prog_bar(
+        self.move_prog_bar(
             start_width=0,
             end_width=self.progbar_inc)
 
@@ -1438,23 +1448,23 @@ class Experiment:
     ###########################################################################
     def Session1(self, check_similarity=False):
         # globalClock = core.Clock()
-        n_experiment_parts = 5
-        self.progbar_inc = 1/n_experiment_parts
+        n_trials_toal = 4 * self.n_exposure * self.maxn_blocks # 2 * cue practice, 2 * test practice, based on i_step
+        self.progbar_inc = 1/n_trials_toal
 
-        # Similarity Task
-        if check_similarity:
-            self.df_sim1 = self.CueSimilarityTest(
-                self.vcue_full,
-                pos_1=[-5, self.center_pos[1]],
-                pos_2=[5, self.center_pos[1]])
-            core.wait(1)
-            self.df_sim2 = self.CueSimilarityTest(
-                self.tcue_full,
-                pos_1=[sum(x) for x in zip(self.center_pos, [0, 6])],
-                pos_2=[sum(x) for x in zip(self.center_pos, [0, 0])])
+        # # Similarity Task
+        # if check_similarity:
+        #     self.df_sim1 = self.CueSimilarityTest(
+        #         self.vcue_full,
+        #         pos_1=[-5, self.center_pos[1]],
+        #         pos_2=[5, self.center_pos[1]])
+        #     core.wait(1)
+        #     self.df_sim2 = self.CueSimilarityTest(
+        #         self.tcue_full,
+        #         pos_1=[sum(x) for x in zip(self.center_pos, [0, 6])],
+        #         pos_2=[sum(x) for x in zip(self.center_pos, [0, 0])])
 
-            fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_similarity"
-            save_object(self.df_sim1 + self.df_sim2, fname, ending='csv')
+        #     fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_similarity"
+        #     save_object(self.df_sim1 + self.df_sim2, fname, ending='csv')
 
         # Navigation
         self.win.mouseVisible = False
@@ -1482,7 +1492,7 @@ class Experiment:
 
         # -------------------------------------------------------------------
         # Balance out which cue modality is learned first
-        if int(self.expInfo["participant"]) % 2 == 0:
+        if int(self.expInfo["participant"]) % 2:
             first_modality = "visual"
             second_modality = "textual"
         else:
@@ -1493,9 +1503,6 @@ class Experiment:
         self.learnDuration_1 = self.LearnCues()
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
-        self.start_width = self.move_prog_bar(
-            start_width=0,
-            end_width=self.progbar_inc)
 
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
@@ -1505,9 +1512,7 @@ class Experiment:
         self.df_out_1 = self.CuePracticeLoop(
             self.trials_prim_cue, first_modality, second_modality,
             mode=first_modality)
-        self.start_width = self.move_prog_bar(
-            start_width=self.start_width,
-            end_width=self.start_width + self.progbar_inc)
+        
 
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
@@ -1523,9 +1528,6 @@ class Experiment:
             self.trials_prim_cue, first_modality, second_modality,
             mode=second_modality,
             i=len(self.df_out_1))
-        self.start_width = self.move_prog_bar(
-            start_width=self.start_width,
-            end_width=self.start_width + self.progbar_inc)
 
         # Save cue memory data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
@@ -1533,7 +1535,7 @@ class Experiment:
 
         # ---------------------------------------------------------------------
         # Balance out which test type is learned first
-        if int(self.expInfo["participant"]) % 2 == 0:
+        if int(self.expInfo["participant"]) % 2:
             first_test = "count"
             tFirst = self.tCount
             trials_test_1 = self.trials_prim_prac_c.copy()
@@ -1588,7 +1590,6 @@ class Experiment:
                                    "feedback": True,
                                    "demonstration": True}])
 
-        start_width_before_block = self.start_width.copy()
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
                                               # i_step = 5, # for testing
                                               min_acc=0.95,
@@ -1596,9 +1597,6 @@ class Experiment:
                                               feedback=True,
                                               pause_between_runs=True,
                                               runlength=360)
-        self.start_width = self.move_prog_bar(
-            start_width=self.start_width,
-            end_width=start_width_before_block + self.progbar_inc)
 
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1624,8 +1622,6 @@ class Experiment:
                                               feedback=True,
                                               pause_between_runs=True,
                                               runlength=360)
-        self.move_prog_bar(start_width=self.start_width,
-                           end_width=1)
 
         # Save test type data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
