@@ -392,21 +392,27 @@ class Experiment:
 
     # Background Components --------------------------------------------------------
 
-    def init_progbar(self, bar_len=15.0, bar_height=0.35, bar_pos=[0, 10]):
+    def init_progbar(self, bar_len=None, bar_height=None):
+        if bar_len is None:
+            bar_len = self.win.size[0]
+        if bar_height is None:
+            bar_height = self.win.size[1]/64
+            
         self.bar_len = bar_len  # total length
         self.bar_height = bar_height
-        self.bar_pos = bar_pos
-        # self.bar_pos = self.center_pos
+        self.bar_pos = [0, self.win.size[1]/2 - bar_height/2]
         self.left_corner = self.bar_pos[0] - self.bar_len/2
         self.progBack = visual.Rect(
             self.win,
+            units="pix",
             width=self.bar_len,
             height=self.bar_height,
             pos=self.bar_pos,
             fillColor=self.color_dict["light_grey"])
         self.progTest = visual.Rect(
             self.win,
-            width=0.01,
+            units="pix",
+            width=0,
             height=self.bar_height,
             pos=self.bar_pos,
             fillColor=self.color_dict["green"])
