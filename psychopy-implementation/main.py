@@ -11,7 +11,7 @@ Exp.init_window(screen=1)
 Exp.dialogue_box(show=True, participant=1)
 Exp.load_trials()
 Exp.render_visuals()
-Exp.init_progbar(bar_pos=[0, 15])
+Exp.init_progbar()
 
 # Start Experiment
 if Exp.expInfo["session"] in ['1', '2', '3']:
