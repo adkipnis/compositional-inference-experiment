@@ -22,8 +22,11 @@ Exp.init_progbar()
 Exp.draw_background()
 Exp.win.flip()
 core.wait(2)
-Exp.move_prog_bar(end_width=Exp.start_width + Exp.progbar_inc, wait_s=0)
+Exp.move_prog_bar(end_width=Exp.start_width + 5*Exp.progbar_inc, wait_s=0)
 core.wait(2)
+Exp.move_prog_bar(end_width=0, wait_s=0)
+core.wait(2)
+
 
 # Finish
 Exp.win.close()
