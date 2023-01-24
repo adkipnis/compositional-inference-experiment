@@ -75,8 +75,9 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
 
-    def dialogue_box(self, participant=None, session="1", show=True, dev=False):
+    def dialogue_box(self, participant=None, session="1", show=True, dev=False, show_progress=True):
         ''' Show dialogue box to get participant info '''
+        self.show_progress = show_progress
         if participant is None:
             savefiles = glob.glob(f"{self.data_dir}{os.sep}*.txt")
             names = [0] + [int(os.path.basename(file)[:2])
@@ -86,6 +87,7 @@ class Experiment:
         expName = "Alteration Magic Experiment"
         expInfo = {"participant": str(participant).zfill(2),
                    "session": session,
+                   "show progress": show_progress,
                    "dateStr": data.getDateStr(),
                    "psychopyVersion": __version__,
                    "frameRate": self.win.getActualFrameRate()}
@@ -418,11 +420,17 @@ class Experiment:
             fillColor=self.color_dict["green"])
         self.start_width = 0.0
         self.progbar_inc = 0.01 # 1% of bar length
+        self.show_progress = True
 
     def draw_background(self):
         self.progBack.length = self.bar_len
         self.progBack.draw()
         self.progTest.draw()
+    
+    def win_flip(self):
+        if self.show_progress:
+            self.draw_background()
+        self.win.flip()
 
     def move_prog_bar_step(self, bar_width_step, win_flip=True):
         # incrementally increase the bar width
@@ -432,7 +440,7 @@ class Experiment:
         self.progTest.pos = self.progTest.pos.tolist()
         self.draw_background()
         if win_flip:
-            self.win.flip()
+            self.win_flip()
 
     def move_prog_bar(self, start_width=None, end_width=1.0,
                       n_steps=20, wait_s=0.75, win_flip=True):
@@ -449,7 +457,7 @@ class Experiment:
         # First display
         self.draw_background()
         if win_flip:
-            self.win.flip()
+            self.win_flip()
             core.wait(wait_s)
 
         # Growing
@@ -469,7 +477,7 @@ class Experiment:
         if self.use_pp:
             self.send_trigger("fix")
         self.fixation.draw()
-        self.win.flip()
+        self.win_flip()
         core.wait(duration + jitter)
 
     def setCue(self, key, mode="random"):
@@ -508,7 +516,7 @@ class Experiment:
                 self.send_trigger("vcue")
             elif mode == "textual":
                 self.send_trigger("tcue")
-        self.win.flip()
+        self.win_flip()
         core.wait(duration)
         return mode
 
@@ -547,7 +555,7 @@ class Experiment:
                 stim.draw()
         if self.use_pp:
             self.send_trigger("disp")
-        self.win.flip()
+        self.win_flip()
         if self_paced:
             intermediateRT = self.getIR(core.Clock())
         else:
@@ -559,7 +567,7 @@ class Experiment:
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
-        self.win.flip()
+        self.win_flip()
         intermediateRT = self.getIR(IRClock)
         return intermediateRT
 
@@ -567,9 +575,9 @@ class Experiment:
         self.draw_background()
         self.pauseClock.draw()
         self.pauseText.draw()
-        self.win.flip()
+        self.win_flip()
         intermediateRT = self.getIR(core.Clock(), max_s=360)  # max 6 min break
-        self.win.flip()
+        self.win_flip()
         return intermediateRT
 
     def tCount(self, trial, feedback=False, demonstration=False,
@@ -602,7 +610,7 @@ class Experiment:
             if inc == 0:
                 if self.use_pp:
                     self.send_trigger("count")
-                self.win.flip()
+                self.win_flip()
                 continue
 
             # Second cycle: Get test response
@@ -631,7 +639,7 @@ class Experiment:
                     resp.pos = self.resp_pos[testResp]
                     resp.draw()
                 if inc == 1:
-                    self.win.flip()
+                    self.win_flip()
                     continue
 
                 # correct solution
@@ -646,7 +654,7 @@ class Experiment:
                     resp.draw()
                     core.wait(1)
                     if inc == 2:
-                        self.win.flip()
+                        self.win_flip()
         return testRT, testResp
 
     def tPosition(self, trial, feedback=False, demonstration=False,
@@ -679,7 +687,7 @@ class Experiment:
             if inc == 0:
                 if self.use_pp:
                     self.send_trigger("position")
-                self.win.flip()
+                self.win_flip()
                 continue
 
             # Second cycle: Get test response
@@ -708,7 +716,7 @@ class Experiment:
                     resp.pos = self.resp_pos[testResp]
                     resp.draw()
                 if inc == 1:
-                    self.win.flip()
+                    self.win_flip()
                     continue
 
             # correct solution
@@ -723,7 +731,7 @@ class Experiment:
                     resp.draw()
                     core.wait(1)
                     if inc == 2:
-                        self.win.flip()
+                        self.win_flip()
         return testRT, testResp
 
     def tLocalizer(self, trial, duration=2):
@@ -740,7 +748,7 @@ class Experiment:
         stim.draw()
         if self.use_pp:
             self.send_trigger("cue")
-        self.win.flip()
+        self.win_flip()
         core.wait(duration)
 
     def tSimilarity(self, stim_1, stim_2, pos_1, pos_2):
@@ -751,7 +759,7 @@ class Experiment:
             stim_2.pos = pos_2
             stim_2.draw()
             self.ratingScale.draw()
-            self.win.flip()
+            self.win_flip()
         rating = self.ratingScale.getRating()
         RT = self.ratingScale.getRT()
         return rating, RT
@@ -788,7 +796,7 @@ class Experiment:
             arg.draw()
             if show_background:
                 self.draw_background()
-            self.win.flip()
+            self.win_flip()
             core.wait(0.2)
 
     def iTransmutableObjects(self, *args, show_background=True):
@@ -812,7 +820,7 @@ class Experiment:
             stim = self.stim_dict.copy()[categories[i]]
             stim.pos = category_pos[i]
             stim.draw()
-        self.win.flip()
+        self.win_flip()
 
     def iSpellExample(self, displays, show_background=True):
         # Input Display
@@ -828,7 +836,7 @@ class Experiment:
             if i == 0:
                 if show_background:
                     self.draw_background()
-                self.win.flip()
+                self.win_flip()
                 core.wait(1)
                 continue
 
@@ -837,7 +845,7 @@ class Experiment:
             if i == 1:
                 if show_background:
                     self.draw_background()
-                self.win.flip()
+                self.win_flip()
                 core.wait(1)
 
         if len(displays) > 1:
@@ -853,7 +861,7 @@ class Experiment:
                 stim.draw()
             if show_background:
                 self.draw_background()
-            self.win.flip()
+            self.win_flip()
             core.wait(1)
 
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
@@ -892,7 +900,7 @@ class Experiment:
                 finished = True
             else:
                 self.nextPrompt.draw()
-                self.win.flip()
+                self.win_flip()
                 _, contResp = self.tTestresponse(TestClock, ["left", "right"],
                                                  return_numeric=False)
                 if contResp == "right":
@@ -925,8 +933,8 @@ class Experiment:
         page = 0
         if show_background:
             self.draw_background()
-        self.win.flip()
-        self.win.flip()
+        self.win_flip()
+        self.win_flip()
         if log_duration:
             instructions_clock = core.Clock()
         while not finished:
@@ -936,7 +944,7 @@ class Experiment:
                 self.instruct_stim.draw()
                 if show_background:
                     self.draw_background()
-                self.win.flip()
+                self.win_flip()
             elif isinstance(page_content, int):
                 special_displays[page_content](
                     args[page_content],
@@ -947,9 +955,9 @@ class Experiment:
                 if complex_displays[int(page_content)].__name__ in\
                         ["tPosition", "tCount"]:
                     if "feedback" not in kwargs[int(page_content)].keys():
-                        self.win.flip()
+                        self.win_flip()
                     elif not kwargs[int(page_content)]["feedback"]:
-                        self.win.flip()
+                        self.win_flip()
             page, finished = self.iNavigate(page=page, max_page=len(Part),
                                             proceed_key=proceed_key,
                                             wait_s=proceed_wait)
@@ -957,13 +965,13 @@ class Experiment:
             duration = instructions_clock.getTime()
             with open(f"{self.file_name}.txt", 'a') as f:
                 f.write(f"duration_{part_key} = {duration}\n")
-        self.win.flip()
+        self.win_flip()
         core.wait(loading_time)
 
     def LearnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   modes=["textual", "visual"]):
         # Initialize parameters
-        self.win.flip()
+        self.win_flip()
         finished = False
         cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
@@ -991,7 +999,7 @@ class Experiment:
                 cat.draw()
             self.leftArrow.pos = cat_center_pos
             self.leftArrow.draw()
-            self.win.flip()
+            self.win_flip()
             core.wait(0.2)
 
             page, finished = self.iNavigate(
@@ -1003,7 +1011,7 @@ class Experiment:
         return learnDuration
 
     def PracticeCues(self, trials_prim_cue, mode="visual", cue_pos=[0, 5],
-                     resp_keys=None, show_progress=True):
+                     resp_keys=None):
 
         assert self.n_cats in [4, 6], "unusual number of unique objects,"\
             "cannot set response keys"
@@ -1028,20 +1036,17 @@ class Experiment:
 
             # Incrementally display stuff
             for inc in range(3 + 2 * num_cr):
-
-                if show_progress:
-                    self.draw_background()
                     
                 # 0. Fixation
                 if inc == 0:
                     self.tFixation()
-                    self.win.flip()
+                    self.win_flip()
                     continue
                     
                 # 1. Map Cue
                 cue.draw()
                 if inc == 1:
-                    self.win.flip()
+                    self.win_flip()
                     core.wait(0.5)
                     continue
 
@@ -1054,7 +1059,7 @@ class Experiment:
                     resp.pos = self.cuepractice_pos[i]
                     resp.draw()
                 if inc == 2:
-                    self.win.flip()
+                    self.win_flip()
                     continue
 
                 # 3. - 3 + num_cr: Immediate Feedback
@@ -1080,7 +1085,7 @@ class Experiment:
                         resp.draw()
 
                 if inc in range(3, 3 + num_cr):
-                    self.win.flip()
+                    self.win_flip()
                     continue
 
                 # 4. If errors were made, draw correct response
@@ -1098,16 +1103,16 @@ class Experiment:
                         resp.draw()
                 if inc in range(3 + num_cr, 3 + 2 * num_cr - 1):
                     j += 1
-                    self.win.flip()
+                    self.win_flip()
                     continue
                 else:
                     trial["emp_resp"] = testRespList
                     trial["resp_RT"] = testRTList
                     trial["cue_type"] = cue_type
-                    self.win.flip()
+                    self.win_flip()
                     core.wait(2)
                     
-            if show_progress:
+            if self.show_progress:
                 self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
         return trials.trialList
 
@@ -1148,7 +1153,7 @@ class Experiment:
         for trial in trials:
             if add_jitter:
                 jitter = trial.jitter
-            self.win.flip()
+            self.win_flip()
             trial["start_time"] = self.exp_clock.getTime()
             if self.use_pp:
                 self.send_trigger("trial")
@@ -1176,7 +1181,7 @@ class Experiment:
 
                 # 5. Empty Display
                 if 5 in display_this:
-                    self.win.flip()
+                    self.win_flip()
                     core.wait(durations[2])
 
                 # 6. Test Display
@@ -1200,8 +1205,8 @@ class Experiment:
                     core.wait(durations[3])
 
             if 7 in display_this:
-                self.win.flip()
-                self.win.flip()
+                self.win_flip()
+                self.win_flip()
                 core.wait(durations[4])
 
             if pause_between_runs:
@@ -1233,6 +1238,7 @@ class Experiment:
         if i_step is None:
             i_step = self.n_exposure * self.maxn_blocks
         while mean_acc < min_acc and i + i_step <= len(trials_prim_cue):
+            start_width_initial = self.start_width
             df = trials_prim_cue[i:i+i_step].copy()
             result = self.PracticeCues(df, mode=mode)
             df_list.append(result)
@@ -1250,6 +1256,7 @@ class Experiment:
             i += i_step
             if mean_acc < min_acc:
                 feedbacktype = "Feedback0"
+                self.start_width = start_width_initial # reset progress bar
             else:
                 feedbacktype = "Feedback1"
             self.Instructions(part_key=feedbacktype,
@@ -1304,7 +1311,7 @@ class Experiment:
             trial_df, 1, method="sequential")
 
         for trial in self.trials:
-            self.win.flip()
+            self.win_flip()
             if self.use_pp:
                 self.send_trigger("trial")
             trial["start_time"] = self.exp_clock.getTime()
@@ -1316,7 +1323,7 @@ class Experiment:
             self.tLocalizer(trial, duration=durations[0])
 
             # 3. Empty Display
-            self.win.flip()
+            self.win_flip()
             core.wait(durations[1])
 
             # 4. Catch Trial Query
@@ -1341,7 +1348,7 @@ class Experiment:
                     pos=self.center_pos,
                     wrapWidth=40)
                 textStim.draw()
-                self.win.flip()
+                self.win_flip()
                 if self.use_pp:
                     self.send_trigger("identity")
                 # core.wait(durations[2])
@@ -1352,13 +1359,13 @@ class Experiment:
                                           mode=trial.query_type)
                     stim.pos = self.center_pos
                     stim.draw()
-                    self.win.flip()
+                    self.win_flip()
 
                 # Get response
                 TestClock = core.Clock()
                 testRT, testResp = self.tTestresponse(
                     TestClock, resp_keys)
-                self.win.flip()
+                self.win_flip()
 
                 # Interpret response according to mapping in self.resp_keys_vpixx / self.resp_keys_alt
                 if testResp == 4:
@@ -1439,7 +1446,7 @@ class Experiment:
                               "cue_2": pair[1],
                               "dissimilarity": rating,
                               "RT": RT})
-            self.win.flip()
+            self.win_flip()
             core.wait(0.5)
         return triallist
 
