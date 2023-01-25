@@ -1094,7 +1094,7 @@ class Experiment:
                      self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
                      durations=[1.0, 3.0, 0.6, 1.0, 0.7],
                      test=True, feedback=False,
-                     pause_between_runs=True, runlength=360,
+                     pause_between_runs=True, runlength=180,
                      instruction_trial=False,
                      resp_keys=None):
         if resp_keys is None:
@@ -1189,17 +1189,9 @@ class Experiment:
 
             if pause_between_runs:
                 if timer.getTime() <= 0:
-                    # Update Progress Bar
-                    progbar_inc_tmp = trial_number / n_trials * self.progbar_inc
-                    self.start_width = self.move_prog_bar(
-                        start_width=self.start_width,
-                        end_width=start_width_initial + progbar_inc_tmp,
-                        n_steps=2,
-                        wait_s=0,
-                        win_flip=False)
-
                     # Pause Display
                     self.tPause()
+                    core.wait(1)
                     timer.reset()
                     run_number += 1
                     if self.use_pp:
