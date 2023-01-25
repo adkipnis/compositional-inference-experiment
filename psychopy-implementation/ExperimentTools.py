@@ -254,20 +254,16 @@ class Experiment:
 
         self.leftArrow = visual.ImageStim(
             self.win,
-            image=glob.glob(f"{self.stim_dir}{os.sep}leftArrow.png")[0],
-            size=self.normal_size, interpolate=True)
+            image=glob.glob(f"{self.stim_dir}{os.sep}leftArrow.png")[0])
 
         self.magicWand = visual.ImageStim(
             self.win,
-            image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0],
-            size=self.normal_size, interpolate=True)
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0])
 
         self.pauseClock = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}pauseClock.png")[0],
-            pos=self.center_pos,
-            size=self.center_size,
-            interpolate=True)
+            pos=self.center_pos)
 
         self.pauseText = visual.TextStim(
             self.win,
@@ -501,10 +497,6 @@ class Experiment:
                 duration=0.5):
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
-        # if with_background:
-        #     rect.pos = center_pos
-        #     rect.size = center_size
-        #     rect.draw()
         n_cues = len(trial.map)
         for i in range(n_cues):
             cue, mode = self.setCue(trial.map[i], mode=mode)
