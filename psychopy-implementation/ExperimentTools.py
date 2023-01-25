@@ -79,10 +79,9 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
 
-    def dialogue_box(self, participant=None, session="1", test_mode=True, show=True, dev=False, show_progress=True):
+    def dialogue_box(self, participant=None, session="1", test_mode=False, show=True, dev=False, show_progress=True):
         ''' Show dialogue box to get participant info '''
-        self.show_progress = show_progress
-        self.test_mode = test_mode
+
         if participant is None:
             savefiles = glob.glob(f"{self.data_dir}{os.sep}*.txt")
             names = [0] + [int(os.path.basename(file)[:2])
@@ -92,8 +91,8 @@ class Experiment:
         expName = "Alteration Magic Experiment"
         expInfo = {"participant": str(participant).zfill(2),
                    "session": session,
-                   "show progress": show_progress,
-                   "test mode": test_mode,
+                   "show_progress": show_progress,
+                   "test_mode": test_mode,
                    "dateStr": data.getDateStr(),
                    "psychopyVersion": __version__,
                    "frameRate": self.win.getActualFrameRate()}
@@ -108,6 +107,8 @@ class Experiment:
                 core.quit()
 
         # Save data to this file later
+        self.show_progress = expInfo["show_progress"]
+        self.test_mode = expInfo["test_mode"]
         self.file_name = f"{self.data_dir}{os.sep}{expInfo['participant']}_{expName}"
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"t0 = {expInfo['dateStr']}\n")
@@ -412,7 +413,6 @@ class Experiment:
             fillColor=self.color_dict["green"])
         self.start_width = 0.0
         self.progbar_inc = 0.01 # 1% of bar length
-        self.show_progress = True
 
     def draw_background(self):
         self.progBack.length = self.bar_len
@@ -521,7 +521,7 @@ class Experiment:
         while intermediateResp == None and IRClock.getTime() < max_s:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-                if thisKey in ["right", "space"]:
+                if thisKey in ["space"]:
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -772,7 +772,7 @@ class Experiment:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
-                    elif thisKey in ["right", "space"]:
+                    elif thisKey in ["space"]:
                         testResp = "NA"
                     elif thisKey == "escape":
                         with open(self.file_name + ".txt", 'a') as f:
@@ -781,19 +781,15 @@ class Experiment:
                 event.clearEvents()
         return testRT, testResp
 
-    def iSingleImage(self, *args, show_background=True):
+    def iSingleImage(self, *args):
         for arg in args:
             arg.pos = [0, 0]
             # arg.size = [10, 10]
             arg.draw()
-            if show_background:
-                self.draw_background()
             self.win_flip()
             core.wait(0.2)
 
-    def iTransmutableObjects(self, *args, show_background=True):
-        if show_background:
-            self.draw_background()
+    def iTransmutableObjects(self, *args,):
         categories = list(self.stim_dict.keys())
         categories.sort()
         n_cats = self.n_cats  # alternatively show all using len(categories)
@@ -814,7 +810,7 @@ class Experiment:
             stim.draw()
         self.win_flip()
 
-    def iSpellExample(self, displays, show_background=True):
+    def iSpellExample(self, displays):
         # Input Display
         for i in range(2):
             rect_pos = circularGridPositions(center_pos=[0, 0],
@@ -826,8 +822,6 @@ class Experiment:
                 stim.pos = rect_pos[j]
                 stim.draw()
             if i == 0:
-                if show_background:
-                    self.draw_background()
                 self.win_flip()
                 core.wait(1)
                 continue
@@ -835,8 +829,6 @@ class Experiment:
             cue = self.magicWand
             cue.draw()
             if i == 1:
-                if show_background:
-                    self.draw_background()
                 self.win_flip()
                 core.wait(1)
 
@@ -851,8 +843,6 @@ class Experiment:
                 stim = self.stim_dict.copy()[displays[1][j]]
                 stim.pos = rect_pos[j]
                 stim.draw()
-            if show_background:
-                self.draw_background()
             self.win_flip()
             core.wait(1)
 
@@ -910,7 +900,6 @@ class Experiment:
                      kwargs=list(),
                      font="Times New Roman",
                      fontcolor=[-0.9, -0.9, -0.9],
-                     show_background=True,
                      log_duration=True,
                      loading_time=1):
         assert part_key in self.instructions.keys(),\
@@ -923,8 +912,6 @@ class Experiment:
         finished = False
         Part = self.instructions[part_key]
         page = 0
-        if show_background:
-            self.draw_background()
         self.win_flip()
         self.win_flip()
         if log_duration:
@@ -934,13 +921,10 @@ class Experiment:
             if isinstance(page_content, str):
                 self.instruct_stim.text = page_content
                 self.instruct_stim.draw()
-                if show_background:
-                    self.draw_background()
                 self.win_flip()
             elif isinstance(page_content, int):
                 special_displays[page_content](
-                    args[page_content],
-                    show_background=show_background)
+                    args[page_content])
             elif isinstance(page_content, float):
                 complex_displays[int(page_content)](
                     **kwargs[int(page_content)])
@@ -1401,8 +1385,7 @@ class Experiment:
         if acc < min_acc:
             self.Instructions(part_key="BadLocalizer",
                               special_displays=[self.iSingleImage],
-                              args=[self.keyboard_dict["keyBoardMegNY"]],
-                              show_background=False)
+                              args=[self.keyboard_dict["keyBoardMegNY"]])
             self.trials_localizer2 = np.random.permutation(
                 self.trials_localizer).tolist()
             df_out_again, acc_2 = self.LocalizerBlock(self.trials_localizer2,
@@ -1411,8 +1394,7 @@ class Experiment:
             # save_object(self.df_out_8 + self.df_out_8_again,
             #             fname, ending = 'csv')
             if acc_2 < min_acc:
-                self.Instructions(part_key="DropOut",
-                                  show_background=False)
+                self.Instructions(part_key="DropOut")
                 with open(self.file_name + ".txt", 'a') as f:
                     f.write("t_a = " + data.getDateStr() + "\n\n")
                 core.quit()
@@ -1488,8 +1470,7 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoardArrows"],
                                 self.keyboard_dict["keyBoardEsc"]],
                           font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+                          fontcolor=self.color_dict["mid_grey"])
 
         # Introduction
         self.Instructions(part_key="Intro",
@@ -1636,8 +1617,7 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoardArrows"],
                                 self.keyboard_dict["keyBoardEsc"]],
                           font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+                          fontcolor=self.color_dict["mid_grey"])
 
         # Introduction
         self.Instructions(part_key="IntroAdvanced",
@@ -1771,16 +1751,14 @@ class Experiment:
     #                       special_displays=[self.iSingleImage],
     #                       args=[self.keyboard_dict["keyBoardMegBF"]],
     #                       font="mono",
-    #                       fontcolor=self.color_dict["mid_grey"],
-    #                       show_background=False)
+    #                       fontcolor=self.color_dict["mid_grey"])
 
     #     # Introduction
     #     self.Instructions(part_key="IntroMEG",
     #                       special_displays=[self.iTransmutableObjects,
     #                                         self.iSingleImage],
     #                       args=[None,
-    #                             self.keyboard_dict["keyBoardMegNY"]],
-    #                       show_background=False)
+    #                             self.keyboard_dict["keyBoardMegNY"]])
 
     #     # Localizer Block
     #     self.df_out_8 = self.LocalizerLoop(durations=[2.0, 2.0, 2.0, 1.0],
@@ -1906,16 +1884,14 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMegBF"]],
                           font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+                          fontcolor=self.color_dict["mid_grey"])
 
         # Introduction
         self.Instructions(part_key="IntroMEG",
                           special_displays=[self.iTransmutableObjects,
                                             self.iSingleImage],
                           args=[None,
-                                self.keyboard_dict["keyBoardMegNY"]],
-                          show_background=False)
+                                self.keyboard_dict["keyBoardMegNY"]])
 
         # Localizer Block
         self.df_out_8 = self.LocalizerLoop(durations=[2.0, 2.0, 2.0, 1.0],
