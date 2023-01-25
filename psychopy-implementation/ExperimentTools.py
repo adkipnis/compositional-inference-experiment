@@ -39,16 +39,15 @@ class Experiment:
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
 
-        # inputs and dimensions #TODO
-        self.resp_keys = np.array(["s", "d", "num_4", "num_5"])
+        # inputs and dimensions
+        self.resp_keys = np.array(["d", "f", "j", "k"])
         self.resp_keys_wide = np.array(
-            ["a", "s", "d", "num_4", "num_5", "num_6"])
-        self.resp_keys_alt = np.array(
-            ["s", "d", "j", "k", "left", "right"])
+            ["s", "d", "f", "j", "k", "l"])
         self.resp_keys_vpixx = np.array(
             ["2", "1", "up", "left", "4", "right"])
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
+        
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.vcue_size = [7, 7]
@@ -1385,7 +1384,7 @@ class Experiment:
                     TestClock, resp_keys)
                 self.win_flip()
 
-                # Interpret response according to mapping in self.resp_keys_vpixx / self.resp_keys_alt
+                # Interpret response according to mapping in self.resp_keys_vpixx 
                 if testResp == 4:
                     testResp = False
                 elif testResp == 5:
