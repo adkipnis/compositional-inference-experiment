@@ -14,7 +14,7 @@ Exp.render_visuals()
 Exp.init_progbar()
 
 # Start Experiment
-if Exp.expInfo["session"] in ['1', '2', '3']:
+if Exp.expInfo["session"] in ['1', '2']:
     eval(f"Exp.Session{Exp.expInfo['session']}()")
 else:
     raise ValueError('A session with this number does not exist')
