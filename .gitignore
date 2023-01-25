@@ -6,3 +6,4 @@ psychopy-implementation/stimuli/stimulus_archive/*
 psychopy-implementation/data/*
 psychopy-implementation/data-pilot/*
 psychopy-implementation/trial-lists/*
+psychopy-implementation/stimuli/instructions_en.pkl

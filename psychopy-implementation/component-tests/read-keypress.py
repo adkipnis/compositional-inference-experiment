@@ -20,7 +20,7 @@ allKeys = event.waitKeys(maxWait = 10)
 print(allKeys[0])
 testRT, testResp = Exp.tTestresponse(
     core.Clock(),
-    Exp.resp_keys_alt #Exp.resp_keys_vpixx
+    Exp.resp_keys #Exp.resp_keys_vpixx
     )
 print(testResp)
 Exp.win.close()
