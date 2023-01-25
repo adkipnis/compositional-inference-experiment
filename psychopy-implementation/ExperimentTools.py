@@ -1468,14 +1468,34 @@ class Experiment:
     # Introduction Session
     ###########################################################################
     def Session1(self):
-        ''' --- 1. Initial instructions ---------------------------------------------'''
         # init session variables
-        n_trials_total = 4 * self.n_exposure * self.maxn_blocks # 2 * cue practice, 2 * test practice (based on i_step)
-        self.progbar_inc = 1/n_trials_total
-        id_is_odd = int(self.expInfo["participant"]) % 2
-
-        # Navigation
         self.win.mouseVisible = False
+        
+        # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
+        n_trials_total = 4 * self.n_exposure * self.maxn_blocks 
+        self.progbar_inc = 1/n_trials_total
+        
+        # Balance out which cue modality is learned first
+        id_is_odd = int(self.expInfo["participant"]) % 2
+        first_modality = "visual" if id_is_odd else "textual"
+        second_modality = "textual" if id_is_odd else "visual"
+        
+        # Balance out which test type is learned first
+        first_test = "count" if id_is_odd else "position"
+        second_test = "position" if id_is_odd else "count"
+        tFirst = self.tCount if id_is_odd else self.tPosition
+        tSecond = self.tPosition if id_is_odd else self.tCount
+        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
+
+        # Get Demo trials
+        demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
+        demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
+        demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
+        
+        
+        ''' --- 1. Initial instructions ---------------------------------------------'''
+        # Navigation
         # self.Instructions(part_key="Navigation1",
         #                   special_displays=[self.iSingleImage,
         #                                     self.iSingleImage],
@@ -1500,10 +1520,6 @@ class Experiment:
 
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
-        # Balance out which cue modality is learned first
-        first_modality = "visual" if id_is_odd else "textual"
-        second_modality = "textual" if id_is_odd else "visual"
-
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
         with open(f"{self.file_name}.txt", 'a') as f:
@@ -1538,19 +1554,6 @@ class Experiment:
 
 
         ''' --- 3. Test Types --------------------------------------------------------'''
-        # Balance out which test type is learned first
-        first_test = "count" if id_is_odd else "position"
-        tFirst = self.tCount if id_is_odd else self.tPosition
-        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
-        second_test = "position" if id_is_odd else "count"
-        tSecond = self.tPosition if id_is_odd else self.tCount
-        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
-        
-        # Get Demo trials
-        demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
-        demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
-        demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
-
         # First Test-Type
         self.Instructions(part_key="TestTypes",
                           special_displays=[self.iSingleImage],
