@@ -297,10 +297,7 @@ class Experiment:
         self.keyboard_dict = {
             os.path.basename(os.path.normpath(keyboard_list[i])).split(".")[0]: visual.ImageStim(
                 self.win,
-                image=keyboard_list[i],
-                # size=[40, 20],
-                # interpolate=True
-                )
+                image=keyboard_list[i])
             for i in range(len(keyboard_list))
         }
 

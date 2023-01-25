@@ -7,7 +7,7 @@ done
 
 # keyboards
 for file in keyBoard*.png;
-  do convert $file -scale 60% $file;
+  do convert $file -scale 65% $file;
 done
 
 # stimuli
