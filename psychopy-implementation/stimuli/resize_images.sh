@@ -1,7 +1,13 @@
 #!/bin/bash
+
 # cues
 for file in c_*.png;
   do convert $file -scale 256x256 $file;
+done
+
+# keyboards
+for file in keyBoard*.png;
+  do convert $file -scale 60% $file;
 done
 
 # stimuli
@@ -19,3 +25,4 @@ convert leftArrow.png -scale 128x128 leftArrow.png
 convert magicWand.png -scale 200x200 magicWand.png
 convert pauseClock.png -scale 256x256 pauseClock.png
 convert magicBooks.png -scale 60% magicBooks.png
+

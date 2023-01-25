@@ -7,3 +7,4 @@ psychopy-implementation/data/*
 psychopy-implementation/data-pilot/*
 psychopy-implementation/trial-lists/*
 psychopy-implementation/stimuli/instructions_en.pkl
+psychopy-testing/testing.py
