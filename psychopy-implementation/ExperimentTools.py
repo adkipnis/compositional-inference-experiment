@@ -1236,9 +1236,8 @@ class Experiment:
             trial_number += 1
         return trials.trialList
 
-    def CuePracticeLoop(self, trials_prim_cue, first_modality, second_modality,
-                        min_acc=0.90, mode="random", i=0, i_step=None,
-                        show_cheetsheet=True):
+    def CuePracticeLoop(self, trials_prim_cue,
+                        min_acc=0.90, mode="random", i=0, i_step=None, show_cheetsheet=True):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
@@ -1465,58 +1464,42 @@ class Experiment:
     ###########################################################################
     # Introduction Session
     ###########################################################################
-    def Session1(self, check_similarity=False):
-        # globalClock = core.Clock()
-        n_trials_toal = 4 * self.n_exposure * self.maxn_blocks # 2 * cue practice, 2 * test practice, based on i_step
-        self.progbar_inc = 1/n_trials_toal
-
-        # # Similarity Task
-        # if check_similarity:
-        #     self.df_sim1 = self.CueSimilarityTest(
-        #         self.vcue_full,
-        #         pos_1=[-5, self.center_pos[1]],
-        #         pos_2=[5, self.center_pos[1]])
-        #     core.wait(1)
-        #     self.df_sim2 = self.CueSimilarityTest(
-        #         self.tcue_full,
-        #         pos_1=[sum(x) for x in zip(self.center_pos, [0, 6])],
-        #         pos_2=[sum(x) for x in zip(self.center_pos, [0, 0])])
-
-        #     fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_similarity"
-        #     save_object(self.df_sim1 + self.df_sim2, fname, ending='csv')
+    def Session1(self):
+        ''' --- 1. Initial instructions ---------------------------------------------'''
+        # set up progress bar
+        n_trials_total = 4 * self.n_exposure * self.maxn_blocks # 2 * cue practice, 2 * test practice (based on i_step)
+        self.progbar_inc = 1/n_trials_total
 
         # Navigation
         self.win.mouseVisible = False
-        # self.Instructions(part_key="Navigation1",
-        #                   special_displays=[self.iSingleImage,
-        #                                     self.iSingleImage],
-        #                   args=[self.keyboard_dict["keyBoardArrows"],
-        #                         self.keyboard_dict["keyBoardEsc"]],
-        #                   font="mono",
-        #                   fontcolor=self.color_dict["mid_grey"],
-        #                   show_background=False)
+        self.Instructions(part_key="Navigation1",
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardArrows"],
+                                self.keyboard_dict["keyBoardEsc"]],
+                          font="mono",
+                          fontcolor=self.color_dict["mid_grey"],
+                          show_background=False)
 
-        # # Introduction
-        # self.Instructions(part_key="Intro",
-        #                   special_displays=[self.iSingleImage,
-        #                                     self.iSingleImage,
-        #                                     self.iTransmutableObjects,
-        #                                     self.iSpellExample,
-        #                                     self.iSpellExample],
-        #                   args=[self.magicBooks,
-        #                         self.philbertine,
-        #                         None,
-        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # Introduction
+        self.Instructions(part_key="Intro",
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage,
+                                            self.iTransmutableObjects,
+                                            self.iSpellExample,
+                                            self.iSpellExample],
+                          args=[self.magicBooks,
+                                self.philbertine,
+                                None,
+                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
-        # -------------------------------------------------------------------
+
+        ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Balance out which cue modality is learned first
-        if int(self.expInfo["participant"]) % 2:
-            first_modality = "visual"
-            second_modality = "textual"
-        else:
-            first_modality = "textual"
-            second_modality = "visual"
+        id_is_odd = int(self.expInfo["participant"]) % 2
+        first_modality = "visual" if id_is_odd else "textual"
+        second_modality = "textual" if id_is_odd else "visual"
 
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
@@ -1528,54 +1511,40 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
                           )
-        self.df_out_1 = self.CuePracticeLoop(
-            self.trials_prim_cue, first_modality, second_modality,
-            mode=first_modality)
+        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             mode=first_modality)
         
-
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
-                          )
+                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
         self.learnDuration_2 = self.LearnCues()
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
         # Test second cue type
-        self.df_out_2 = self.CuePracticeLoop(
-            self.trials_prim_cue, first_modality, second_modality,
-            mode=second_modality,
-            i=len(self.df_out_1))
+        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             mode=second_modality,
+                                             i=len(self.df_out_1))
 
         # Save cue memory data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
         save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
-        # ---------------------------------------------------------------------
-        # Balance out which test type is learned first
-        if int(self.expInfo["participant"]) % 2:
-            first_test = "count"
-            tFirst = self.tCount
-            trials_test_1 = self.trials_prim_prac_c.copy()
-            second_test = "position"
-            tSecond = self.tPosition
-            trials_test_2 = self.trials_prim_prac_p.copy()
-        else:
-            first_test = "position"
-            tFirst = self.tPosition
-            trials_test_1 = self.trials_prim_prac_p.copy()
-            second_test = "count"
-            tSecond = self.tCount
-            trials_test_2 = self.trials_prim_prac_c.copy()
 
+        ''' --- 3. Test Types --------------------------------------------------------'''
+        # Balance out which test type is learned first
+        first_test = "count" if id_is_odd else "position"
+        tFirst = self.tCount if id_is_odd else self.tPosition
+        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
+        second_test = "position" if id_is_odd else "count"
+        tSecond = self.tPosition if id_is_odd else self.tCount
+        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
+        
         # Get Demo trials
-        demoTrials1 = data.TrialHandler(
-            trials_test_1[0:1], 1, method="sequential")
-        demoTrial1 = demoTrials1.trialList[0]
-        demoTrials2 = data.TrialHandler(
-            trials_test_2[0:1], 1, method="sequential")
-        demoTrial2 = demoTrials2.trialList[0]
+        demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
+        demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
+        demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
 
         # First Test-Type
         self.Instructions(part_key="TestTypes",
@@ -1587,6 +1556,7 @@ class Experiment:
                                    "i_step": 1,
                                    "test": False}],
                           loading_time=0)
+        
         self.Instructions(part_key=first_test + "First",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]],
@@ -1634,6 +1604,7 @@ class Experiment:
                                   {"trial": demoTrial2,
                                    "feedback": True,
                                    "demonstration": True}])
+        
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
                                               # i_step = 5, # for testing
                                               min_acc=0.95,
@@ -1646,6 +1617,7 @@ class Experiment:
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
         save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
 
+        # Wrap up
         self.Instructions(part_key="Bye")
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"t_n = {data.getDateStr()}\n\n")
