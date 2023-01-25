@@ -10,7 +10,7 @@ import sys
 import csv
 from string import ascii_uppercase
 import numpy as np
-from psychopy import __version__, core, event, visual, gui, data
+from psychopy import __version__, core, event, visual, gui, data, monitors
 from psychopy.parallel import ParallelPort
 
 
@@ -64,7 +64,13 @@ class Experiment:
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
         if res is None:
-            res = [1920, 1080]
+            sizes = [monitors.Monitor(mon).getSizePix() for mon in monitors.getAllMonitors()]
+            if sizes:
+                res = sorted(sizes, reverse=True)[0]
+            else:
+                print("No monitor found, using default resolution (1920x1080).")
+                res = [1920, 1080]
+            
         assert isinstance(res, list), "res must be list of two integers"
         self.win = visual.Window(
             res,
@@ -1492,10 +1498,11 @@ class Experiment:
         demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
         demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
         demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
+        print("Starting Session 1.")
         
         
         ''' --- 1. Initial instructions ---------------------------------------------'''
-        Navigation
+        # Navigation
         self.Instructions(part_key="Navigation1",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage],
