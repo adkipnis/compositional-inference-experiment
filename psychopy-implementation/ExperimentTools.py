@@ -534,7 +534,7 @@ class Experiment:
         while intermediateResp == None and IRClock.getTime() < max_s:
             allKeys = event.waitKeys()
             for thisKey in allKeys:
-                if thisKey in ["right"]:
+                if thisKey in ["right", "space"]:
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
@@ -1520,37 +1520,37 @@ class Experiment:
 
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
-        # Learn first cue type
-        self.learnDuration_1 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
+        # # Learn first cue type
+        # self.learnDuration_1 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
 
-        # Test first cue type
-        self.Instructions(part_key="Intermezzo1",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
-                          )
-        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=first_modality)
+        # # Test first cue type
+        # self.Instructions(part_key="Intermezzo1",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
+        #                   )
+        # self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=first_modality)
         
-        # Learn second cue type
-        self.Instructions(part_key="Intermezzo2",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
-        self.learnDuration_2 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
+        # # Learn second cue type
+        # self.Instructions(part_key="Intermezzo2",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+        # self.learnDuration_2 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
-        # Test second cue type
-        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=second_modality,
-                                             i=len(self.df_out_1))
+        # # Test second cue type
+        # self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=second_modality,
+        #                                      i=len(self.df_out_1))
 
-        # Save cue memory data
-        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
-        save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+        # # Save cue memory data
+        # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
+        # save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
 
         ''' --- 3. Test Types --------------------------------------------------------'''
