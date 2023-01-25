@@ -75,9 +75,10 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
 
-    def dialogue_box(self, participant=None, session="1", show=True, dev=False, show_progress=True):
+    def dialogue_box(self, participant=None, session="1", test_mode=True, show=True, dev=False, show_progress=True):
         ''' Show dialogue box to get participant info '''
         self.show_progress = show_progress
+        self.test_mode = test_mode
         if participant is None:
             savefiles = glob.glob(f"{self.data_dir}{os.sep}*.txt")
             names = [0] + [int(os.path.basename(file)[:2])
@@ -88,6 +89,7 @@ class Experiment:
         expInfo = {"participant": str(participant).zfill(2),
                    "session": session,
                    "show progress": show_progress,
+                   "test mode": test_mode,
                    "dateStr": data.getDateStr(),
                    "psychopyVersion": __version__,
                    "frameRate": self.win.getActualFrameRate()}
@@ -1209,7 +1211,10 @@ class Experiment:
                     trial["resp_RT"] = testRT
                     trial["cue_type"] = cue_type
                     core.wait(durations[3])
-
+            
+            if self.show_progress:
+                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
+            
             if 7 in display_this:
                 self.win_flip()
                 self.win_flip()
@@ -1276,7 +1281,7 @@ class Experiment:
         return df_out
 
     def TestPracticeLoop(self, trial_df,
-                         min_acc=0.9, mode="random", i=0, i_step=None,
+                         min_acc=0.95, mode="random", i=0, i_step=None,
                          durations=[1.0, 3.0, 0.6, 1.0, 0.7],
                          test=True, feedback=False, self_paced=False,
                          pause_between_runs=True, runlength=360):
@@ -1512,6 +1517,7 @@ class Experiment:
                           args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
                           )
         self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             i_step = 2 if self.test_mode else None,
                                              mode=first_modality)
         
         # Learn second cue type
@@ -1524,6 +1530,7 @@ class Experiment:
 
         # Test second cue type
         self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             i_step = 2 if self.test_mode else None,
                                              mode=second_modality,
                                              i=len(self.df_out_1))
 
@@ -1580,7 +1587,7 @@ class Experiment:
                                    "demonstration": True}])
 
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                              # i_step = 5, # for testing
+                                              i_step = 2 if self.test_mode else None,
                                               min_acc=0.95,
                                               self_paced=True,
                                               feedback=True,
@@ -1606,7 +1613,7 @@ class Experiment:
                                    "demonstration": True}])
         
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
-                                              # i_step = 5, # for testing
+                                              i_step = 2 if self.test_mode else None,
                                               min_acc=0.95,
                                               self_paced=True,
                                               feedback=True,
