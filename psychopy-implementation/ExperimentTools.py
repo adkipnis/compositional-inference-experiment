@@ -50,7 +50,6 @@ class Experiment:
         
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
-        self.vcue_size = [7, 7]
         self.normal_size = [5, 5]
         self.color_dict = {"light_grey": [0.7, 0.7, 0.7],
                            "mid_grey": [0.0, 0.0, 0.0],
@@ -216,7 +215,7 @@ class Experiment:
         self.cuepractice_pos = rectangularGrindPositions(
             center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
 
-    def render_visuals(self, check_similarity=False):
+    def render_visuals(self):
         print("Rendering unique visual objects...")
 
         self.instruct_stim = visual.TextStim(
@@ -340,9 +339,7 @@ class Experiment:
             self.map_names[i]: visual.ImageStim(
                 self.win,
                 image=vcue_list[i],
-                pos=self.center_pos,
-                size=self.vcue_size,
-                interpolate=True)
+                pos=self.center_pos)
             for i in range(self.n_primitives)
         }
 
@@ -362,42 +359,40 @@ class Experiment:
             for i in range(len(stim_list))
         }
 
-        if check_similarity:
-            print("Rendering stimuli for similarity check...")
-            self.ratingScale = visual.RatingScale(
-                self.win,
-                low=0, high=10,
-                pos=[0.0, -0.2],
-                marker="slider",
-                markerStart=None,
-                lineColor="white",
-                labels=["0: very similar", "10: very different"],
-                stretch=1.25,
-                textSize=0.75,
-                textFont="mono",
-                mouseOnly=False,
-                acceptKeys='space',
-                scale=None)
+        # if check_similarity:
+        #     print("Rendering stimuli for similarity check...")
+        #     self.ratingScale = visual.RatingScale(
+        #         self.win,
+        #         low=0, high=10,
+        #         pos=[0.0, -0.2],
+        #         marker="slider",
+        #         markerStart=None,
+        #         lineColor="white",
+        #         labels=["0: very similar", "10: very different"],
+        #         stretch=1.25,
+        #         textSize=0.75,
+        #         textFont="mono",
+        #         mouseOnly=False,
+        #         acceptKeys='space',
+        #         scale=None)
 
-            self.tcue_full = {
-                tcue_list[i]: visual.TextStim(
-                    self.win,
-                    text=tcue_list[i],
-                    pos=self.center_pos,
-                    height=4,
-                    color=self.color_dict["black"])
-                for i in range(len(tcue_list))
-            }
+        #     self.tcue_full = {
+        #         tcue_list[i]: visual.TextStim(
+        #             self.win,
+        #             text=tcue_list[i],
+        #             pos=self.center_pos,
+        #             height=4,
+        #             color=self.color_dict["black"])
+        #         for i in range(len(tcue_list))
+        #     }
 
-            self.vcue_full = {
-                vcue_list[i][-5]: visual.ImageStim(
-                    self.win,
-                    image=vcue_list[i],
-                    pos=self.center_pos,
-                    size=self.vcue_size,
-                    interpolate=True)
-                for i in range(len(vcue_list))
-            }
+        #     self.vcue_full = {
+        #         vcue_list[i][-5]: visual.ImageStim(
+        #             self.win,
+        #             image=vcue_list[i],
+        #             pos=self.center_pos)
+        #         for i in range(len(vcue_list))
+        #     }
 
     # Background Components --------------------------------------------------------
 
