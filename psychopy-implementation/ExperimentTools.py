@@ -976,6 +976,7 @@ class Experiment:
         self.win_flip()
         core.wait(loading_time)
 
+
     def LearnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   modes=["textual", "visual"]):
         # Initialize parameters
@@ -1129,6 +1130,7 @@ class Experiment:
                      durations=[1.0, 3.0, 0.6, 1.0, 0.7],
                      test=True, feedback=False,
                      pause_between_runs=True, runlength=360,
+                     instruction_trial=False,
                      resp_keys=None):
         if resp_keys is None:
             resp_keys = self.resp_keys
@@ -1212,8 +1214,8 @@ class Experiment:
                     trial["cue_type"] = cue_type
                     core.wait(durations[3])
             
-            if self.show_progress:
-                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
+            if self.show_progress and not instruction_trial:
+                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0, win_flip=False)
             
             if 7 in display_this:
                 self.win_flip()
@@ -1471,72 +1473,72 @@ class Experiment:
     ###########################################################################
     def Session1(self):
         ''' --- 1. Initial instructions ---------------------------------------------'''
-        # set up progress bar
+        # init session variables
         n_trials_total = 4 * self.n_exposure * self.maxn_blocks # 2 * cue practice, 2 * test practice (based on i_step)
         self.progbar_inc = 1/n_trials_total
+        id_is_odd = int(self.expInfo["participant"]) % 2
 
         # Navigation
         self.win.mouseVisible = False
-        self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardArrows"],
-                                self.keyboard_dict["keyBoardEsc"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+        # self.Instructions(part_key="Navigation1",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardArrows"],
+        #                         self.keyboard_dict["keyBoardEsc"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"],
+        #                   show_background=False)
 
-        # Introduction
-        self.Instructions(part_key="Intro",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
-                                            self.iTransmutableObjects,
-                                            self.iSpellExample,
-                                            self.iSpellExample],
-                          args=[self.magicBooks,
-                                self.philbertine,
-                                None,
-                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # # Introduction
+        # self.Instructions(part_key="Intro",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage,
+        #                                     self.iTransmutableObjects,
+        #                                     self.iSpellExample,
+        #                                     self.iSpellExample],
+        #                   args=[self.magicBooks,
+        #                         self.philbertine,
+        #                         None,
+        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
 
-        ''' --- 2. Learn Cues --------------------------------------------------------'''
-        # Balance out which cue modality is learned first
-        id_is_odd = int(self.expInfo["participant"]) % 2
-        first_modality = "visual" if id_is_odd else "textual"
-        second_modality = "textual" if id_is_odd else "visual"
+        # ''' --- 2. Learn Cues --------------------------------------------------------'''
+        # # Balance out which cue modality is learned first
+        # first_modality = "visual" if id_is_odd else "textual"
+        # second_modality = "textual" if id_is_odd else "visual"
 
-        # Learn first cue type
-        self.learnDuration_1 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
+        # # Learn first cue type
+        # self.learnDuration_1 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
 
-        # Test first cue type
-        self.Instructions(part_key="Intermezzo1",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
-                          )
-        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=first_modality)
+        # # Test first cue type
+        # self.Instructions(part_key="Intermezzo1",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
+        #                   )
+        # self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=first_modality)
         
-        # Learn second cue type
-        self.Instructions(part_key="Intermezzo2",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
-        self.learnDuration_2 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
+        # # Learn second cue type
+        # self.Instructions(part_key="Intermezzo2",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+        # self.learnDuration_2 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
-        # Test second cue type
-        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=second_modality,
-                                             i=len(self.df_out_1))
+        # # Test second cue type
+        # self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=second_modality,
+        #                                      i=len(self.df_out_1))
 
-        # Save cue memory data
-        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
-        save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+        # # Save cue memory data
+        # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
+        # save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
 
         ''' --- 3. Test Types --------------------------------------------------------'''
@@ -1561,6 +1563,7 @@ class Experiment:
                           kwargs=[{"trial_df": self.trials_prim_prac_p,
                                    "durations": [1, 3, 0.6, 0, 0],
                                    "i_step": 1,
+                                   "instruction_trial": True,
                                    "test": False}],
                           loading_time=0)
         
@@ -1573,11 +1576,13 @@ class Experiment:
                                    "display_this": [2],
                                    "durations": [0, 0, 0, 0, 0],
                                    "i_step": 1,
+                                   "instruction_trial": True,
                                    "test": False},
                                   {"trial_df": trials_test_1,
                                    "display_this": [3, 4],
                                    "durations": [0, 0, 0, 0, 0],
                                    "i_step": 1,
+                                   "instruction_trial": True,
                                    "test": False},
                                   {"trial": demoTrial1,
                                    "feedback": False,
