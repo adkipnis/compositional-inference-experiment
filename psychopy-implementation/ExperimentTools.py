@@ -280,15 +280,11 @@ class Experiment:
 
         self.philbertine = visual.ImageStim(
             self.win, image=glob.glob(
-                f"{self.stim_dir}{os.sep}philbertine.png")[0],
-            units="pix",
-            size=[512, 512], interpolate=True)
+                f"{self.stim_dir}{os.sep}philbertine.png")[0])
 
         self.magicBooks = visual.ImageStim(
             self.win,
-            image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0],
-            units="pix",
-            size=[512, 512], interpolate=True)
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0])
 
         # Count responses
         self.count_dict = {
@@ -353,9 +349,7 @@ class Experiment:
         self.stim_dict = {
             stim_names[i]: visual.ImageStim(
                 self.win,
-                image=stim_list[i],
-                size=self.normal_size,
-                interpolate=True)
+                image=stim_list[i])
             for i in range(len(stim_list))
         }
 
@@ -812,7 +806,8 @@ class Experiment:
             self.draw_background()
         categories = list(self.stim_dict.keys())
         categories.sort()
-        n_cats = self.n_cats  # alternatively show all using len(categories)
+        # n_cats = self.n_cats  # alternatively show all using len(categories)
+        n_cats = len(categories)
         if n_cats > 4:
             dim = [2, np.ceil(n_cats/2)]
         else:
