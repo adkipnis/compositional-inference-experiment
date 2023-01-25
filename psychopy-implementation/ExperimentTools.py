@@ -787,7 +787,7 @@ class Experiment:
                             testResp = np.where(respKeys == thisKey)[0][0]
                         else:
                             testResp = thisKey
-                    elif thisKey in ["right"]:
+                    elif thisKey in ["right", "space"]:
                         testResp = "NA"
                     elif thisKey == "escape":
                         with open(self.file_name + ".txt", 'a') as f:
@@ -1038,6 +1038,7 @@ class Experiment:
             num_cr = len(trial.correct_resp)
             testRespList = []
             testRTList = []
+            testResp = ""
             j = 0
             cue, cue_type = self.setCue(trial.map[0], mode=mode)
             cue.pos = cue_pos
@@ -1071,24 +1072,21 @@ class Experiment:
                     continue
 
                 # 3. - 3 + num_cr: Immediate Feedback
-                if inc in range(3, 3 + num_cr):
+                if inc in range(3, 3 + num_cr) and testResp != "NA":
                     TestClock = core.Clock()
                     testRT, testResp = self.tTestresponse(
                         TestClock, resp_keys)
                     testRTList.append(testRT)
                     testRespList.append(testResp)
+                    
                 for i, testResp in enumerate(testRespList):
                     self.testResp = testResp
                     if testResp != "NA":
                         self.rect.pos = self.cuepractice_pos[testResp]
-                        if trial.correct_resp[i] == testResp:
-                            self.rect.lineColor = self.color_dict["green"]
-                        else:
-                            self.rect.lineColor = self.color_dict["red"]
+                        self.rect.lineColor = self.color_dict["green"] if trial.correct_resp[i] == testResp else self.color_dict["red"]
                         self.rect.draw()
                         self.rect.lineColor = self.color_dict["dark_grey"]
-                        resp = self.stim_dict.copy(
-                        )[trial.resp_options[testResp]]
+                        resp = self.stim_dict.copy()[trial.resp_options[testResp]]
                         resp.pos = self.cuepractice_pos[testResp]
                         resp.draw()
 
@@ -1105,8 +1103,7 @@ class Experiment:
                         self.rect.fillColor = self.color_dict["blue"]
                         self.rect.draw()
                         self.rect.fillColor = self.color_dict["light_grey"]
-                        resp = self.stim_dict.copy(
-                        )[trial.resp_options[corResp]]
+                        resp = self.stim_dict.copy()[trial.resp_options[corResp]]
                         resp.pos = self.cuepractice_pos[corResp]
                         resp.draw()
                 if inc in range(3 + num_cr, 3 + 2 * num_cr - 1):
@@ -1479,27 +1476,27 @@ class Experiment:
 
         # Navigation
         self.win.mouseVisible = False
-        self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardArrows"],
-                                self.keyboard_dict["keyBoardEsc"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"],
-                          show_background=False)
+        # self.Instructions(part_key="Navigation1",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardArrows"],
+        #                         self.keyboard_dict["keyBoardEsc"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"],
+        #                   show_background=False)
 
-        # Introduction
-        self.Instructions(part_key="Intro",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
-                                            self.iTransmutableObjects,
-                                            self.iSpellExample,
-                                            self.iSpellExample],
-                          args=[self.magicBooks,
-                                self.philbertine,
-                                None,
-                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # # Introduction
+        # self.Instructions(part_key="Intro",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage,
+        #                                     self.iTransmutableObjects,
+        #                                     self.iSpellExample,
+        #                                     self.iSpellExample],
+        #                   args=[self.magicBooks,
+        #                         self.philbertine,
+        #                         None,
+        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
