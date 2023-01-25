@@ -79,7 +79,7 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
 
-    def dialogue_box(self, participant=None, session="1", test_mode=False, show=True, dev=False, show_progress=True):
+    def dialogue_box(self, participant=None, session="1", run_length=180, test_mode=False, show=True, dev=False, show_progress=True):
         ''' Show dialogue box to get participant info '''
 
         if participant is None:
@@ -93,6 +93,7 @@ class Experiment:
                    "session": session,
                    "show_progress": show_progress,
                    "test_mode": test_mode,
+                   "run_length": run_length,
                    "dateStr": data.getDateStr(),
                    "psychopyVersion": __version__,
                    "frameRate": self.win.getActualFrameRate()}
@@ -109,6 +110,7 @@ class Experiment:
         # Save data to this file later
         self.show_progress = expInfo["show_progress"]
         self.test_mode = expInfo["test_mode"]
+        self.run_length = expInfo["run_length"]
         self.file_name = f"{self.data_dir}{os.sep}{expInfo['participant']}_{expName}"
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"t0 = {expInfo['dateStr']}\n")
@@ -1094,7 +1096,7 @@ class Experiment:
                      self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
                      durations=[1.0, 3.0, 0.6, 1.0, 0.7],
                      test=True, feedback=False,
-                     pause_between_runs=True, runlength=180,
+                     pause_between_runs=True,
                      instruction_trial=False,
                      resp_keys=None):
         if resp_keys is None:
@@ -1114,7 +1116,7 @@ class Experiment:
 
         if pause_between_runs:
             run_number = 1
-            timer = core.CountdownTimer(runlength)
+            timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
                 self.send_trigger("run")
 
@@ -1180,7 +1182,7 @@ class Experiment:
                     core.wait(durations[3])
             
             if self.show_progress and not instruction_trial:
-                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0, win_flip=False)
+                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
             
             if 7 in display_this:
                 self.win_flip()
@@ -1240,10 +1242,15 @@ class Experiment:
         return df_out
 
     def TestPracticeLoop(self, trial_df,
-                         min_acc=0.95, mode="random", i=0, i_step=None,
+                         min_acc=0.95,
+                         mode="random",
+                         i=0,
+                         i_step=None,
                          durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-                         test=True, feedback=False, self_paced=False,
-                         pause_between_runs=True, runlength=360):
+                         test=True,
+                         feedback=False,
+                         self_paced=False,
+                         pause_between_runs=True):
         mean_acc = 0.0
         df_list = []
         if i_step is None:
@@ -1252,7 +1259,7 @@ class Experiment:
             start_width_initial = self.start_width
             result = self.GenericBlock(trial_df, mode=mode, i=i, i_step=i_step,
                                        durations=durations, test=test, feedback=feedback,
-                                       self_paced=self_paced, runlength=runlength,
+                                       self_paced=self_paced,
                                        pause_between_runs=pause_between_runs)
             df_list.append(result)
             errors = [trial["correct_resp"] == trial["emp_resp"]
@@ -1454,62 +1461,62 @@ class Experiment:
         print("Starting Session 1.")
         
         
-        ''' --- 1. Initial instructions ---------------------------------------------'''
-        # Navigation
-        self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardArrows"],
-                                self.keyboard_dict["keyBoardEsc"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"])
+        # ''' --- 1. Initial instructions ---------------------------------------------'''
+        # # Navigation
+        # self.Instructions(part_key="Navigation1",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardArrows"],
+        #                         self.keyboard_dict["keyBoardEsc"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"])
 
-        # Introduction
-        self.Instructions(part_key="Intro",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
-                                            self.iTransmutableObjects,
-                                            self.iSpellExample,
-                                            self.iSpellExample],
-                          args=[self.magicBooks,
-                                self.philbertine,
-                                None,
-                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # # Introduction
+        # self.Instructions(part_key="Intro",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage,
+        #                                     self.iTransmutableObjects,
+        #                                     self.iSpellExample,
+        #                                     self.iSpellExample],
+        #                   args=[self.magicBooks,
+        #                         self.philbertine,
+        #                         None,
+        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
 
-        ''' --- 2. Learn Cues --------------------------------------------------------'''
-        # Learn first cue type
-        self.learnDuration_1 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
+        # ''' --- 2. Learn Cues --------------------------------------------------------'''
+        # # Learn first cue type
+        # self.learnDuration_1 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
 
-        # Test first cue type
-        self.Instructions(part_key="Intermezzo1",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
-                          )
-        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=first_modality)
+        # # Test first cue type
+        # self.Instructions(part_key="Intermezzo1",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
+        #                   )
+        # self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=first_modality)
         
-        # Learn second cue type
-        self.Instructions(part_key="Intermezzo2",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
-        self.learnDuration_2 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
+        # # Learn second cue type
+        # self.Instructions(part_key="Intermezzo2",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+        # self.learnDuration_2 = self.LearnCues()
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
-        # Test second cue type
-        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
-                                             mode=second_modality,
-                                             i=len(self.df_out_1))
+        # # Test second cue type
+        # self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+        #                                      i_step = 2 if self.test_mode else None,
+        #                                      mode=second_modality,
+        #                                      i=len(self.df_out_1))
 
-        # Save cue memory data
-        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
-        save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+        # # Save cue memory data
+        # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
+        # save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
 
         ''' --- 3. Test Types --------------------------------------------------------'''
@@ -1554,8 +1561,7 @@ class Experiment:
                                               min_acc=0.95,
                                               self_paced=True,
                                               feedback=True,
-                                              pause_between_runs=True,
-                                              runlength=360)
+                                              pause_between_runs=True)
 
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1581,8 +1587,7 @@ class Experiment:
                                               min_acc=0.95,
                                               self_paced=True,
                                               feedback=True,
-                                              pause_between_runs=True,
-                                              runlength=360)
+                                              pause_between_runs=True)
 
         # Save test type data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
@@ -1678,7 +1683,7 @@ class Experiment:
     #                                           self_paced=True,
     #                                           feedback=True,
     #                                           pause_between_runs=True,
-    #                                           runlength=360)
+    #                                           run_length=360)
     #     self.start_width = self.move_prog_bar(
     #         start_width=self.start_width,
     #         end_width=start_width_before_block + self.progbar_inc)
@@ -1713,7 +1718,7 @@ class Experiment:
     #                                           self_paced=True,
     #                                           feedback=True,
     #                                           pause_between_runs=True,
-    #                                           runlength=360)
+    #                                           run_length=360)
     #     self.move_prog_bar(start_width=self.start_width,
     #                        end_width=1)
 
@@ -1776,7 +1781,7 @@ class Experiment:
     #                                       mode="random",
     #                                       self_paced=True,
     #                                       pause_between_runs=True,
-    #                                       runlength=360,
+    #                                       run_length=360,
     #                                       feedback=True,
     #                                       resp_keys=resp_keys)
     #     self.start_width = self.move_prog_bar(
@@ -1828,7 +1833,7 @@ class Experiment:
     #                                        durations=[1.0, 3.0, 0.6, 1.0, 0.7],
     #                                        self_paced=True,
     #                                        pause_between_runs=True,
-    #                                        runlength=360,
+    #                                        run_length=360,
     #                                        resp_keys=resp_keys)
     #     self.start_width = self.move_prog_bar(
     #         start_width=self.start_width,
@@ -1846,7 +1851,7 @@ class Experiment:
     #                                        durations=[2.0, 3.0, 0.6, 1.0, 0.7],
     #                                        self_paced=True,
     #                                        pause_between_runs=True,
-    #                                        runlength=360,
+    #                                        run_length=360,
     #                                        resp_keys=self.resp_keys_vpixx)
     #     self.move_prog_bar(start_width=self.start_width, end_width=1)
 
@@ -1942,7 +1947,7 @@ class Experiment:
     #                                            self_paced=True,
     #                                            feedback=True,
     #                                            pause_between_runs=True,
-    #                                            runlength=360,
+    #                                            run_length=360,
     #                                            resp_keys=resp_keys)
     #     self.start_width = self.move_prog_bar(
     #         start_width=self.start_width,
@@ -1980,7 +1985,7 @@ class Experiment:
     #                                            self_paced=True,
     #                                            feedback=True,
     #                                            pause_between_runs=True,
-    #                                            runlength=360,
+    #                                            run_length=360,
     #                                            resp_keys=resp_keys)
     #     self.move_prog_bar(start_width=self.start_width, end_width=1)
 
