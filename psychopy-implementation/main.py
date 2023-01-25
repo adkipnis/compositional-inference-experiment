@@ -7,7 +7,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 Exp = Experiment()
-Exp.init_window(screen=1)
+Exp.init_window(screen=1, fullscr=False)
 Exp.dialogue_box(show=True, participant=1)
 Exp.load_trials()
 Exp.render_visuals()
