@@ -210,9 +210,11 @@ class Experiment:
         # Determine_positions
         self.rect_pos = circularGridPositions(
             center_pos=self.center_pos, set_size=self.set_size, radius=7)
-        self.resp_pos = rectangularGrindPositions(
+        self.resp_pos = rectangularGridPositions(
             center_pos=[0, -10], h_dist=10, dim=(1, 4))
-        self.cuepractice_pos = rectangularGrindPositions(
+        self.resp_pos_num = rectangularGridPositions(
+            center_pos=[0, -9.6], h_dist=10, dim=(1, 4))
+        self.cuepractice_pos = rectangularGridPositions(
             center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
 
     def render_visuals(self):
@@ -588,14 +590,12 @@ class Experiment:
             self.rect.lineColor = self.color_dict["dark_grey"]
             stim = self.stim_dict.copy()[trial.target]
             stim.pos = self.center_pos
-            stim.size = self.center_size
             stim.draw()
-            stim.size = self.normal_size
             for i in range(len(self.resp_pos)):
                 self.rect.pos = self.resp_pos[i]
                 self.rect.draw()
                 resp = self.count_dict[str(i)]
-                resp.pos = self.resp_pos[i]
+                resp.pos = self.resp_pos_num[i]
                 resp.draw()
 
             # First cycle: Display stimuli
@@ -628,7 +628,7 @@ class Experiment:
                     self.rect.draw()
                     self.rect.lineColor = self.color_dict["dark_grey"]
                     resp = self.count_dict[str(testResp)]
-                    resp.pos = self.resp_pos[testResp]
+                    resp.pos = self.resp_pos_num[testResp]
                     resp.draw()
                 if inc == 1:
                     self.win_flip()
@@ -642,7 +642,7 @@ class Experiment:
                     self.rect.draw()
                     self.rect.fillColor = self.color_dict["light_grey"]
                     resp = self.count_dict[str(corResp)]
-                    resp.pos = self.resp_pos[corResp]
+                    resp.pos = self.resp_pos_num[corResp]
                     resp.draw()
                     core.wait(1)
                     if inc == 2:
@@ -796,14 +796,13 @@ class Experiment:
             self.draw_background()
         categories = list(self.stim_dict.keys())
         categories.sort()
-        # n_cats = self.n_cats  # alternatively show all using len(categories)
-        n_cats = len(categories)
+        n_cats = self.n_cats  # alternatively show all using len(categories)
         if n_cats > 4:
             dim = [2, np.ceil(n_cats/2)]
         else:
             dim = [1, n_cats]
 
-        category_pos = rectangularGrindPositions(
+        category_pos = rectangularGridPositions(
             center_pos=[0, 0], h_dist=10, dim=dim)
 
         # draw categories
@@ -913,7 +912,7 @@ class Experiment:
                      fontcolor=[-0.9, -0.9, -0.9],
                      show_background=True,
                      log_duration=True,
-                     loading_time=2):
+                     loading_time=1):
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
 
@@ -969,7 +968,7 @@ class Experiment:
         finished = False
         cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
-        category_pos = rectangularGrindPositions(
+        category_pos = rectangularGridPositions(
             center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
 
         LearnClock = core.Clock()
@@ -2032,7 +2031,7 @@ class Experiment:
 # =============================================================================
 
 # Positions -------------------------------------------------------------------
-def rectangularGrindPositions(center_pos=[0, 0],
+def rectangularGridPositions(center_pos=[0, 0],
                               v_dist=10, h_dist=10, dim=(2, 3)):
     # horizontal positions
     c = np.floor(dim[1]/2)
@@ -2045,7 +2044,7 @@ def rectangularGrindPositions(center_pos=[0, 0],
                               h_dist).tolist()
 
     # vertical positions
-    c = np.floor(dim[0]/2)
+    c = np.round(dim[0]/2)
     if dim[0] % 2 != 0:
         rect_vpos = np.arange(-c * v_dist + center_pos[1],
                               c * v_dist + 1 + center_pos[1], v_dist).tolist()
