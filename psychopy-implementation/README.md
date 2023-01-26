@@ -1,7 +1,15 @@
 # Compositional Inference Experiment
 
-#### Installation as Anaconda environment
-1. For Ubuntu users: Make sure that `build-essential swig git libpulse-dev libasound2-dev libgtk-3-dev [portaudio19-dev python3-pyaudio libsndfile1-dev]` are installed (packages in square brackets may not be necessary).
-2. Open a terminal in the toolbox directory and run `conda env create -n psychopy -f psychopy-env.yml`. 
-3. Activate the environment and launch `main.py`.
+#### Prerequisite: Psychopy
+It is possible to install psychopy via conda but that route is less reliable in practice.
+Instead we install it via pip in a virtual environment with Python 3.6 to 3.10
+1. Set a target directory for a python venv and cd into it.
+2. `python -m env psychopy`
+3. activate it using `{source path-to-your-dir}/bin/activate` 
+4. Download the appropriate build of wxpython and `pip install {path-to-wxpython-installation-file}`
+5. `pip install psychopy`
+6. Test installation: `psychopy`
 
+
+#### Running the experiment:
+1. Activate the environment and launch `main.py`.

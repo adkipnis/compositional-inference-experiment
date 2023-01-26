@@ -1,8 +1,0 @@
-name: psychopy
-channels:
-- conda-forge
-dependencies:
-- python
-- spyder-kernels
-- psychopy
-  
