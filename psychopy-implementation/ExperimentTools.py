@@ -63,12 +63,7 @@ class Experiment:
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
         if res is None:
-            sizes = [monitors.Monitor(mon).getSizePix() for mon in monitors.getAllMonitors()]
-            if sizes:
-                res = sorted(sizes, reverse=True)[0]
-            else:
-                print("No monitor found, using default resolution (1920x1080).")
-                res = [1920, 1080]
+            res = [1920, 1080]
             
         assert isinstance(res, list), "res must be list of two integers"
         self.win = visual.Window(
@@ -1521,47 +1516,47 @@ class Experiment:
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
-        self.Instructions(part_key="TestTypes",
-                          special_displays=[self.iSingleImage],
-                          args=[self.magicWand],
-                          complex_displays=[self.GenericBlock],
-                          kwargs=[{"trial_df": self.trials_prim_prac_p,
-                                   "durations": [1, 3, 0.6, 0, 0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False}],
-                          loading_time=0)
+        # self.Instructions(part_key="TestTypes",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.magicWand],
+        #                   complex_displays=[self.GenericBlock],
+        #                   kwargs=[{"trial_df": self.trials_prim_prac_p,
+        #                            "durations": [1, 3, 0.6, 0, 0],
+        #                            "i_step": 1,
+        #                            "instruction_trial": True,
+        #                            "test": False}],
+        #                   loading_time=0)
         
-        self.Instructions(part_key=first_test + "First",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"]],
-                          complex_displays=[self.GenericBlock, self.GenericBlock,
-                                            tFirst, tFirst],
-                          kwargs=[{"trial_df": trials_test_1,
-                                   "display_this": [2],
-                                   "durations": [0, 0, 0, 0, 0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False},
-                                  {"trial_df": trials_test_1,
-                                   "display_this": [3, 4],
-                                   "durations": [0, 0, 0, 0, 0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False},
-                                  {"trial": demoTrial1,
-                                   "feedback": False,
-                                   "demonstration": True},
-                                  {"trial": demoTrial1,
-                                   "feedback": True,
-                                   "demonstration": True}])
+        # self.Instructions(part_key=first_test + "First",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoard4"]],
+        #                   complex_displays=[self.GenericBlock, self.GenericBlock,
+        #                                     tFirst, tFirst],
+        #                   kwargs=[{"trial_df": trials_test_1,
+        #                            "display_this": [2],
+        #                            "durations": [0, 0, 0, 0, 0],
+        #                            "i_step": 1,
+        #                            "instruction_trial": True,
+        #                            "test": False},
+        #                           {"trial_df": trials_test_1,
+        #                            "display_this": [3, 4],
+        #                            "durations": [0, 0, 0, 0, 0],
+        #                            "i_step": 1,
+        #                            "instruction_trial": True,
+        #                            "test": False},
+        #                           {"trial": demoTrial1,
+        #                            "feedback": False,
+        #                            "demonstration": True},
+        #                           {"trial": demoTrial1,
+        #                            "feedback": True,
+        #                            "demonstration": True}])
 
-        self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                              i_step = 2 if self.test_mode else None,
-                                              min_acc=0.95,
-                                              self_paced=True,
-                                              feedback=True,
-                                              pause_between_runs=True)
+        # self.df_out_3 = self.TestPracticeLoop(trials_test_1,
+        #                                       i_step = 2 if self.test_mode else None,
+        #                                       min_acc=0.95,
+        #                                       self_paced=True,
+        #                                       feedback=True,
+        #                                       pause_between_runs=True)
 
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1591,7 +1586,9 @@ class Experiment:
 
         # Save test type data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
-        save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
+        save_object(
+            # self.df_out_3 + \
+                self.df_out_4, fname, ending='csv')
 
         # Wrap up
         self.Instructions(part_key="Bye")
