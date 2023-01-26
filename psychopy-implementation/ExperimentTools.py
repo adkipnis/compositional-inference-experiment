@@ -1431,6 +1431,7 @@ class Experiment:
     def Session1(self):
         # init session variables
         self.win.mouseVisible = False
+        min_acc = 0.9
         
         # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
         n_trials_total = 4 * self.n_exposure * self.maxn_blocks 
@@ -1457,106 +1458,107 @@ class Experiment:
         
         
         # ''' --- 1. Initial instructions ---------------------------------------------'''
-        # # Navigation
-        # self.Instructions(part_key="Navigation1",
-        #                   special_displays=[self.iSingleImage,
-        #                                     self.iSingleImage],
-        #                   args=[self.keyboard_dict["keyBoardArrows"],
-        #                         self.keyboard_dict["keyBoardEsc"]],
-        #                   font="mono",
-        #                   fontcolor=self.color_dict["mid_grey"])
+        # Navigation
+        self.Instructions(part_key="Navigation1",
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardArrows"],
+                                self.keyboard_dict["keyBoardEsc"]],
+                          font="mono",
+                          fontcolor=self.color_dict["mid_grey"])
 
-        # # Introduction
-        # self.Instructions(part_key="Intro",
-        #                   special_displays=[self.iSingleImage,
-        #                                     self.iSingleImage,
-        #                                     self.iTransmutableObjects,
-        #                                     self.iSpellExample,
-        #                                     self.iSpellExample],
-        #                   args=[self.magicBooks,
-        #                         self.philbertine,
-        #                         None,
-        #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-        #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
+        # Introduction
+        self.Instructions(part_key="Intro",
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage,
+                                            self.iTransmutableObjects,
+                                            self.iSpellExample,
+                                            self.iSpellExample],
+                          args=[self.magicBooks,
+                                self.philbertine,
+                                None,
+                                [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+                                [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
 
         # ''' --- 2. Learn Cues --------------------------------------------------------'''
-        # # Learn first cue type
-        # self.learnDuration_1 = self.LearnCues()
-        # with open(f"{self.file_name}.txt", 'a') as f:
-        #     f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
+        # Learn first cue type
+        self.learnDuration_1 = self.LearnCues()
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
 
-        # # Test first cue type
-        # self.Instructions(part_key="Intermezzo1",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]]
-        #                   )
-        # self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-        #                                      i_step = 2 if self.test_mode else None,
-        #                                      mode=first_modality)
+        # Test first cue type
+        self.Instructions(part_key="Intermezzo1",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             i_step = 2 if self.test_mode else None,
+                                             mode=first_modality,
+                                             min_acc=min_acc)
         
-        # # Learn second cue type
-        # self.Instructions(part_key="Intermezzo2",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
-        # self.learnDuration_2 = self.LearnCues()
-        # with open(f"{self.file_name}.txt", 'a') as f:
-        #     f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
+        # Learn second cue type
+        self.Instructions(part_key="Intermezzo2",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+        self.learnDuration_2 = self.LearnCues()
+        with open(f"{self.file_name}.txt", 'a') as f:
+            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
 
-        # # Test second cue type
-        # self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-        #                                      i_step = 2 if self.test_mode else None,
-        #                                      mode=second_modality,
-        #                                      i=len(self.df_out_1))
+        # Test second cue type
+        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
+                                             i_step = 2 if self.test_mode else None,
+                                             mode=second_modality,
+                                             i=len(self.df_out_1),
+                                             min_acc=min_acc)
 
-        # # Save cue memory data
-        # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
-        # save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+        # Save cue memory data
+        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
+        save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
 
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
-        # self.Instructions(part_key="TestTypes",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.magicWand],
-        #                   complex_displays=[self.GenericBlock],
-        #                   kwargs=[{"trial_df": self.trials_prim_prac_p,
-        #                            "durations": [1, 3, 0.6, 0, 0],
-        #                            "i_step": 1,
-        #                            "instruction_trial": True,
-        #                            "test": False}],
-        #                   loading_time=0)
+        self.Instructions(part_key="TestTypes",
+                          special_displays=[self.iSingleImage],
+                          args=[self.magicWand],
+                          complex_displays=[self.GenericBlock],
+                          kwargs=[{"trial_df": self.trials_prim_prac_p,
+                                   "durations": [1, 3, 0.6, 0, 0],
+                                   "i_step": 1,
+                                   "instruction_trial": True,
+                                   "test": False}],
+                          loading_time=0)
         
-        # self.Instructions(part_key=first_test + "First",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.keyboard_dict["keyBoard4"]],
-        #                   complex_displays=[self.GenericBlock, self.GenericBlock,
-        #                                     tFirst, tFirst],
-        #                   kwargs=[{"trial_df": trials_test_1,
-        #                            "display_this": [2],
-        #                            "durations": [0, 0, 0, 0, 0],
-        #                            "i_step": 1,
-        #                            "instruction_trial": True,
-        #                            "test": False},
-        #                           {"trial_df": trials_test_1,
-        #                            "display_this": [3, 4],
-        #                            "durations": [0, 0, 0, 0, 0],
-        #                            "i_step": 1,
-        #                            "instruction_trial": True,
-        #                            "test": False},
-        #                           {"trial": demoTrial1,
-        #                            "feedback": False,
-        #                            "demonstration": True},
-        #                           {"trial": demoTrial1,
-        #                            "feedback": True,
-        #                            "demonstration": True}])
+        self.Instructions(part_key=first_test + "First",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoard4"]],
+                          complex_displays=[self.GenericBlock, self.GenericBlock,
+                                            tFirst, tFirst],
+                          kwargs=[{"trial_df": trials_test_1,
+                                   "display_this": [2],
+                                   "durations": [0, 0, 0, 0, 0],
+                                   "i_step": 1,
+                                   "instruction_trial": True,
+                                   "test": False},
+                                  {"trial_df": trials_test_1,
+                                   "display_this": [3, 4],
+                                   "durations": [0, 0, 0, 0, 0],
+                                   "i_step": 1,
+                                   "instruction_trial": True,
+                                   "test": False},
+                                  {"trial": demoTrial1,
+                                   "feedback": False,
+                                   "demonstration": True},
+                                  {"trial": demoTrial1,
+                                   "feedback": True,
+                                   "demonstration": True}])
 
-        # self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-        #                                       i_step = 2 if self.test_mode else None,
-        #                                       min_acc=0.95,
-        #                                       self_paced=True,
-        #                                       feedback=True,
-        #                                       pause_between_runs=True)
+        self.df_out_3 = self.TestPracticeLoop(trials_test_1,
+                                              i_step = 2 if self.test_mode else None,
+                                              min_acc=min_acc,
+                                              self_paced=True,
+                                              feedback=True,
+                                              pause_between_runs=True)
 
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1579,16 +1581,14 @@ class Experiment:
         
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
                                               i_step = 2 if self.test_mode else None,
-                                              min_acc=0.95,
+                                              min_acc=min_acc,
                                               self_paced=True,
                                               feedback=True,
                                               pause_between_runs=True)
 
         # Save test type data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_testType"
-        save_object(
-            # self.df_out_3 + \
-                self.df_out_4, fname, ending='csv')
+        save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
 
         # Wrap up
         self.Instructions(part_key="Bye")
