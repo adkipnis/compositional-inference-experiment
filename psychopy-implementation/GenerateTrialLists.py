@@ -25,7 +25,8 @@ display_size = 4
 n_primitives = 3
 # minimal number of instances per composition type
 min_type = np.floor(n_primitives/3)
-n_exposure = 30  # present each entity n times for the main task
+n_exposure = 30  # present each map n times for the main task
+n_exposure_practice = 10
 maxn_repeats = 4  # maximum number of times a block of n_exposure * factor can be repeated
 n_exposure_prim_dec = 30
 n_exposure_loc = 30  # present each entity n times for the localizer task
@@ -624,7 +625,7 @@ for i in range(1, n_participants+1):
     df_list = []
     for _ in range(maxn_repeats):
         cue_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure, allow_repeats=False)
+            selection_prim, n_repeats=n_exposure_practice*2, allow_repeats=False)
         df_list.append(gen_cue_trials(cue_list_prim, stimuli))
     trials_prim_cue = [item for sublist in df_list for item in sublist]
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue"
@@ -635,7 +636,7 @@ for i in range(1, n_participants+1):
     df_list = []
     for _ in range(maxn_repeats):
         map_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure, allow_repeats=False)
+            selection_prim, n_repeats=n_exposure_practice, allow_repeats=False)
         df_list.append(gen_trials(stimuli,
                                   map_list_prim,
                                   resp_list=resp_list,
@@ -653,7 +654,7 @@ for i in range(1, n_participants+1):
     df_list = []
     for _ in range(maxn_repeats):
         map_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure, allow_repeats=False)
+            selection_prim, n_repeats=n_exposure_practice, allow_repeats=False)
         df_list.append(gen_trials(stimuli,
                                   map_list_prim,
                                   resp_list=resp_list,
@@ -674,17 +675,19 @@ for i in range(1, n_participants+1):
     use_cases = ["", "_MEG"]
     for use_case in use_cases:
         df_list = []
-        for test_type in test_types:
-            for _ in range(maxn_repeats):
+        for _ in range(maxn_repeats//2):
+            block_list = []
+            for test_type in test_types:
                 map_list_prim = get_map_list(
                     selection_prim, n_repeats=n_exposure, allow_repeats=True)
-                df_list.append(gen_trials(stimuli, map_list_prim,
-                                          resp_list=resp_list,
-                                          test_type=test_type,
-                                          display_size=display_size,
-                                          sep=sep))
-            trials_prim = np.random.permutation(
-                [item for sublist in df_list for item in sublist]).tolist()
+                block_list.append(gen_trials(stimuli, map_list_prim,
+                                             resp_list=resp_list,
+                                             test_type=test_type,
+                                             display_size=display_size,
+                                             sep=sep))
+            df_list.append(np.random.permutation(
+                [item for sublist in block_list for item in sublist]).tolist())
+        trials_prim = [item for sublist in df_list for item in sublist]
         fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + \
             "trials_prim" + use_case
         if save_this:
@@ -693,18 +696,20 @@ for i in range(1, n_participants+1):
     # 2. Compositional blocks
     for use_case in use_cases:
         df_list = []
-        for test_type in test_types:
-            for _ in range(maxn_repeats):
+        for _ in range(maxn_repeats//2):
+            block_list = []
+            for test_type in test_types:
                 map_list_binary = get_map_list(
                     selection_binary, n_repeats=20, inary_maps=True, allow_repeats=True)
-                df_list.append(gen_trials(stimuli,
-                                          map_list_binary,
-                                          resp_list=resp_list,
-                                          test_type=test_type,
-                                          display_size=display_size,
-                                          sep=sep))
-        trials_binary = np.random.permutation(
-            [item for sublist in df_list for item in sublist]).tolist()
+                block_list.append(gen_trials(stimuli,
+                                             map_list_binary,
+                                             resp_list=resp_list,
+                                             test_type=test_type,
+                                             display_size=display_size,
+                                             sep=sep))
+            df_list.append(np.random.permutation(
+                [item for sublist in block_list for item in sublist]).tolist())
+        trials_binary = [item for sublist in df_list for item in sublist]
         fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" +\
             "trials_bin" + use_case
         if save_this:
