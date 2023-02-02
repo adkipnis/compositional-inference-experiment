@@ -58,7 +58,7 @@ class Experiment:
                            }
 
 
-    def dialogue_box(self, participant=None, session="1", run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
+    def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
         ''' Show dialogue box to get participant info '''
 
         if participant is None:
@@ -69,7 +69,7 @@ class Experiment:
 
         expName = "Alteration Magic Experiment"
         expInfo = {"participant": str(participant).zfill(2),
-                   "session": session,
+                   "session": int(session),
                    "MEG": meg,
                    "runLength": run_length,
                    "testMode": test_mode,
@@ -90,6 +90,7 @@ class Experiment:
         self.show_progress = expInfo["showProgress"]
         self.test_mode = expInfo["testMode"]
         self.run_length = expInfo["runLength"]
+        self.meg = expInfo["MEG"]
         self.file_name = f"{self.data_dir}{os.sep}{expInfo['participant']}_{expName}"
         with open(f"{self.file_name}.txt", 'a') as f:
             for key in expInfo:
@@ -309,12 +310,12 @@ class Experiment:
         vcue_list = self.mappinglists["vcue"]
         assert len(vcue_list) >= 2*self.n_primitives
 
-        # use latter half of cues for MEG-Session
-        if self.expInfo["session"] == "3":
-            tcue_list = np.concatenate((tcue_list[self.n_primitives:],
-                                        tcue_list[:self.n_primitives]))
-            vcue_list = np.concatenate((vcue_list[self.n_primitives:],
-                                        vcue_list[:self.n_primitives]))
+        # # use latter half of cues for MEG-Session
+        # if self.expInfo["session"] == "3":
+        #     tcue_list = np.concatenate((tcue_list[self.n_primitives:],
+        #                                 tcue_list[:self.n_primitives]))
+        #     vcue_list = np.concatenate((vcue_list[self.n_primitives:],
+        #                                 vcue_list[:self.n_primitives]))
 
         self.tcue_dict = {
             self.map_names[i]: visual.TextStim(
@@ -339,8 +340,8 @@ class Experiment:
         stim_list = self.mappinglists["stim"]
         assert len(stim_list) >= 2*self.n_cats, "Not enough stimuli"
         stim_names = ascii_uppercase[0:len(stim_list)]
-        if self.expInfo["session"] == "3":
-            stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
+        # if self.expInfo["session"] == "3":
+        #     stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
         self.stim_dict = {
             stim_names[i]: visual.ImageStim(
                 self.win,
@@ -1428,7 +1429,7 @@ class Experiment:
         print("Starting Session 1.")
         
         
-        # ''' --- 1. Initial instructions ---------------------------------------------'''
+        ''' --- 1. Initial instructions ---------------------------------------------'''
         # Navigation
         self.Instructions(part_key="Navigation1",
                           special_displays=[self.iSingleImage,
@@ -1572,66 +1573,62 @@ class Experiment:
     #  Testing Session
     # ###########################################################################
     def Session2(self):
+        # init session variables
         self.win.mouseVisible = False
-        n_experiment_parts = 3
-        self.progbar_inc = 1/n_experiment_parts
-        self.start_width = 0
-
-        # Part 1
+        min_acc = 0.9
+        
+        # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
+        n_trials_total = 100 # TODO
+        self.progbar_inc = 1/n_trials_total
+        
+        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1, method="sequential")
+        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1, method="sequential")
+        demoCount, demoPosition = demoCounts.trialList[0], demoPositions.trialList[0] 
+        
+        
+        ''' --- 1. Initial instructions and function decoder ------------------------'''
         # Navigation
-        self.Instructions(part_key="Navigation3",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMegBF"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"])
+        # self.Instructions(part_key="Navigation3",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"])
 
-        # Introduction
+        # Introduction 
         self.Instructions(part_key="IntroMEG",
                           special_displays=[self.iTransmutableObjects,
                                             self.iSingleImage],
                           args=[None,
                                 self.keyboard_dict["keyBoardMegNY"]])
+        
+        # TODO function decoder loop
 
-        # Localizer Block
-        self.df_out_8 = self.LocalizerLoop(durations=[2.0, 2.0, 2.0, 1.0],
-                                           min_acc=0.8,
-                                           resp_keys=resp_keys)
-        self.start_width = self.move_prog_bar(
-            start_width=self.start_width,
-            end_width=self.progbar_inc)
-        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_localizer_MEG"
-        save_object(self.df_out_8, fname, ending='csv')
 
-        # Part 2
-        # Primitive trials
-        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1,
-                                       method="sequential")
-        demoCount = demoCounts.trialList[0]
-        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1,
-                                          method="sequential")
-        demoPosition = demoPositions.trialList[0]
-
+        ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",
                           special_displays=[
                               self.iSingleImage, self.iSingleImage],
                           args=[self.magicWand,
-                                self.keyboard_dict["keyBoardMeg0123"]],
+                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.GenericBlock, self.GenericBlock,
                                             self.GenericBlock, self.tCount, self.tPosition],
                           kwargs=[{"trial_df": self.trials_prim_prac_c,
                                    "display_this": [2],
                                    "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
                                    "i_step": 1,
+                                   "instruction_trial": True,
                                    "test": False},
                                   {"trial_df": self.trials_prim_prac_c,
                                    "display_this": [3, 7],
                                    "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
                                    "i_step": 1,
+                                   "instruction_trial": True,
                                    "test": False},
                                   {"trial_df": self.trials_prim_prac_c,
                                    "display_this": [4],
                                    "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                  "i_step": 1,
+                                   "instruction_trial": True,
+                                   "i_step": 1,
                                    "test": True},
                                   {"trial": demoCount,
                                    "feedback": False,
@@ -1640,65 +1637,58 @@ class Experiment:
                                    "feedback": False,
                                    "demonstration": True}])
 
-        start_width_before_block = self.start_width.copy()
-        self.df_out_10 = self.TestPracticeLoop(self.trials_prim_MEG,
+        self.df_out_5 = self.TestPracticeLoop(self.trials_prim_MEG,
                                                mode="random",
-                                               min_acc=0.95,
-                                               durations=[
-                                                   1.0, 3.0, 0.6, 1.0, 0.7],
+                                               min_acc=min_acc,
+                                               durations=[1.0, 3.0, 0.6, 1.0, 0.7],
                                                self_paced=True,
                                                feedback=True,
-                                               pause_between_runs=True,
-                                               run_length=360,
-                                               resp_keys=resp_keys)
-        self.start_width = self.move_prog_bar(
-            start_width=self.start_width,
-            end_width=start_width_before_block + self.progbar_inc)
-
-        # Part 3
-        # Binary trials
-        self.Instructions(part_key="BinariesMEGR",
-                          special_displays=[
-                              self.iSingleImage, self.iSingleImage],
-                          args=[self.magicWand,
-                                self.keyboard_dict["keyBoardMeg0123"]],
-                          complex_displays=[self.GenericBlock, self.GenericBlock,
-                                            self.GenericBlock],
-                          kwargs=[{"trial_df": self.trials_bin_MEG,
-                                   "display_this": [2],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                   "i_step": 1,
-                                   "test": False},
-                                  {"trial_df": self.trials_bin_MEG,
-                                   "display_this": [3, 7],
-                                   "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
-                                   "i_step": 1,
-                                   "test": False},
-                                  {"trial_df": self.trials_bin_MEG,
-                                   "display_this": [4],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                  "i_step": 1,
-                                   "test": True}])
-        self.df_out_11 = self.TestPracticeLoop(self.trials_bin_MEG,
-                                               mode="random",
-                                               min_acc=0.75,
-                                               durations=[
-                                                   2.0, 3.0, 0.6, 1.0, 0.7],
-                                               self_paced=True,
-                                               feedback=True,
-                                               pause_between_runs=True,
-                                               run_length=360,
-                                               resp_keys=resp_keys)
+                                               pause_between_runs=True)
+        
+        # # Part 3
+        # # Binary trials
+        # self.Instructions(part_key="BinariesMEGR",
+        #                   special_displays=[
+        #                       self.iSingleImage, self.iSingleImage],
+        #                   args=[self.magicWand,
+        #                         self.keyboard_dict["keyBoardMeg0123"]],
+        #                   complex_displays=[self.GenericBlock, self.GenericBlock,
+        #                                     self.GenericBlock],
+        #                   kwargs=[{"trial_df": self.trials_bin_MEG,
+        #                            "display_this": [2],
+        #                            "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
+        #                            "i_step": 1,
+        #                            "test": False},
+        #                           {"trial_df": self.trials_bin_MEG,
+        #                            "display_this": [3, 7],
+        #                            "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
+        #                            "i_step": 1,
+        #                            "test": False},
+        #                           {"trial_df": self.trials_bin_MEG,
+        #                            "display_this": [4],
+        #                            "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
+        #                           "i_step": 1,
+        #                            "test": True}])
+        # self.df_out_11 = self.TestPracticeLoop(self.trials_bin_MEG,
+        #                                        mode="random",
+        #                                        min_acc=0.75,
+        #                                        durations=[
+        #                                            2.0, 3.0, 0.6, 1.0, 0.7],
+        #                                        self_paced=True,
+        #                                        feedback=True,
+        #                                        pause_between_runs=True,
+        #                                        run_length=360,
+        #                                        resp_keys=resp_keys)
         
         
 
-        # Finalization
-        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_generic_MEG"
-        save_object(self.df_out_10 + self.df_out_11, fname, ending='csv')
+        # # Finalization
+        # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_generic_MEG"
+        # save_object(self.df_out_10 + self.df_out_11, fname, ending='csv')
 
-        self.Instructions(part_key="ByeBye")
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"t_n = {data.getDateStr()}\n\n")
+        # self.Instructions(part_key="ByeBye")
+        # with open(f"{self.file_name}.txt", 'a') as f:
+        #     f.write(f"t_n = {data.getDateStr()}\n\n")
         self.win.close()
 
 

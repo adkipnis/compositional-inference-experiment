@@ -204,19 +204,15 @@ IntroAdvanced = ["Since the last time, you have advanced in your Alteration stud
          0,
          "Ready?"]
 
-# TODO eyetracking?
 IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
          "You have trained hard to get here.",
          "The (very large) magical helmet above you\nreads your spellcasting.",
          "Everyone's mind is special,\nso before the exam...",
          "...it has to be attuned to yours.",
-         "For this, you will first view the objects\nwhich will be used in the exam:",
-         0,
-         "After some of them, you have\nto answer a yes/no question.",
-         "Use the following keys:",
-         1,
+         "For this, you will do a set\nof easy Alteration trials:",
+         "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
          "Try to move as little as possible:\nThe helmet will be "\
-             "attuned quicker\nthis way.",
+             "attuned quicker this way.",
          "Ready?"]
 
     
