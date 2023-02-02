@@ -211,6 +211,8 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
          "...it has to be attuned to yours.",
          "For this, you will do a set\nof easy Alteration trials:",
          "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
+         "Please use the following keys for this task:",
+         0,
          "Try to move as little as possible:\nThe helmet will be "\
              "attuned quicker this way.",
          "Ready?"]

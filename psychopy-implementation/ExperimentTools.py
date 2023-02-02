@@ -156,8 +156,8 @@ class Experiment:
             open(f"{self.stim_dir}{os.sep}instructions_en.pkl", "rb"))
 
         #  Localizer trials
-        self.trials_localizer = pickle.load(
-            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_localizer.pkl", "rb"))
+        # self.trials_localizer = pickle.load(
+        #     open(f"{self.trial_list_dir}{os.sep}{pid}_trials_localizer.pkl", "rb"))
 
         self.trials_prim_dec = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_dec.pkl", "rb"))
@@ -1239,7 +1239,7 @@ class Experiment:
                 color=self.color_dict["black"])
 
             # repeat or wrap up
-            i += i_step
+            i += i_step if i < len(trial_df) else 0
             if mean_acc < min_acc:
                 feedbacktype = "Feedback0Test"
             else:
@@ -1252,150 +1252,7 @@ class Experiment:
                 self.move_prog_bar(end_width=start_width_initial)
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
-
-    # def LocalizerBlock(self, trial_df, durations=[2.0, 2.0, 2.0, 1.0],
-    #                    resp_keys=[]):
-    #     # create the trial handler
-    #     self.trials = data.TrialHandler(
-    #         trial_df, 1, method="sequential")
-
-    #     for trial in self.trials:
-    #         self.win_flip()
-    #         if self.use_pp:
-    #             self.send_trigger("trial")
-    #         trial["start_time"] = self.exp_clock.getTime()
-
-    #         # 1. Fixation
-    #         self.tFixation()
-
-    #         # 2. Display stimulus
-    #         self.tLocalizer(trial, duration=durations[0])
-
-    #         # 3. Empty Display
-    #         self.win_flip()
-    #         core.wait(durations[1])
-
-    #         # 4. Catch Trial Query
-    #         if trial.catch:
-
-    #             # Prepare query
-    #             if trial.type == "item":
-    #                 # transform alphabetical to numeric
-    #                 name_index = ord(trial.query_stim) - 65
-    #                 name = self.item_names[name_index]
-    #                 text = "Was the previous item a\n" + name + "?"
-    #             else:
-    #                 text = "Was the previous cue equivalent to..."
-
-    #             # Display query text
-    #             textStim = visual.TextStim(
-    #                 self.win,
-    #                 text,
-    #                 font="Times New Roman",
-    #                 color=self.color_dict["black"],
-    #                 height=1.8,
-    #                 pos=self.center_pos,
-    #                 wrapWidth=40)
-    #             textStim.draw()
-    #             self.win_flip()
-    #             if self.use_pp:
-    #                 self.send_trigger("identity")
-    #             # core.wait(durations[2])
-
-    #             # For Cue trials, display display cue of other type
-    #             if trial.type != "item":
-    #                 stim, _ = self.setCue(trial.content,
-    #                                       mode=trial.query_type)
-    #                 stim.pos = self.center_pos
-    #                 stim.draw()
-    #                 self.win_flip()
-
-    #             # Get response
-    #             TestClock = core.Clock()
-    #             testRT, testResp = self.tTestresponse(
-    #                 TestClock, resp_keys)
-    #             self.win_flip()
-
-    #             # Interpret response according to mapping in self.resp_keys_vpixx 
-    #             if testResp == 4:
-    #                 testResp = False
-    #             elif testResp == 5:
-    #                 testResp = True
-
-    #             core.wait(durations[3])
-    #         else:
-    #             testResp = None
-    #             testRT = None
-
-    #         # Save data
-    #         trial["emp_resp"] = testResp
-    #         trial["resp_RT"] = testRT
-
-    #     # calculate accuracy
-    #     correct_responses = [trial["emp_resp"] == trial["cor_resp"]
-    #                          for trial in self.trials if trial.catch]
-    #     accuracy = sum(correct_responses) / len(correct_responses)
-
-    #     return self.trials.triallist, accuracy
-
-    # def LocalizerLoop(self, durations=[2.0, 2.0, 2.0, 1.0], min_acc=0.8,
-    #                   resp_keys=[]):
-    #     # Localizer Block
-    #     df_out, acc = self.LocalizerBlock(self.trials_localizer,
-    #                                       durations=durations,
-    #                                       resp_keys=resp_keys)
-    #     # fname = self.data_dir + os.sep + self.expInfo["participant"] + "_" +\
-    #     #     self.expInfo["dateStr"] + "_" + "localizer_MEG"
-
-    #     # Conditionally repeat or stop experiment
-    #     if acc < min_acc:
-    #         self.Instructions(part_key="BadLocalizer",
-    #                           special_displays=[self.iSingleImage],
-    #                           args=[self.keyboard_dict["keyBoardMegNY"]])
-    #         self.trials_localizer2 = np.random.permutation(
-    #             self.trials_localizer).tolist()
-    #         df_out_again, acc_2 = self.LocalizerBlock(self.trials_localizer2,
-    #                                                   durations=durations,
-    #                                                   resp_keys=resp_keys)
-    #         # save_object(self.df_out_8 + self.df_out_8_again,
-    #         #             fname, ending = 'csv')
-    #         if acc_2 < min_acc:
-    #             self.Instructions(part_key="DropOut")
-    #             with open(self.file_name + ".txt", 'a') as f:
-    #                 f.write("t_a = " + data.getDateStr() + "\n\n")
-    #             core.quit()
-    #         else:
-    #             df_out = df_out + df_out_again
-    #     # else:
-    #         # save_object(self.df_out_8, fname, ending = 'csv')
-    #     self.move_prog_bar(
-    #         start_width=0,
-    #         end_width=self.progbar_inc)
-
-    #     return df_out
-
-    # def CueSimilarityTest(self, cue_dict, pos_1=[-5, 0], pos_2=[5, 0]):
-    #     # Prepare visual comparisons
-    #     stim_names = list(cue_dict.keys())
-    #     unique_pairs = []
-    #     for i in range(len(stim_names)):
-    #         for j in range(i, len(stim_names)):
-    #             unique_pairs.append((stim_names[i], stim_names[j]))
-    #     unique_pairs = np.random.permutation(unique_pairs)
-
-    #     # Perform visual comparisons
-    #     triallist = []
-    #     for pair in unique_pairs:
-    #         stim_1 = cue_dict[pair[0]]
-    #         stim_2 = cue_dict[pair[1]]
-    #         rating, RT = self.tSimilarity(stim_1, stim_2, pos_1, pos_2)
-    #         triallist.append({"cue_1": pair[0],
-    #                           "cue_2": pair[1],
-    #                           "dissimilarity": rating,
-    #                           "RT": RT})
-    #         self.win_flip()
-    #         core.wait(0.5)
-    #     return triallist
+    
 
     ###########################################################################
     # Introduction Session
@@ -1462,7 +1319,7 @@ class Experiment:
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+                          args=[self.keyboard_dict["keyBoard4"]])
         self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
                                              i_step = 2 if self.test_mode else None,
                                              mode=first_modality,
@@ -1471,7 +1328,7 @@ class Experiment:
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict[f"keyBoard{self.n_cats}"]])
+                          args=[self.keyboard_dict["keyBoard4"]])
         self.learnDuration_2 = self.LearnCues()
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
@@ -1596,12 +1453,13 @@ class Experiment:
 
         # Introduction 
         self.Instructions(part_key="IntroMEG",
-                          special_displays=[self.iTransmutableObjects,
-                                            self.iSingleImage],
-                          args=[None,
-                                self.keyboard_dict["keyBoardMegNY"]])
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         
-        # TODO function decoder loop
+        self.df_out_5 = self.TestPracticeLoop(self.trials_prim_dec,
+                                              i_step=len(self.trials_prim_dec), test=True, feedback=True, self_paced=True)
+        fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_function_decoder"
+        save_object(self.df_out_5, fname, ending='csv')
 
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
@@ -1637,7 +1495,7 @@ class Experiment:
                                    "feedback": False,
                                    "demonstration": True}])
 
-        self.df_out_5 = self.TestPracticeLoop(self.trials_prim_MEG,
+        self.df_out_6 = self.TestPracticeLoop(self.trials_prim_MEG,
                                                mode="random",
                                                min_acc=min_acc,
                                                durations=[1.0, 3.0, 0.6, 1.0, 0.7],
