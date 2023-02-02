@@ -39,12 +39,12 @@ class Experiment:
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
 
-        # inputs and dimensions        
+        # inputs and dimensions
         self.resp_keys_kb = np.array(["d", "f", "j", "k"])
         self.resp_keys_vpixx = np.array(["2", "1", "up", "left", "4", "right"])
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
-        
+
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
@@ -56,7 +56,6 @@ class Experiment:
                            "green": [0.0, 0.6, 0.0],
                            "blue": [0.2, 0.6, 1.0]
                            }
-
 
     def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
         ''' Show dialogue box to get participant info '''
@@ -85,7 +84,7 @@ class Experiment:
                                   fixed=["dateStr", "psychopyVersion", "frameRate"])
             if not dlg.OK:
                 core.quit()
-        
+
         # Save data to this file later
         self.show_progress = expInfo["showProgress"]
         self.test_mode = expInfo["testMode"]
@@ -101,7 +100,7 @@ class Experiment:
         # Optionally init parallel port
         self.resp_keys = self.resp_keys_kb
         self.use_pp = False
-        
+
         if expInfo["MEG"]:
             self.init_interface()
             self.use_pp = True
@@ -121,7 +120,7 @@ class Experiment:
             units="deg")
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"frameRate = {self.win.getActualFrameRate()}\n")
-        
+
     def init_interface(self):
         ''' Initialize parallel port for sending MEG triggers '''
         # set pp to base state
@@ -204,8 +203,8 @@ class Experiment:
         self.map_names = np.unique([trial["map"]
                                     for trial in self.trials_prim])
         self.n_primitives = len(self.map_names)
-        self.n_exposure = 5  # this value should match in GenerateTrialLists
-        self.maxn_blocks = 6  # this too
+        self.n_exposure = 30  # this value should match in GenerateTrialLists
+        self.maxn_blocks = 4  # this value should match in GenerateTrialLists
 
         # Determine_positions
         self.rect_pos = circularGridPositions(
@@ -391,7 +390,7 @@ class Experiment:
             bar_len = self.win.size[0]
         if bar_height is None:
             bar_height = self.win.size[1]/64
-            
+
         self.bar_len = bar_len  # total length
         self.bar_height = bar_height
         self.bar_pos = [0, self.win.size[1]/2 - bar_height/2]
@@ -411,13 +410,13 @@ class Experiment:
             pos=self.bar_pos,
             fillColor=self.color_dict["green"])
         self.start_width = 0.0
-        self.progbar_inc = 0.01 # 1% of bar length
+        self.progbar_inc = 0.01  # 1% of bar length
 
     def draw_background(self):
         self.progBack.length = self.bar_len
         self.progBack.draw()
         self.progTest.draw()
-    
+
     def win_flip(self):
         if self.show_progress:
             self.draw_background()
@@ -437,7 +436,7 @@ class Experiment:
                       n_steps=20, wait_s=0.75, win_flip=True):
         if start_width is None:
             start_width = self.start_width
-        
+
         # Setup starting state of progress bar
         self.progTest.width = start_width * self.progBack.width
         self.progTest.pos[0] = self.left_corner + start_width *\
@@ -459,7 +458,6 @@ class Experiment:
             # Waning
             while self.progTest.width > self.progBack.width * end_width:
                 self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
-            
 
         # Last bit for completion
         self.move_prog_bar_step(
@@ -931,7 +929,6 @@ class Experiment:
         self.win_flip()
         core.wait(loading_time)
 
-
     def LearnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   modes=["textual", "visual"]):
         # Initialize parameters
@@ -991,13 +988,13 @@ class Experiment:
 
             # Incrementally display stuff
             for inc in range(3 + 2 * num_cr):
-                    
+
                 # 0. Fixation
                 if inc == 0:
                     self.tFixation()
                     self.win_flip()
                     continue
-                    
+
                 # 1. Map Cue
                 cue.draw()
                 if inc == 1:
@@ -1020,18 +1017,21 @@ class Experiment:
                 # 3. - 3 + num_cr: Immediate Feedback
                 if inc in range(3, 3 + num_cr) and testResp != "NA":
                     TestClock = core.Clock()
-                    testRT, testResp = self.tTestresponse(TestClock, self.resp_keys)
+                    testRT, testResp = self.tTestresponse(
+                        TestClock, self.resp_keys)
                     testRTList.append(testRT)
                     testRespList.append(testResp)
-                    
+
                 for i, testResp in enumerate(testRespList):
                     self.testResp = testResp
                     if testResp != "NA":
                         self.rect.pos = self.cuepractice_pos[testResp]
-                        self.rect.lineColor = self.color_dict["green"] if trial.correct_resp[i] == testResp else self.color_dict["red"]
+                        self.rect.lineColor = self.color_dict["green"] if trial.correct_resp[
+                            i] == testResp else self.color_dict["red"]
                         self.rect.draw()
                         self.rect.lineColor = self.color_dict["dark_grey"]
-                        resp = self.stim_dict.copy()[trial.resp_options[testResp]]
+                        resp = self.stim_dict.copy(
+                        )[trial.resp_options[testResp]]
                         resp.pos = self.cuepractice_pos[testResp]
                         resp.draw()
 
@@ -1048,7 +1048,8 @@ class Experiment:
                         self.rect.fillColor = self.color_dict["blue"]
                         self.rect.draw()
                         self.rect.fillColor = self.color_dict["light_grey"]
-                        resp = self.stim_dict.copy()[trial.resp_options[corResp]]
+                        resp = self.stim_dict.copy(
+                        )[trial.resp_options[corResp]]
                         resp.pos = self.cuepractice_pos[corResp]
                         resp.draw()
                 if inc in range(3 + num_cr, 3 + 2 * num_cr - 1):
@@ -1061,9 +1062,10 @@ class Experiment:
                     trial["cue_type"] = cue_type
                     self.win_flip()
                     core.wait(2)
-                    
+
             if self.show_progress:
-                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
+                self.move_prog_bar(
+                    end_width=self.start_width + self.progbar_inc, wait_s=0)
         return trials.trialList
 
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
@@ -1075,7 +1077,7 @@ class Experiment:
 
         # create the trial handler and optionally timer
         if i_step is None:
-            i_step = len(trial_df)
+            i_step = len(trial_df) // self.maxn_blocks
         df = trial_df[i:i+i_step].copy()
         trials = data.TrialHandler(
             df, 1, method="sequential")
@@ -1135,9 +1137,11 @@ class Experiment:
                 # 6. Test Display
                 if 6 in display_this:
                     if trial.test_type == "count":
-                        testRT, testResp = self.tCount(trial, feedback=feedback)
+                        testRT, testResp = self.tCount(
+                            trial, feedback=feedback)
                     elif trial.test_type == "position":
-                        testRT, testResp = self.tPosition(trial, feedback=feedback)
+                        testRT, testResp = self.tPosition(
+                            trial, feedback=feedback)
 
                     # Save data
                     trial["run_number"] = run_number
@@ -1147,10 +1151,11 @@ class Experiment:
                     trial["resp_RT"] = testRT
                     trial["cue_type"] = cue_type
                     core.wait(durations[3])
-            
+
             if self.show_progress and not instruction_trial:
-                self.move_prog_bar(end_width=self.start_width + self.progbar_inc, wait_s=0)
-            
+                self.move_prog_bar(
+                    end_width=self.start_width + self.progbar_inc, wait_s=0)
+
             if 7 in display_this:
                 self.win_flip()
                 self.win_flip()
@@ -1174,13 +1179,14 @@ class Experiment:
         mean_acc = 0.0
         df_list = []
         if i_step is None:
-            i_step = self.n_exposure * self.maxn_blocks
+            i_step = len(trials_prim_cue)//self.maxn_blocks
         while mean_acc < min_acc and i + i_step <= len(trials_prim_cue):
             start_width_initial = self.start_width
             df = trials_prim_cue[i:i+i_step].copy()
             result = self.PracticeCues(df, mode=mode)
             df_list.append(result)
-            errors = [trial["correct_resp"] == trial["emp_resp"] for trial in result]
+            errors = [trial["correct_resp"] == trial["emp_resp"]
+                      for trial in result]
             mean_acc = np.mean(list(map(int, errors)))  # convert to integers
 
             accPrompt = visual.TextStim(
@@ -1194,7 +1200,7 @@ class Experiment:
             i += i_step
             if mean_acc < min_acc:
                 feedbacktype = "Feedback0"
-                
+
             else:
                 feedbacktype = "Feedback1"
             self.Instructions(part_key=feedbacktype,
@@ -1221,7 +1227,7 @@ class Experiment:
         mean_acc = 0.0
         df_list = []
         if i_step is None:
-            i_step = self.n_exposure * self.maxn_blocks  # length of one loop
+            i_step = len(trial_df)//self.maxn_blocks
         while mean_acc < min_acc:
             start_width_initial = self.start_width
             result = self.GenericBlock(trial_df, mode=mode, i=i, i_step=i_step,
@@ -1252,40 +1258,45 @@ class Experiment:
                 self.move_prog_bar(end_width=start_width_initial)
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
-    
 
     ###########################################################################
     # Introduction Session
     ###########################################################################
+
     def Session1(self):
         # init session variables
         self.win.mouseVisible = False
         min_acc = 0.9
-        
+
         # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
-        n_trials_total = 4 * self.n_exposure * self.maxn_blocks 
+        n_trials_total = (2 * len(self.trials_prim_cue) +
+                          len(self.trials_prim_prac_p) +
+                          len(self.trials_prim_prac_c)) // self.maxn_blocks
         self.progbar_inc = 1/n_trials_total
-        
+
         # Balance out which cue modality is learned first
         id_is_odd = int(self.expInfo["participant"]) % 2
         first_modality = "visual" if id_is_odd else "textual"
         second_modality = "textual" if id_is_odd else "visual"
-        
+
         # Balance out which test type is learned first
         first_test = "count" if id_is_odd else "position"
         second_test = "position" if id_is_odd else "count"
         tFirst = self.tCount if id_is_odd else self.tPosition
         tSecond = self.tPosition if id_is_odd else self.tCount
-        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
-        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
+        trials_test_1 = self.trials_prim_prac_c.copy(
+        ) if id_is_odd else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy(
+        ) if id_is_odd else self.trials_prim_prac_c.copy()
 
         # Get Demo trials
-        demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
-        demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
+        demoTrials1 = data.TrialHandler(
+            trials_test_1[:1], 1, method="sequential")
+        demoTrials2 = data.TrialHandler(
+            trials_test_2[:1], 1, method="sequential")
         demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
         print("Starting Session 1.")
-        
-        
+
         ''' --- 1. Initial instructions ---------------------------------------------'''
         # Navigation
         self.Instructions(part_key="Navigation1",
@@ -1309,7 +1320,6 @@ class Experiment:
                                 [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
                                 [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
-
         # ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
@@ -1321,10 +1331,10 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
         self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
+                                             i_step=2 if self.test_mode else None,
                                              mode=first_modality,
                                              min_acc=min_acc)
-        
+
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
@@ -1335,7 +1345,7 @@ class Experiment:
 
         # Test second cue type
         self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step = 2 if self.test_mode else None,
+                                             i_step=2 if self.test_mode else None,
                                              mode=second_modality,
                                              i=len(self.df_out_1),
                                              min_acc=min_acc)
@@ -1343,7 +1353,6 @@ class Experiment:
         # Save cue memory data
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_cueMemory"
         save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
-
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
@@ -1357,7 +1366,7 @@ class Experiment:
                                    "instruction_trial": True,
                                    "test": False}],
                           loading_time=0)
-        
+
         self.Instructions(part_key=first_test + "First",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]],
@@ -1383,7 +1392,7 @@ class Experiment:
                                    "demonstration": True}])
 
         self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                              i_step = 2 if self.test_mode else None,
+                                              i_step=2 if self.test_mode else None,
                                               min_acc=min_acc,
                                               self_paced=True,
                                               feedback=True,
@@ -1407,9 +1416,9 @@ class Experiment:
                                   {"trial": demoTrial2,
                                    "feedback": True,
                                    "demonstration": True}])
-        
+
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
-                                              i_step = 2 if self.test_mode else None,
+                                              i_step=2 if self.test_mode else None,
                                               min_acc=min_acc,
                                               self_paced=True,
                                               feedback=True,
@@ -1433,16 +1442,19 @@ class Experiment:
         # init session variables
         self.win.mouseVisible = False
         min_acc = 0.9
-        
+
         # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
-        n_trials_total = 100 # TODO
+        n_trials_total = (len(self.trials_prim_dec) +
+                          len(self.trials_prim_MEG) +
+                          len(self.trials_bin_MEG)) // self.maxn_blocks
         self.progbar_inc = 1/n_trials_total
-        
-        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1, method="sequential")
-        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1, method="sequential")
-        demoCount, demoPosition = demoCounts.trialList[0], demoPositions.trialList[0] 
-        
-        
+
+        demoCounts = data.TrialHandler(
+            self.trials_prim_prac_c[0:1], 1, method="sequential")
+        demoPositions = data.TrialHandler(
+            self.trials_prim_prac_p[0:1], 1, method="sequential")
+        demoCount, demoPosition = demoCounts.trialList[0], demoPositions.trialList[0]
+
         ''' --- 1. Initial instructions and function decoder ------------------------'''
         # Navigation
         # self.Instructions(part_key="Navigation3",
@@ -1451,16 +1463,20 @@ class Experiment:
         #                   font="mono",
         #                   fontcolor=self.color_dict["mid_grey"])
 
-        # Introduction 
+        # Introduction & Function Decoder
         self.Instructions(part_key="IntroMEG",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-        
+
         self.df_out_5 = self.TestPracticeLoop(self.trials_prim_dec,
-                                              i_step=len(self.trials_prim_dec), test=True, feedback=True, self_paced=True)
+                                              i_step=len(
+                                                  self.trials_prim_dec)/2,
+                                              min_acc=min_acc,
+                                              test=True,
+                                              feedback=True,
+                                              self_paced=True)
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_function_decoder"
         save_object(self.df_out_5, fname, ending='csv')
-
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",
@@ -1496,13 +1512,14 @@ class Experiment:
                                    "demonstration": True}])
 
         self.df_out_6 = self.TestPracticeLoop(self.trials_prim_MEG,
-                                               mode="random",
-                                               min_acc=min_acc,
-                                               durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-                                               self_paced=True,
-                                               feedback=True,
-                                               pause_between_runs=True)
-        
+                                              mode="random",
+                                              min_acc=min_acc,
+                                              i_step=90,
+                                              durations=[
+                                                  1.0, 3.0, 0.6, 1.0, 0.7],
+                                              self_paced=True,
+                                              pause_between_runs=True)
+
         # # Part 3
         # # Binary trials
         # self.Instructions(part_key="BinariesMEGR",
@@ -1537,8 +1554,6 @@ class Experiment:
         #                                        pause_between_runs=True,
         #                                        run_length=360,
         #                                        resp_keys=resp_keys)
-        
-        
 
         # # Finalization
         # fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_generic_MEG"
@@ -1556,7 +1571,7 @@ class Experiment:
 
 # Positions -------------------------------------------------------------------
 def rectangularGridPositions(center_pos=[0, 0],
-                              v_dist=10, h_dist=10, dim=(2, 3)):
+                             v_dist=10, h_dist=10, dim=(2, 3)):
     # horizontal positions
     c = np.floor(dim[1]/2)
     if dim[1] % 2 != 0:  # odd number of items on vertical tile => center
