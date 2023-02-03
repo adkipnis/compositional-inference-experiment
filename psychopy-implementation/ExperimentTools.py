@@ -1519,7 +1519,7 @@ class Experiment:
                                               self_paced=True,
                                               pause_between_runs=True)
         fname = self.writeFileName("primitiveTrials")
-        save_object(self.df_out_7, fname, ending='csv')
+        save_object(self.df_out_6, fname, ending='csv')
         
         ''' --- 3. Binary trials ------------------------------------------------'''
         self.Instructions(part_key="BinariesMEGR",
@@ -1533,29 +1533,33 @@ class Experiment:
                           kwargs=[{"trial_df": self.trials_bin_MEG,
                                    "display_this": [2],
                                    "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
+                                   "instruction_trial": True,
                                    "i_step": 1,
                                    "test": False},
                                   {"trial_df": self.trials_bin_MEG,
                                    "display_this": [3, 7],
                                    "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
+                                   "instruction_trial": True,
                                    "i_step": 1,
                                    "test": False},
                                   {"trial_df": self.trials_bin_MEG,
                                    "display_this": [4],
                                    "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                  "i_step": 1,
+                                   "instruction_trial": True,
+                                   "i_step": 1,
                                    "test": True}])
         self.df_out_7 = self.TestPracticeLoop(self.trials_bin_MEG,
                                                i_step=2 if self.test_mode else None,
                                                min_acc=0.75,
-                                               durations=[2.0, 3.0, 0.6, 1.0, 0.7],
+                                               durations=[1.5, 3.0, 0.6, 1.0, 0.7],
                                                self_paced=True,
+                                               feedback=True,
                                                pause_between_runs=True)
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
         save_object(self.df_out_7, fname, ending='csv')
-
+        self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="ByeBye")
         with open(f"{self.file_name}.txt", 'a') as f:
             f.write(f"t_n = {data.getDateStr()}\n\n")
