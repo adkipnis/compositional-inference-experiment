@@ -10,6 +10,7 @@ import sys
 import csv
 from string import ascii_uppercase
 import numpy as np
+print("Loading psychopy...")
 from psychopy import __version__, core, event, visual, gui, data, monitors
 from psychopy.parallel import ParallelPort
 
@@ -1269,7 +1270,7 @@ class Experiment:
         min_acc = 0.9
 
         # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
-        n_trials_total = (2 * len(self.trials_prim_cue) +
+        n_trials_total = (len(self.trials_prim_cue) +
                           len(self.trials_prim_prac_p) +
                           len(self.trials_prim_prac_c)) // self.maxn_blocks
         self.progbar_inc = 1/n_trials_total
@@ -1442,8 +1443,6 @@ class Experiment:
         # init session variables
         self.win.mouseVisible = False
         min_acc = 0.9
-
-        # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
         n_trials_total = (len(self.trials_prim_dec) +
                           len(self.trials_prim_MEG) +
                           len(self.trials_bin_MEG)) // self.maxn_blocks
@@ -1469,14 +1468,15 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
 
         self.df_out_5 = self.TestPracticeLoop(self.trials_prim_dec,
-                                              i_step=len(
-                                                  self.trials_prim_dec)/2,
+                                              i_step=2 if self.test_mode else None,
                                               min_acc=min_acc,
                                               test=True,
                                               feedback=True,
                                               self_paced=True)
         fname = f"{self.data_dir}{os.sep}{self.expInfo['participant']}_{self.expInfo['dateStr']}_function_decoder"
         save_object(self.df_out_5, fname, ending='csv')
+
+        # TODO test trial list lengths
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",

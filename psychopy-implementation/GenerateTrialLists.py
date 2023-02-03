@@ -16,6 +16,7 @@ import numpy as np
 
 # ==============================================================================
 # User settings
+first_participant = 1
 n_participants = 2
 save_this = False
 ending = 'pkl'
@@ -609,7 +610,7 @@ vcue_list = [Path(fname).stem for fname in vcue_list]  # remove trunk
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
 stim_list = [Path(fname).stem for fname in stim_list]
 
-for i in range(1, n_participants+1):
+for i in range(first_participant, first_participant+n_participants+1):
     print(f"Generating trial lists for participant {i}...")
     # Mappings between cues and stimuli
     tcue_list = np.random.permutation(tcue_list)
