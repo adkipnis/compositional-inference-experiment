@@ -54,8 +54,10 @@ class Experiment:
                            "dark_grey": [-0.6, -0.6, -0.6],
                            "black": [-0.9, -0.9, -0.9],
                            "red": [0.8, 0.0, 0.0],
+                           "yellow": [0.9, 0.9, 0.0],
                            "green": [0.0, 0.6, 0.0],
-                           "blue": [0.2, 0.6, 1.0]
+                           "blue": [0.2, 0.6, 1.0],
+                           "dark_blue": [0.1, 0.3, 1.0],
                            }
 
     def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
