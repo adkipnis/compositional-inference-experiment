@@ -1029,90 +1029,51 @@ class Experiment:
         self.win.flip(clearBuffer=False)
         
         
+    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
+        ''' Subroutine for the cue practice trials'''
+        # Init
+        stimuli = self.stim_dict.copy()
+        testResp = ""
             testRespList = []
             testRTList = []
-            testResp = ""
-            j = 0
-            cue, cue_type = self.setCue(trial.map[0], mode=mode)
-            cue.pos = cue_pos
+        trial["start_time"] = self.exp_clock.getTime()
 
-            # Incrementally display stuff
-            for inc in range(3 + 2 * num_cr):
-
-                # 0. Fixation
-                if inc == 0:
+        # Fixation Cross
                     self.tFixation()
-                    self.win_flip()
-                    continue
+        self.win.flip()
 
-                # 1. Map Cue
+        # Map Cue and Response Options
+        cue, cue_type = self.setCue(trial.map[0], mode=mode)
+        cue.pos = cue_pos
                 cue.draw()
-                if inc == 1:
-                    self.win_flip()
-                    core.wait(0.5)
-                    continue
+        self.drawResponseOptions(stimuli, trial.resp_options)
 
-                # 2. Response options
-                self.rect.lineColor = self.color_dict["dark_grey"]
-                for i in range(len(self.cuepractice_pos)):
-                    self.rect.pos = self.cuepractice_pos[i]
-                    self.rect.draw()
-                    resp = self.stim_dict.copy()[trial.resp_options[i]]
-                    resp.pos = self.cuepractice_pos[i]
-                    resp.draw()
-                if inc == 2:
-                    self.win_flip()
+        # Wait for response(s)
+        for correctResp in trial.correct_resp:
+            if testResp == "NA":
                     continue
-
-                # 3. - 3 + num_cr: Immediate Feedback
-                if inc in range(3, 3 + num_cr) and testResp != "NA":
-                    TestClock = core.Clock()
-                    testRT, testResp = self.tTestresponse(
-                        TestClock, self.resp_keys)
+            testRT, testResp = self.tTestresponse(core.Clock(), self.resp_keys)
                     testRTList.append(testRT)
                     testRespList.append(testResp)
+            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
+                                     pos=self.cuepractice_pos[testResp],
+                                     isCorrect=correctResp == testResp,
+                                     isQuick=sum(testRTList) <= goal_rt)
 
-                for i, testResp in enumerate(testRespList):
-                    self.testResp = testResp
-                    if testResp != "NA":
-                        self.rect.pos = self.cuepractice_pos[testResp]
-                        self.rect.lineColor = self.color_dict["green"] if trial.correct_resp[
-                            i] == testResp else self.color_dict["red"]
-                        self.rect.draw()
-                        self.rect.lineColor = self.color_dict["dark_grey"]
-                        resp = self.stim_dict.copy(
-                        )[trial.resp_options[testResp]]
-                        resp.pos = self.cuepractice_pos[testResp]
-                        resp.draw()
-
-                if inc in range(3, 3 + num_cr):
-                    self.win_flip()
-                    continue
-
-                # 4. If errors were made, draw correct response
+        # Feedback (if incorrect)
                 if trial.correct_resp != testRespList:
-                    core.wait(1)
-                    for i in range(1 + j):
-                        corResp = trial.correct_resp[i]
-                        self.rect.pos = self.cuepractice_pos[corResp]
-                        self.rect.fillColor = self.color_dict["blue"]
-                        self.rect.draw()
-                        self.rect.fillColor = self.color_dict["light_grey"]
-                        resp = self.stim_dict.copy(
-                        )[trial.resp_options[corResp]]
-                        resp.pos = self.cuepractice_pos[corResp]
-                        resp.draw()
-                if inc in range(3 + num_cr, 3 + 2 * num_cr - 1):
-                    j += 1
-                    self.win_flip()
-                    continue
-                else:
+            for correctResp in trial.correct_resp:
+                self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
+                                    pos=self.cuepractice_pos[correctResp])
+        
+        # Save data
                     trial["emp_resp"] = testRespList
                     trial["resp_RT"] = testRTList
                     trial["cue_type"] = cue_type
-                    self.win_flip()
+        self.win.flip()
                     core.wait(2)
 
+    
             if self.show_progress:
                 self.move_prog_bar(
                     end_width=self.start_width + self.progbar_inc, wait_s=0)
