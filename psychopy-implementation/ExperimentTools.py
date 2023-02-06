@@ -92,10 +92,9 @@ class Experiment:
         self.test_mode = expInfo["testMode"]
         self.run_length = expInfo["runLength"]
         self.meg = expInfo["MEG"]
-        self.file_name = f"{self.data_dir}{os.sep}{expInfo['participant']}_{expName}"
-        with open(f"{self.file_name}.txt", 'a') as f:
-            for key in expInfo:
-                f.write(f"{key} = {expInfo[key]}\n")
+        self.meta_fname = f"{self.data_dir}{os.sep}{expInfo['expName']}_id={expInfo['participant']}_start={expInfo['dateStr']}_metadata"
+        for key in expInfo:
+            self.add2meta(key, expInfo[key])
         self.expInfo = expInfo
         self.exp_clock = core.Clock()
 
@@ -120,8 +119,7 @@ class Experiment:
             screen=screen,
             monitor="testMonitor",
             units="deg")
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"frameRate = {self.win.getActualFrameRate()}\n")
+        self.add2meta("frameRate", self.win.getActualFrameRate())
 
     def init_interface(self):
         ''' Initialize parallel port for sending MEG triggers '''
@@ -524,8 +522,7 @@ class Experiment:
                     intermediateRT = IRClock.getTime()
                     intermediateResp = 1
                 elif thisKey in ["escape"]:
-                    with open(self.file_name + ".txt", 'a') as f:
-                        f.write("t_a = " + data.getDateStr() + "\n\n")
+                    self.add2meta("t_abort", data.getDateStr())
                     core.quit()  # abort experiment
             event.clearEvents()
         if intermediateResp == None and IRClock.getTime() >= max_s:
@@ -762,8 +759,7 @@ class Experiment:
                     elif thisKey in ["space"]:
                         testResp = "NA"
                     elif thisKey == "escape":
-                        with open(self.file_name + ".txt", 'a') as f:
-                            f.write("t_a = " + data.getDateStr() + "\n\n")
+                        self.add2meta("t_abort", data.getDateStr())
                         core.quit()  # abort experiment
                 event.clearEvents()
         return testRT, testResp
@@ -926,8 +922,7 @@ class Experiment:
                                             wait_s=proceed_wait)
         if log_duration:
             duration = instructions_clock.getTime()
-            with open(f"{self.file_name}.txt", 'a') as f:
-                f.write(f"duration_{part_key} = {duration}\n")
+            self.add2meta(f"duration_{part_key}", duration)
         self.win_flip()
         core.wait(loading_time)
 
@@ -1264,6 +1259,10 @@ class Experiment:
     def writeFileName(self, dataset_name):
         return  f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
     
+    def add2meta(self, var, val):
+        with open(f"{self.meta_fname}.csv", "a") as f:
+            f.write(f"{var},{val}\n")
+        
     ###########################################################################
     # Introduction Session
     ###########################################################################
@@ -1326,8 +1325,7 @@ class Experiment:
         # ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Learn first cue type
         self.learnDuration_1 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_1 = {self.learnDuration_1}\n")
+        self.add2meta("learnDuration_1", self.learnDuration_1)
 
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
@@ -1343,8 +1341,8 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
         self.learnDuration_2 = self.LearnCues()
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"learnDuration_2 = {self.learnDuration_2}\n")
+        self.add2meta("learnDuration_2", self.learnDuration_2)
+        
 
         # Test second cue type
         self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
@@ -1434,8 +1432,7 @@ class Experiment:
         # Wrap up
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="Bye")
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"t_n = {data.getDateStr()}\n\n")
+        self.add2meta("t_end", data.getDateStr())
         self.win.close()
 
     # ###########################################################################
@@ -1561,8 +1558,7 @@ class Experiment:
         save_object(self.df_out_7, fname, ending='csv')
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="ByeBye")
-        with open(f"{self.file_name}.txt", 'a') as f:
-            f.write(f"t_n = {data.getDateStr()}\n\n")
+        self.add2meta("t_end", data.getDateStr())
         self.win.close()
 
 
