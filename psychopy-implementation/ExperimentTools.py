@@ -1082,6 +1082,18 @@ class Experiment:
         return True 
     
     
+    def updateCounterDict(self, trial, goal_rt=2.0):
+        ''' Updates the counter dict for the adaptive cue practice:
+            - reset counter if incorrect response
+            - increase counter if quick correct response
+        '''
+        if trial.correct_resp != trial.emp_resp: 
+            self.counter_dict[trial.map[0]] = 0
+        elif sum(trial.resp_RT) <= goal_rt:
+            self.counter_dict[trial.map[0]] += 1
+        # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
+                
+    
             if self.show_progress:
                 self.move_prog_bar(
                     end_width=self.start_width + self.progbar_inc, wait_s=0)
