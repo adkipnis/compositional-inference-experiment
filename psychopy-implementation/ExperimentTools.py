@@ -995,6 +995,26 @@ class Experiment:
         self.win.flip(clearBuffer=False)
     
     
+    def redrawAfterResponse(self, stimulus, pos=(0,0), isCorrect=False, isQuick=False):
+        ''' Redraw the stimulus after a response has been made and indicate performance via color '''
+        # set informative border color
+        if not isCorrect:
+            lc = self.color_dict["red"]
+        elif not isQuick:
+            lc = self.color_dict["yellow"]
+        else:
+            lc = self.color_dict["green"]
+                    
+        # redraw rectangle
+        self.rect.lineColor = lc
+        self.rect.pos = pos
+        self.rect.draw()
+        self.rect.lineColor = self.color_dict["dark_grey"] #reset
+        stimulus.pos = pos
+        stimulus.draw()
+        self.win.flip(clearBuffer=False)
+        
+        
             testRespList = []
             testRTList = []
             testResp = ""
