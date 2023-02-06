@@ -350,43 +350,15 @@ class Experiment:
             for i in range(len(stim_list))
         }
 
-        # if check_similarity:
-        #     print("Rendering stimuli for similarity check...")
-        #     self.ratingScale = visual.RatingScale(
-        #         self.win,
-        #         low=0, high=10,
-        #         pos=[0.0, -0.2],
-        #         marker="slider",
-        #         markerStart=None,
-        #         lineColor="white",
-        #         labels=["0: very similar", "10: very different"],
-        #         stretch=1.25,
-        #         textSize=0.75,
-        #         textFont="mono",
-        #         mouseOnly=False,
-        #         acceptKeys='space',
-        #         scale=None)
-
-        #     self.tcue_full = {
-        #         tcue_list[i]: visual.TextStim(
-        #             self.win,
-        #             text=tcue_list[i],
-        #             pos=self.center_pos,
-        #             height=4,
-        #             color=self.color_dict["black"])
-        #         for i in range(len(tcue_list))
-        #     }
-
-        #     self.vcue_full = {
-        #         vcue_list[i][-5]: visual.ImageStim(
-        #             self.win,
-        #             image=vcue_list[i],
-        #             pos=self.center_pos)
-        #         for i in range(len(vcue_list))
-        #     }
 
     # Background Components --------------------------------------------------------
-
+    def writeFileName(self, dataset_name):
+        return  f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
+    
+    def add2meta(self, var, val):
+        with open(f"{self.meta_fname}.csv", "a") as f:
+            f.write(f"{var},{val}\n")
+            
     def init_progbar(self, bar_len=None, bar_height=None):
         if bar_len is None:
             bar_len = self.win.size[0]
@@ -471,7 +443,349 @@ class Experiment:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
-    # Trial Components --------------------------------------------------------
+
+    ###########################################################################
+    # Instructions
+    ###########################################################################
+    
+    def iSingleImage(self, *args):
+        for arg in args:
+            arg.pos = [0, 0]
+            # arg.size = [10, 10]
+            arg.draw()
+            self.win_flip()
+            core.wait(0.2)
+
+    def iTransmutableObjects(self, *args,):
+        categories = list(self.stim_dict.keys())
+        categories.sort()
+        n_cats = self.n_cats  # alternatively show all using len(categories)
+        if n_cats > 4:
+            dim = [2, np.ceil(n_cats/2)]
+        else:
+            dim = [1, n_cats]
+
+        category_pos = rectangularGridPositions(
+            center_pos=[0, 0], h_dist=10, dim=dim)
+
+        # draw categories
+        for i in range(n_cats):
+            self.rect.pos = category_pos[i]
+            self.rect.draw()
+            stim = self.stim_dict.copy()[categories[i]]
+            stim.pos = category_pos[i]
+            stim.draw()
+        self.win_flip()
+
+    def iSpellExample(self, displays):
+        # Input Display
+        for i in range(2):
+            rect_pos = circularGridPositions(center_pos=[0, 0],
+                                             set_size=len(displays[0]), radius=8)
+            for j in range(len(displays[0])):
+                self.rect.pos = rect_pos[j]
+                self.rect.draw()
+                stim = self.stim_dict.copy()[displays[0][j]]
+                stim.pos = rect_pos[j]
+                stim.draw()
+            if i == 0:
+                self.win_flip()
+                core.wait(1)
+                continue
+
+            cue = self.magicWand
+            cue.draw()
+            if i == 1:
+                self.win_flip()
+                core.wait(1)
+
+        if len(displays) > 1:
+            # Output Display
+            rect_pos = circularGridPositions(center_pos=[0, 0],
+                                             set_size=len(displays[1]),
+                                             radius=8)
+            for j in range(len(displays[1])):
+                self.rect.pos = rect_pos[j]
+                self.rect.draw()
+                stim = self.stim_dict.copy()[displays[1][j]]
+                stim.pos = rect_pos[j]
+                stim.draw()
+            self.win_flip()
+            core.wait(1)
+    
+    def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
+                  proceed_key="/k", wait_s=3):
+
+        assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
+        finished = False
+        testResp = None
+        TestClock = core.Clock()
+
+        # get response or wait or something in between
+        if proceed_key == "/k":  # keypress
+            _, testResp = self.tTestresponse(
+                TestClock, ["left", "right"],
+                return_numeric=False)
+        if proceed_key == "/m":  # meg keypress
+            _, testResp = self.tTestresponse(
+                TestClock, self.resp_keys_vpixx[-2:],
+                return_numeric=False)
+        elif proceed_key == "/t":  # time
+            core.wait(wait_s)
+            testResp = "right"
+        elif proceed_key == "/e":  # either
+            _, testResp = self.tTestresponse(
+                TestClock, ["left", "right"],
+                return_numeric=False,
+                max_wait=wait_s)
+            if testResp is None:
+                testResp = "right"
+
+        # Proceed accordingly
+        if testResp in ["right", self.resp_keys_vpixx[-1]]:
+            if page < max_page-1:
+                page += 1
+            elif continue_after_last_page:
+                finished = True
+            else:
+                self.nextPrompt.draw()
+                self.win_flip()
+                _, contResp = self.tTestresponse(TestClock, ["left", "right"],
+                                                 return_numeric=False)
+                if contResp == "right":
+                    finished = True
+        elif testResp in ["left", self.resp_keys_vpixx[-2]] and page > 0:
+            page -= 1
+
+        return page, finished
+    
+    def Instructions(self, part_key="Intro",
+                     special_displays=list(),
+                     args=list(),
+                     complex_displays=list(),
+                     kwargs=list(),
+                     font="Times New Roman",
+                     fontcolor=[-0.9, -0.9, -0.9],
+                     log_duration=True,
+                     loading_time=1):
+        assert part_key in self.instructions.keys(),\
+            "No instructions provided for this part"
+
+        self.instruct_stim.font = font
+        self.instruct_stim.color = fontcolor
+
+        # Initialize parameters
+        finished = False
+        Part = self.instructions[part_key]
+        page = 0
+        self.win_flip()
+        self.win_flip()
+        if log_duration:
+            instructions_clock = core.Clock()
+        while not finished:
+            page_content, proceed_key, proceed_wait = Part[page]
+            if isinstance(page_content, str):
+                self.instruct_stim.text = page_content
+                self.instruct_stim.draw()
+                self.win_flip()
+            elif isinstance(page_content, int):
+                special_displays[page_content](
+                    args[page_content])
+            elif isinstance(page_content, float):
+                complex_displays[int(page_content)](
+                    **kwargs[int(page_content)])
+                if complex_displays[int(page_content)].__name__ in\
+                        ["tPosition", "tCount"]:
+                    if "feedback" not in kwargs[int(page_content)].keys():
+                        self.win_flip()
+                    elif not kwargs[int(page_content)]["feedback"]:
+                        self.win_flip()
+            page, finished = self.iNavigate(page=page, max_page=len(Part),
+                                            proceed_key=proceed_key,
+                                            wait_s=proceed_wait)
+        if log_duration:
+            duration = instructions_clock.getTime()
+            self.add2meta(f"duration_{part_key}", duration)
+        self.win_flip()
+        core.wait(loading_time)
+
+    
+    ###########################################################################
+    # Cues
+    ###########################################################################
+
+    def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
+                  modes=["textual", "visual"]):
+        ''' Interactive display for learning cues for all maps, return viewing duration '''
+        
+        # Init
+        self.win_flip()
+        finished = False
+        cat_center_pos = [0, cue_center_pos[1] - vert_dist]
+        page = 0
+        category_pos = rectangularGridPositions(
+            center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
+        stimuli = self.stim_dict.copy()
+        learn_clock = core.Clock()
+
+        while not finished:
+            # Draw map cue
+            map_name = self.map_names[page]
+            categories = map_name.split("-")
+
+            for j, mode in enumerate(modes):
+                cue, _ = self.setCue(map_name, mode=mode)
+                cue.pos = [sum(x) for x in
+                           zip(cue_center_pos, [0, (1-j)*vert_dist])]
+                cue.draw()
+
+            # Draw corresponding explicit map
+            for i, category in enumerate(categories):
+                self.rect.pos = category_pos[i]
+                self.rect.draw()
+                cat = stimuli[category]
+                cat.pos = category_pos[i]
+                cat.draw()
+            self.leftArrow.pos = cat_center_pos
+            self.leftArrow.draw()
+            self.win_flip()
+            core.wait(0.2)
+
+            page, finished = self.iNavigate(
+                page=page, max_page=self.n_primitives,
+                continue_after_last_page=False)
+
+        return learn_clock.getTime()
+
+    def drawResponseOptions(self, stimuli, resp_options):
+        ''' Draw the response options on the screen'''
+        self.rect.lineColor = self.color_dict["dark_grey"]
+        for i, pos in enumerate(self.cuepractice_pos):
+                self.rect.pos = pos
+                self.rect.draw()
+                resp = stimuli[resp_options[i]]
+                resp.pos = pos
+                resp.draw()
+        self.win.flip(clearBuffer=False)
+    
+    def redrawAfterResponse(self, stimulus, pos=(0,0), isCorrect=False, isQuick=False):
+        ''' Redraw the stimulus after a response has been made and indicate performance via color '''
+        # set informative border color
+        if not isCorrect:
+            lc = self.color_dict["red"]
+        elif not isQuick:
+            lc = self.color_dict["yellow"]
+        else:
+            lc = self.color_dict["green"]
+                    
+        # redraw rectangle
+        self.rect.lineColor = lc
+        self.rect.pos = pos
+        self.rect.draw()
+        self.rect.lineColor = self.color_dict["dark_grey"] #reset
+        stimulus.pos = pos
+        stimulus.draw()
+        self.win.flip(clearBuffer=False)
+        
+    def redrawFeedback(self, stimulus, pos=(0,0)):
+        ''' Mark the correct response option as feedback '''
+        core.wait(1)
+        self.rect.pos = pos
+        self.rect.lineColor = self.color_dict["dark_blue"]
+        self.rect.fillColor = self.color_dict["blue"]
+        self.rect.draw()
+        self.rect.lineColor = self.color_dict["dark_grey"] #reset
+        self.rect.fillColor = self.color_dict["light_grey"] #reset
+        stimulus.pos = pos
+        stimulus.draw()
+        self.win.flip(clearBuffer=False)
+        
+    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
+        ''' Subroutine for the cue practice trials'''
+        # Init
+        stimuli = self.stim_dict.copy()
+        testResp = ""
+        testRespList = []
+        testRTList = []
+        trial["start_time"] = self.exp_clock.getTime()
+        
+        # Fixation Cross
+        self.tFixation()
+        self.win.flip()
+        
+        # Map Cue and Response Options
+        cue, cue_type = self.setCue(trial.map[0], mode=mode)
+        cue.pos = cue_pos
+        cue.draw()
+        self.drawResponseOptions(stimuli, trial.resp_options)
+        
+        # Wait for response(s)
+        for correctResp in trial.correct_resp:
+            if testResp == "NA":
+                continue
+            testRT, testResp = self.tTestresponse(core.Clock(), self.resp_keys)
+            testRTList.append(testRT)
+            testRespList.append(testResp)
+            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
+                                     pos=self.cuepractice_pos[testResp],
+                                     isCorrect=correctResp == testResp,
+                                     isQuick=sum(testRTList) <= goal_rt)
+        
+        # Feedback (if incorrect)
+        if trial.correct_resp != testRespList:
+            for correctResp in trial.correct_resp:
+                self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
+                                    pos=self.cuepractice_pos[correctResp])
+        
+        # Save data
+        trial["emp_resp"] = testRespList
+        trial["resp_RT"] = testRTList
+        trial["cue_type"] = cue_type
+        self.win.flip()
+        core.wait(2)
+    
+    def allMapsLearned(self, streak_length=5):
+        ''' Evaluates the counter dict for the adaptive cue practice'''
+        for _map in self.map_names:
+            if self.counter_dict[_map] < streak_length:
+                return False
+        return True 
+    
+    def updateCounterDict(self, trial, goal_rt=2.0):
+        ''' Updates the counter dict for the adaptive cue practice:
+            - reset counter if incorrect response
+            - increase counter if quick correct response
+        '''
+        if trial.correct_resp != trial.emp_resp: 
+            self.counter_dict[trial.map[0]] = 0
+        elif sum(trial.resp_RT) <= goal_rt:
+            self.counter_dict[trial.map[0]] += 1
+        # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
+    
+    def adaptiveCuePractice(self, trials_prim_cue, streak_length=5, goal_rt=2.0, mode="random"):
+        ''' Practice cues until for each map the last streak_length trials are correct and below the goal_rt'''
+        self.counter_dict = {map:0 for map in self.map_names}
+        start_width_initial = self.start_width # progbar
+        trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
+        out = []
+        
+        while not self.allMapsLearned(streak_length=streak_length):
+            trial = trials.next()
+            self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
+            self.updateCounterDict(trial, goal_rt=goal_rt)
+            out.append(trial)
+            
+            if self.show_progress:
+                progress_length = sum(self.counter_dict.values()) * self.progbar_inc
+                self.move_prog_bar(end_width=start_width_initial + progress_length, wait_s=0)
+        
+        return out
+    
+    
+    ###########################################################################
+    # Normal Trials
+    ###########################################################################
+    
     def tFixation(self, duration=0.3, jitter=0.0):
         if self.use_pp:
             self.send_trigger("fix")
@@ -714,36 +1028,6 @@ class Experiment:
                         self.win_flip()
         return testRT, testResp
 
-    def tLocalizer(self, trial, duration=2):
-        if trial.type == "item":
-            stim = self.stim_dict.copy()[trial.content]
-            stim.size = self.center_size
-        else:
-            stim, _ = self.setCue(trial.content, mode=trial.type)
-
-        for i in range(2):
-            stim.pos[i] = self.center_pos[i] + \
-                trial.pos[i] * self.center_size[i]
-        stim.pos = stim.pos.tolist()
-        stim.draw()
-        if self.use_pp:
-            self.send_trigger("cue")
-        self.win_flip()
-        core.wait(duration)
-
-    def tSimilarity(self, stim_1, stim_2, pos_1, pos_2):
-        self.ratingScale.reset()
-        while self.ratingScale.noResponse:
-            stim_1.pos = pos_1
-            stim_1.draw()
-            stim_2.pos = pos_2
-            stim_2.draw()
-            self.ratingScale.draw()
-            self.win_flip()
-        rating = self.ratingScale.getRating()
-        RT = self.ratingScale.getRT()
-        return rating, RT
-
     def tTestresponse(self, TestClock, respKeys,
                       return_numeric=True, max_wait=np.inf):
         testResp, testRT, pressed = None, None, None
@@ -757,363 +1041,17 @@ class Experiment:
                 thisKey, testRT = pressed[0]
                 
                 # case: valid response
-                    if thisKey in respKeys:
+                if thisKey in respKeys:
                     testResp = respKeys.index(thisKey) if return_numeric else thisKey
                 # case: don't know
                 elif thisKey == "space":
-                        testResp = "NA"
+                    testResp = "NA"
                 # case: abort
-                    elif thisKey == "escape":
-                        self.add2meta("t_abort", data.getDateStr())
-                        core.quit()  # abort experiment
+                elif thisKey == "escape":
+                    self.add2meta("t_abort", data.getDateStr())
+                    core.quit()  # abort experiment
                     
         return testRT, testResp
-
-    def iSingleImage(self, *args):
-        for arg in args:
-            arg.pos = [0, 0]
-            # arg.size = [10, 10]
-            arg.draw()
-            self.win_flip()
-            core.wait(0.2)
-
-    def iTransmutableObjects(self, *args,):
-        categories = list(self.stim_dict.keys())
-        categories.sort()
-        n_cats = self.n_cats  # alternatively show all using len(categories)
-        if n_cats > 4:
-            dim = [2, np.ceil(n_cats/2)]
-        else:
-            dim = [1, n_cats]
-
-        category_pos = rectangularGridPositions(
-            center_pos=[0, 0], h_dist=10, dim=dim)
-
-        # draw categories
-        for i in range(n_cats):
-            self.rect.pos = category_pos[i]
-            self.rect.draw()
-            stim = self.stim_dict.copy()[categories[i]]
-            stim.pos = category_pos[i]
-            stim.draw()
-        self.win_flip()
-
-    def iSpellExample(self, displays):
-        # Input Display
-        for i in range(2):
-            rect_pos = circularGridPositions(center_pos=[0, 0],
-                                             set_size=len(displays[0]), radius=8)
-            for j in range(len(displays[0])):
-                self.rect.pos = rect_pos[j]
-                self.rect.draw()
-                stim = self.stim_dict.copy()[displays[0][j]]
-                stim.pos = rect_pos[j]
-                stim.draw()
-            if i == 0:
-                self.win_flip()
-                core.wait(1)
-                continue
-
-            cue = self.magicWand
-            cue.draw()
-            if i == 1:
-                self.win_flip()
-                core.wait(1)
-
-        if len(displays) > 1:
-            # Output Display
-            rect_pos = circularGridPositions(center_pos=[0, 0],
-                                             set_size=len(displays[1]),
-                                             radius=8)
-            for j in range(len(displays[1])):
-                self.rect.pos = rect_pos[j]
-                self.rect.draw()
-                stim = self.stim_dict.copy()[displays[1][j]]
-                stim.pos = rect_pos[j]
-                stim.draw()
-            self.win_flip()
-            core.wait(1)
-
-    def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
-                  proceed_key="/k", wait_s=3):
-
-        assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
-        finished = False
-        testResp = None
-        TestClock = core.Clock()
-
-        # get response or wait or something in between
-        if proceed_key == "/k":  # keypress
-            _, testResp = self.tTestresponse(
-                TestClock, ["left", "right"],
-                return_numeric=False)
-        if proceed_key == "/m":  # meg keypress
-            _, testResp = self.tTestresponse(
-                TestClock, self.resp_keys_vpixx[-2:],
-                return_numeric=False)
-        elif proceed_key == "/t":  # time
-            core.wait(wait_s)
-            testResp = "right"
-        elif proceed_key == "/e":  # either
-            _, testResp = self.tTestresponse(
-                TestClock, ["left", "right"],
-                return_numeric=False,
-                max_wait=wait_s)
-            if testResp is None:
-                testResp = "right"
-
-        # Proceed accordingly
-        if testResp in ["right", self.resp_keys_vpixx[-1]]:
-            if page < max_page-1:
-                page += 1
-            elif continue_after_last_page:
-                finished = True
-            else:
-                self.nextPrompt.draw()
-                self.win_flip()
-                _, contResp = self.tTestresponse(TestClock, ["left", "right"],
-                                                 return_numeric=False)
-                if contResp == "right":
-                    finished = True
-        elif testResp in ["left", self.resp_keys_vpixx[-2]] and page > 0:
-            page -= 1
-
-        return page, finished
-
-    # Blocks and Loops---------------------------------------------------------
-    def Instructions(self, part_key="Intro",
-                     special_displays=list(),
-                     args=list(),
-                     complex_displays=list(),
-                     kwargs=list(),
-                     font="Times New Roman",
-                     fontcolor=[-0.9, -0.9, -0.9],
-                     log_duration=True,
-                     loading_time=1):
-        assert part_key in self.instructions.keys(),\
-            "No instructions provided for this part"
-
-        self.instruct_stim.font = font
-        self.instruct_stim.color = fontcolor
-
-        # Initialize parameters
-        finished = False
-        Part = self.instructions[part_key]
-        page = 0
-        self.win_flip()
-        self.win_flip()
-        if log_duration:
-            instructions_clock = core.Clock()
-        while not finished:
-            page_content, proceed_key, proceed_wait = Part[page]
-            if isinstance(page_content, str):
-                self.instruct_stim.text = page_content
-                self.instruct_stim.draw()
-                self.win_flip()
-            elif isinstance(page_content, int):
-                special_displays[page_content](
-                    args[page_content])
-            elif isinstance(page_content, float):
-                complex_displays[int(page_content)](
-                    **kwargs[int(page_content)])
-                if complex_displays[int(page_content)].__name__ in\
-                        ["tPosition", "tCount"]:
-                    if "feedback" not in kwargs[int(page_content)].keys():
-                        self.win_flip()
-                    elif not kwargs[int(page_content)]["feedback"]:
-                        self.win_flip()
-            page, finished = self.iNavigate(page=page, max_page=len(Part),
-                                            proceed_key=proceed_key,
-                                            wait_s=proceed_wait)
-        if log_duration:
-            duration = instructions_clock.getTime()
-            self.add2meta(f"duration_{part_key}", duration)
-        self.win_flip()
-        core.wait(loading_time)
-
-    ###########################################################################
-    # Cues
-    ###########################################################################
-
-    def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
-                  modes=["textual", "visual"]):
-        ''' Interactive display for learning cues for all maps, return viewing duration '''
-        
-        # Init
-        self.win_flip()
-        finished = False
-        cat_center_pos = [0, cue_center_pos[1] - vert_dist]
-        page = 0
-        category_pos = rectangularGridPositions(
-            center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
-        stimuli = self.stim_dict.copy()
-        learn_clock = core.Clock()
-
-        while not finished:
-            # Draw map cue
-            map_name = self.map_names[page]
-            categories = map_name.split("-")
-
-            for j, mode in enumerate(modes):
-                cue, _ = self.setCue(map_name, mode=mode)
-                cue.pos = [sum(x) for x in
-                           zip(cue_center_pos, [0, (1-j)*vert_dist])]
-                cue.draw()
-
-            # Draw corresponding explicit map
-            for i, category in enumerate(categories):
-                self.rect.pos = category_pos[i]
-                self.rect.draw()
-                cat = stimuli[category]
-                cat.pos = category_pos[i]
-                cat.draw()
-            self.leftArrow.pos = cat_center_pos
-            self.leftArrow.draw()
-            self.win_flip()
-            core.wait(0.2)
-
-            page, finished = self.iNavigate(
-                page=page, max_page=self.n_primitives,
-                continue_after_last_page=False)
-
-        return learn_clock.getTime()
-
-    def PracticeCues(self, trials_prim_cue, mode="visual", cue_pos=[0, 5]):
-        # create the trial handler
-        trials = data.TrialHandler(
-            trials_prim_cue, 1, method="sequential")
-
-    def drawResponseOptions(self, stimuli, resp_options):
-        ''' Draw the response options on the screen'''
-        self.rect.lineColor = self.color_dict["dark_grey"]
-        for i, pos in enumerate(self.cuepractice_pos):
-                self.rect.pos = pos
-                self.rect.draw()
-                resp = stimuli[resp_options[i]]
-                resp.pos = pos
-                resp.draw()
-        self.win.flip(clearBuffer=False)
-    
-    
-    def redrawAfterResponse(self, stimulus, pos=(0,0), isCorrect=False, isQuick=False):
-        ''' Redraw the stimulus after a response has been made and indicate performance via color '''
-        # set informative border color
-        if not isCorrect:
-            lc = self.color_dict["red"]
-        elif not isQuick:
-            lc = self.color_dict["yellow"]
-        else:
-            lc = self.color_dict["green"]
-                    
-        # redraw rectangle
-        self.rect.lineColor = lc
-        self.rect.pos = pos
-        self.rect.draw()
-        self.rect.lineColor = self.color_dict["dark_grey"] #reset
-        stimulus.pos = pos
-        stimulus.draw()
-        self.win.flip(clearBuffer=False)
-        
-        
-    def redrawFeedback(self, stimulus, pos=(0,0)):
-        ''' Mark the correct response option as feedback '''
-        core.wait(1)
-        self.rect.pos = pos
-        self.rect.lineColor = self.color_dict["dark_blue"]
-        self.rect.fillColor = self.color_dict["blue"]
-        self.rect.draw()
-        self.rect.lineColor = self.color_dict["dark_grey"] #reset
-        self.rect.fillColor = self.color_dict["light_grey"] #reset
-        stimulus.pos = pos
-        stimulus.draw()
-        self.win.flip(clearBuffer=False)
-        
-        
-    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
-        ''' Subroutine for the cue practice trials'''
-        # Init
-        stimuli = self.stim_dict.copy()
-        testResp = ""
-            testRespList = []
-            testRTList = []
-        trial["start_time"] = self.exp_clock.getTime()
-
-        # Fixation Cross
-                    self.tFixation()
-        self.win.flip()
-
-        # Map Cue and Response Options
-        cue, cue_type = self.setCue(trial.map[0], mode=mode)
-        cue.pos = cue_pos
-                cue.draw()
-        self.drawResponseOptions(stimuli, trial.resp_options)
-
-        # Wait for response(s)
-        for correctResp in trial.correct_resp:
-            if testResp == "NA":
-                    continue
-            testRT, testResp = self.tTestresponse(core.Clock(), self.resp_keys)
-                    testRTList.append(testRT)
-                    testRespList.append(testResp)
-            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
-                                     pos=self.cuepractice_pos[testResp],
-                                     isCorrect=correctResp == testResp,
-                                     isQuick=sum(testRTList) <= goal_rt)
-
-        # Feedback (if incorrect)
-                if trial.correct_resp != testRespList:
-            for correctResp in trial.correct_resp:
-                self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
-                                    pos=self.cuepractice_pos[correctResp])
-        
-        # Save data
-                    trial["emp_resp"] = testRespList
-                    trial["resp_RT"] = testRTList
-                    trial["cue_type"] = cue_type
-        self.win.flip()
-                    core.wait(2)
-
-    
-    def allMapsLearned(self, streak_length=5):
-        ''' Evaluates the counter dict for the adaptive cue practice'''
-        for _map in self.map_names:
-            if self.counter_dict[_map] < streak_length:
-                return False
-        return True 
-    
-    
-    def updateCounterDict(self, trial, goal_rt=2.0):
-        ''' Updates the counter dict for the adaptive cue practice:
-            - reset counter if incorrect response
-            - increase counter if quick correct response
-        '''
-        if trial.correct_resp != trial.emp_resp: 
-            self.counter_dict[trial.map[0]] = 0
-        elif sum(trial.resp_RT) <= goal_rt:
-            self.counter_dict[trial.map[0]] += 1
-        # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
-                
-    
-    def adaptiveCuePractice(self, trials_prim_cue, streak_length=5, goal_rt=2.0, mode="random"):
-        ''' Practice cues until for each map the last streak_length trials are correct and below the goal_rt'''
-        self.counter_dict = {map:0 for map in self.map_names}
-        start_width_initial = self.start_width # progbar
-        trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
-        out = []
-        
-        while not self.allMapsLearned(streak_length=streak_length):
-            trial = trials.next()
-            self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
-            self.updateCounterDict(trial, goal_rt=goal_rt)
-            out.append(trial)
-            
-            if self.show_progress:
-                progress_length = sum(self.counter_dict.values()) * self.progbar_inc
-                self.move_prog_bar(end_width=start_width_initial + progress_length, wait_s=0)
-        
-        return out
-    
-    # -------------------------------------------------------------------------
 
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
                      self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
@@ -1220,47 +1158,7 @@ class Experiment:
 
             trial_number += 1
         return trials.trialList
-
-    def CuePracticeLoop(self, trials_prim_cue,
-                        min_acc=0.90, mode="random", i=0, i_step=None, show_cheetsheet=True):
-        mean_acc = 0.0
-        df_list = []
-        if i_step is None:
-            i_step = len(trials_prim_cue)//self.maxn_blocks
-        while mean_acc < min_acc and i + i_step <= len(trials_prim_cue):
-            start_width_initial = self.start_width
-            df = trials_prim_cue[i:i+i_step].copy()
-            result = self.PracticeCues(df, mode=mode)
-            df_list.append(result)
-            errors = [trial["correct_resp"] == trial["emp_resp"]
-                      for trial in result]
-            mean_acc = np.mean(list(map(int, errors)))  # convert to integers
-
-            accPrompt = visual.TextStim(
-                self.win, text=str(np.round(mean_acc * 100)) + "%",
-                height=2.5,
-                wrapWidth=30,
-                font="Times New Roman",
-                color=self.color_dict["black"])
-
-            # repeat or wrap up
-            i += i_step
-            if mean_acc < min_acc:
-                feedbacktype = "Feedback0"
-
-            else:
-                feedbacktype = "Feedback1"
-            self.Instructions(part_key=feedbacktype,
-                              special_displays=[self.iSingleImage],
-                              args=[accPrompt])
-            if show_cheetsheet and mean_acc < min_acc:
-                # reset progress bar
-                self.move_prog_bar(end_width=start_width_initial)
-                self.LearnCues()
-            core.wait(2)
-        df_out = [item for sublist in df_list for item in sublist]
-        return df_out
-
+    
     def TestPracticeLoop(self, trial_df,
                          min_acc=0.95,
                          mode="random",
@@ -1306,12 +1204,6 @@ class Experiment:
         df_out = [item for sublist in df_list for item in sublist]
         return df_out
 
-    def writeFileName(self, dataset_name):
-        return  f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
-    
-    def add2meta(self, var, val):
-        with open(f"{self.meta_fname}.csv", "a") as f:
-            f.write(f"{var},{val}\n")
         
     ###########################################################################
     # Introduction Session
@@ -1374,7 +1266,7 @@ class Experiment:
 
         # ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Learn first cue type
-        self.learnDuration_1 = self.LearnCues()
+        self.learnDuration_1 = self.learnCues()
         self.add2meta("learnDuration_1", self.learnDuration_1)
 
         # Test first cue type
@@ -1390,7 +1282,7 @@ class Experiment:
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
-        self.learnDuration_2 = self.LearnCues()
+        self.learnDuration_2 = self.learnCues()
         self.add2meta("learnDuration_2", self.learnDuration_2)
         
 
