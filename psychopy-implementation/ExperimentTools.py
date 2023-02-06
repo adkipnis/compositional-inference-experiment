@@ -742,28 +742,29 @@ class Experiment:
         RT = self.ratingScale.getRT()
         return rating, RT
 
-    def tTestresponse(self, TestClock, respKeys, return_numeric=True,
-                      max_wait=np.inf):
-        testResp = None
-        testRT = None
+    def tTestresponse(self, TestClock, respKeys,
+                      return_numeric=True, max_wait=np.inf):
+        testResp, testRT, pressed = None, None, None
         while testResp is None:
-            pressedKeys = event.waitKeys(maxWait=max_wait)
-            if pressedKeys is None and max_wait < np.inf:
+            pressed = event.waitKeys(timeStamped=TestClock, maxWait=max_wait)
+            
+            # case: tTestresponse is timed but no response is given, yet 
+            if max_wait < np.inf and pressed is None:
                 break
             else:
-                for thisKey in pressedKeys:
-                    testRT = TestClock.getTime()
+                thisKey, testRT = pressed[0]
+                
+                # case: valid response
                     if thisKey in respKeys:
-                        if return_numeric:
-                            testResp = np.where(respKeys == thisKey)[0][0]
-                        else:
-                            testResp = thisKey
-                    elif thisKey in ["space"]:
+                    testResp = respKeys.index(thisKey) if return_numeric else thisKey
+                # case: don't know
+                elif thisKey == "space":
                         testResp = "NA"
+                # case: abort
                     elif thisKey == "escape":
                         self.add2meta("t_abort", data.getDateStr())
                         core.quit()  # abort experiment
-                event.clearEvents()
+                    
         return testRT, testResp
 
     def iSingleImage(self, *args):
