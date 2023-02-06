@@ -41,8 +41,8 @@ class Experiment:
             os.makedirs(self.data_dir)
 
         # inputs and dimensions
-        self.resp_keys_kb = np.array(["d", "f", "j", "k"])
-        self.resp_keys_vpixx = np.array(["2", "1", "up", "left", "4", "right"])
+        self.resp_keys_kb = ["d", "f", "j", "k"]
+        self.resp_keys_vpixx = ["2", "1", "up", "left", "4", "right"]
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
         # Mapping: 0, 1, 2, 3, False, True
 
