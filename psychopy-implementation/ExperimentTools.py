@@ -1074,6 +1074,14 @@ class Experiment:
                     core.wait(2)
 
     
+    def allMapsLearned(self, streak_length=5):
+        ''' Evaluates the counter dict for the adaptive cue practice'''
+        for _map in self.map_names:
+            if self.counter_dict[_map] < streak_length:
+                return False
+        return True 
+    
+    
             if self.show_progress:
                 self.move_prog_bar(
                     end_width=self.start_width + self.progbar_inc, wait_s=0)
