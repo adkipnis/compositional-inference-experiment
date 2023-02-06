@@ -1015,6 +1015,20 @@ class Experiment:
         self.win.flip(clearBuffer=False)
         
         
+    def redrawFeedback(self, stimulus, pos=(0,0)):
+        ''' Mark the correct response option as feedback '''
+        core.wait(1)
+        self.rect.pos = pos
+        self.rect.lineColor = self.color_dict["dark_blue"]
+        self.rect.fillColor = self.color_dict["blue"]
+        self.rect.draw()
+        self.rect.lineColor = self.color_dict["dark_grey"] #reset
+        self.rect.fillColor = self.color_dict["light_grey"] #reset
+        stimulus.pos = pos
+        stimulus.draw()
+        self.win.flip(clearBuffer=False)
+        
+        
             testRespList = []
             testRTList = []
             testResp = ""
