@@ -931,17 +931,24 @@ class Experiment:
         self.win_flip()
         core.wait(loading_time)
 
-    def LearnCues(self, cue_center_pos=[0, 2], vert_dist=7,
+    ###########################################################################
+    # Cues
+    ###########################################################################
+
+    def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   modes=["textual", "visual"]):
-        # Initialize parameters
+        ''' Interactive display for learning cues for all maps, return viewing duration '''
+        
+        # Init
         self.win_flip()
         finished = False
         cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
         category_pos = rectangularGridPositions(
             center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
+        stimuli = self.stim_dict.copy()
+        learn_clock = core.Clock()
 
-        LearnClock = core.Clock()
         while not finished:
             # Draw map cue
             map_name = self.map_names[page]
@@ -957,7 +964,7 @@ class Experiment:
             for i, category in enumerate(categories):
                 self.rect.pos = category_pos[i]
                 self.rect.draw()
-                cat = self.stim_dict.copy()[category]
+                cat = stimuli[category]
                 cat.pos = category_pos[i]
                 cat.draw()
             self.leftArrow.pos = cat_center_pos
@@ -969,9 +976,7 @@ class Experiment:
                 page=page, max_page=self.n_primitives,
                 continue_after_last_page=False)
 
-        # Save learning duration
-        learnDuration = LearnClock.getTime()
-        return learnDuration
+        return learn_clock.getTime()
 
     def PracticeCues(self, trials_prim_cue, mode="visual", cue_pos=[0, 5]):
         # create the trial handler
