@@ -403,14 +403,16 @@ class Experiment:
             width=self.bar_len,
             height=self.bar_height,
             pos=self.bar_pos,
-            fillColor=self.color_dict["light_grey"])
+            fillColor=self.color_dict["light_grey"],
+            autoDraw=True)
         self.progTest = visual.Rect(
             self.win,
             units="pix",
             width=0,
             height=self.bar_height,
             pos=self.bar_pos,
-            fillColor=self.color_dict["green"])
+            fillColor=self.color_dict["green"],
+            autoDraw=True)
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
 
