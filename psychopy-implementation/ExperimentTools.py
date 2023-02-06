@@ -1094,10 +1094,26 @@ class Experiment:
         # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
                 
     
+    def adaptiveCuePractice(self, trials_prim_cue, streak_length=5, goal_rt=2.0, mode="random"):
+        ''' Practice cues until for each map the last streak_length trials are correct and below the goal_rt'''
+        self.counter_dict = {map:0 for map in self.map_names}
+        start_width_initial = self.start_width # progbar
+        trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
+        out = []
+        
+        while not self.allMapsLearned(streak_length=streak_length):
+            trial = trials.next()
+            self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
+            self.updateCounterDict(trial, goal_rt=goal_rt)
+            out.append(trial)
+            
             if self.show_progress:
-                self.move_prog_bar(
-                    end_width=self.start_width + self.progbar_inc, wait_s=0)
-        return trials.trialList
+                progress_length = sum(self.counter_dict.values()) * self.progbar_inc
+                self.move_prog_bar(end_width=start_width_initial + progress_length, wait_s=0)
+        
+        return out
+    
+    # -------------------------------------------------------------------------
 
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
                      self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
