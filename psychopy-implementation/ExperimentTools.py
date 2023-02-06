@@ -983,9 +983,18 @@ class Experiment:
         trials = data.TrialHandler(
             trials_prim_cue, 1, method="sequential")
 
-        for trial in trials:
-            trial["start_time"] = self.exp_clock.getTime()
-            num_cr = len(trial.correct_resp)
+    def drawResponseOptions(self, stimuli, resp_options):
+        ''' Draw the response options on the screen'''
+        self.rect.lineColor = self.color_dict["dark_grey"]
+        for i, pos in enumerate(self.cuepractice_pos):
+                self.rect.pos = pos
+                self.rect.draw()
+                resp = stimuli[resp_options[i]]
+                resp.pos = pos
+                resp.draw()
+        self.win.flip(clearBuffer=False)
+    
+    
             testRespList = []
             testRTList = []
             testResp = ""
