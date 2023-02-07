@@ -816,22 +816,28 @@ class Experiment:
         core.wait(duration)
         return mode
 
-    def getIR(self, IRClock, min_s=0.1, max_s=10):
-        # get intermediate response
-        intermediateResp = None
-        core.wait(min_s)
-        while intermediateResp == None and IRClock.getTime() < max_s:
-            allKeys = event.waitKeys()
-            for thisKey in allKeys:
-                if thisKey in ["space"]:
-                    intermediateRT = IRClock.getTime()
-                    intermediateResp = 1
-                elif thisKey in ["escape"]:
+    def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=10):
+        ''' wait for intermediate response and return RT '''
+        core.wait(min_wait)
+        while True:
+            pressed = event.waitKeys(timeStamped=IRClock, maxWait=max_wait)            
+            
+            # case: intermediate response is timed but no response is given, yet
+            if pressed is None:
+                intermediateRT = max_wait
+                break
+            else:
+                thisKey, intermediateRT = pressed[0]      
+            
+            # case: valid response
+            if thisKey == "space":
+                break
+                
+            # case: abort
+            elif thisKey == "escape":
                     self.add2meta("t_abort", data.getDateStr())
                     core.quit()  # abort experiment
-            event.clearEvents()
-        if intermediateResp == None and IRClock.getTime() >= max_s:
-            intermediateRT = max_s
+        
         return intermediateRT
 
     def tDisplay(self, trial, duration=1, self_paced=False):
