@@ -511,18 +511,18 @@ class Experiment:
 
         # get response or wait or something in between
         if proceed_key == "/k":  # keypress
-            _, testResp = self.tTestresponse(
+            _, testResp = self.tTestResponse(
                 TestClock, ["left", "right"],
                 return_numeric=False)
         if proceed_key == "/m":  # meg keypress
-            _, testResp = self.tTestresponse(
+            _, testResp = self.tTestResponse(
                 TestClock, self.resp_keys_vpixx[-2:],
                 return_numeric=False)
         elif proceed_key == "/t":  # time
             core.wait(wait_s)
             testResp = "right"
         elif proceed_key == "/e":  # either
-            _, testResp = self.tTestresponse(
+            _, testResp = self.tTestResponse(
                 TestClock, ["left", "right"],
                 return_numeric=False,
                 max_wait=wait_s)
@@ -538,7 +538,7 @@ class Experiment:
             else:
                 self.nextPrompt.draw()
                 self.win.flip()
-                _, contResp = self.tTestresponse(TestClock, ["left", "right"],
+                _, contResp = self.tTestResponse(TestClock, ["left", "right"],
                                                  return_numeric=False)
                 if contResp == "right":
                     finished = True
@@ -698,7 +698,7 @@ class Experiment:
         trial["start_time"] = self.exp_clock.getTime()
         
         # Fixation Cross
-        self.tFixation()
+        self.drawFixation()
         self.win.flip()
         
         # Map Cue and Response Options
@@ -711,7 +711,7 @@ class Experiment:
         for correctResp in trial.correct_resp:
             if testResp == "NA":
                 continue
-            testRT, testResp = self.tTestresponse(core.Clock(), self.resp_keys)
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
             testRTList.append(testRT)
             testRespList.append(testResp)
             self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
@@ -725,7 +725,7 @@ class Experiment:
                 self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
                                     pos=self.cuepractice_pos[correctResp])
         
-        # Save data
+        # Save data and clear screen
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
@@ -771,10 +771,10 @@ class Experiment:
     
     
     ###########################################################################
-    # Normal Trials
+    # Normal Trials (methods prefaced with "t" may require response)
     ###########################################################################
     
-    def tFixation(self, duration=0.3, jitter=0.0):
+    def drawFixation(self, duration=0.3, jitter=0.0):
         if self.use_pp:
             self.send_trigger("fix")
         self.fixation.draw()
@@ -782,6 +782,7 @@ class Experiment:
         core.wait(duration + jitter)
 
     def setCue(self, key, mode="random"):
+        ''' return cue stimulus for a given mode '''
         # opt: randomize mode
         if mode == "random":
             if np.random.randint(0, 2) == 1:
@@ -795,9 +796,7 @@ class Experiment:
             cue = self.tcue_dict.copy()[key]
         return cue, mode
 
-    def tMapcue(self, trial, mode="random",
-                # with_background = False,  # would need flexible background
-                duration=0.5):
+    def drawCue(self, trial, mode="random", duration=0.5):
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
         n_cues = len(trial.map)
@@ -851,32 +850,30 @@ class Experiment:
         # flip
         self.win.flip()
         if self_paced:
-            intermediateRT = self.getIR(core.Clock())
+            intermediateRT = self.tIndermediateResponse(core.Clock())
         else:
             core.wait(duration)
             intermediateRT = duration
         return intermediateRT
 
-    def tEmpty(self, trial, IRClock):
+    def tEmptySquares(self, IRClock):
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
-        self.win_flip()
-        intermediateRT = self.getIR(IRClock)
+        self.win.flip()
+        intermediateRT = self.tIndermediateResponse(IRClock)
         return intermediateRT
 
     def tPause(self):
         self.draw_background()
         self.pauseClock.draw()
         self.pauseText.draw()
-        self.win_flip()
-        intermediateRT = self.getIR(core.Clock(), max_s=360)  # max 6 min break
-        self.win_flip()
+        self.win.flip()
+        intermediateRT = self.tIndermediateResponse(core.Clock(), max_wait=360)  # max 6 min break
+        self.win.flip()
         return intermediateRT
 
-    def tCount(self, trial, feedback=False, demonstration=False):
-        TestClock = core.Clock()
-        for inc in range(2 + feedback*1):
+    def drawCountTarget(self, stimulus):
             self.rect.pos = self.center_pos
             self.rect.size = self.center_size
             self.rect.draw()
@@ -968,7 +965,7 @@ class Experiment:
             # Second cycle: Get test response
             if inc == 1:
                 if not demonstration:
-                    testRT, testResp = self.tTestresponse(
+                    testRT, testResp = self.tTestResponse(
                         TestClock, self.resp_keys)
                 else:
                     badoptions = np.array(range(4))
@@ -1051,24 +1048,24 @@ class Experiment:
 
             # 1. Fixation
             if 1 in display_this:
-                self.tFixation(jitter=jitter[0])
+                self.drawFixation(jitter=jitter[0])
 
             # 2. Display Family
             if 2 in display_this:
-                displayRT = self.tDisplay(trial,
+                displayRT = self.tInput(trial, 
                                           duration=durations[1] + jitter[1],
                                           self_paced=self_paced)
 
             # 3. Map Cue
             if 3 in display_this:
-                self.tFixation()
-                cue_type = self.tMapcue(trial, mode=mode,
+                self.drawFixation()
+                cue_type = self.drawCue(trial, mode=mode,
                                         duration=durations[0] + jitter[2])
 
             if test:
                 # 4. Transformation Display
                 if 4 in display_this:
-                    intermediateRT = self.tEmpty(trial, core.Clock())
+                    intermediateRT = self.tEmptySquares(core.Clock())
 
                 # 5. Empty Display
                 if 5 in display_this:
