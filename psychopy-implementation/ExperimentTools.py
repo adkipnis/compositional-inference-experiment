@@ -780,14 +780,15 @@ class Experiment:
     ###########################################################################
     
     def drawFixation(self, duration=0.3):
-        if self.use_pp:
-            self.send_trigger("fix")
+        ''' draw fixation cross'''
         self.fixation.draw()
         self.win.flip()
+        if self.use_pp:
+            self.send_trigger("fix")
         core.wait(duration)
 
     def setCue(self, key, mode="random"):
-        ''' return cue stimulus for a given mode '''
+        ''' return cue stimulus for a given mode'''
         # opt: randomize mode
         if mode == "random":
             mode = np.random.choice(["visual", "textual"])
@@ -802,6 +803,7 @@ class Experiment:
         return cue, mode
 
     def drawCue(self, trial, mode="random", duration=0.5):
+        ''' draw cue(s) for a given trial, return the mode'''
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
         n_cues = len(trial.map)
@@ -822,7 +824,7 @@ class Experiment:
         return mode
 
     def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=10.0):
-        ''' wait for intermediate response and return RT '''
+        ''' wait for intermediate response and return RT'''
         core.wait(min_wait)
         while True:
             pressed = event.waitKeys(timeStamped=IRClock, maxWait=max_wait)            
@@ -872,6 +874,7 @@ class Experiment:
         return testRT, testResp
     
     def tInput(self, trial, duration=1, self_paced=False):
+        ''' draw input stimuli and wait for response if self_paced'''
         # Init
         stimuli = self.stim_dict.copy()
         
@@ -903,6 +906,7 @@ class Experiment:
         return intermediateRT
     
     def tEmptySquares(self, IRClock):
+        ''' draw empty squares and wait for response'''
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
@@ -911,6 +915,7 @@ class Experiment:
         return intermediateRT
 
     def tPause(self):
+        ''' draw pause screen and wait for response'''
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
@@ -922,6 +927,7 @@ class Experiment:
         return intermediateRT
 
     def drawCountTarget(self, stimulus):
+        ''' draw target stimulus for count test'''
         self.rect.pos = self.center_pos
         self.rect.size = self.center_size
         self.rect.draw()
@@ -931,6 +937,7 @@ class Experiment:
         self.win.flip(clearBuffer=False)
     
     def drawCountResponses(self):
+        ''' draw response options for count test'''
         self.rect.lineColor = self.color_dict["dark_grey"]
         for i, pos in enumerate(self.resp_pos):
             self.rect.pos = pos
@@ -941,7 +948,7 @@ class Experiment:
         self.win.flip(clearBuffer=False)
     
     def tCount(self, trial, feedback=False, demonstration=False):
-        ''' trial subroutine: count test '''
+        ''' wrapper for count test'''
         # Init
         stimuli = self.stim_dict.copy()
         corResp = trial.correct_resp
@@ -984,6 +991,7 @@ class Experiment:
         return testRT, testResp        
 
     def drawPositionTarget(self, target_idx):
+        ''' draw target stimulus for position test'''
         for i, pos in enumerate(self.rect_pos):
             self.rect.pos = pos
             self.rect.draw()
@@ -993,6 +1001,7 @@ class Experiment:
         self.win.flip(clearBuffer=False)
     
     def drawPositionResponses(self, stimuli, resp_options):
+        ''' draw response options for position test'''
         for i, pos in enumerate(self.resp_pos):
             self.rect.pos = pos
             self.rect.draw()
@@ -1002,7 +1011,7 @@ class Experiment:
         self.win.flip(clearBuffer=False)
     
     def tPosition(self, trial, feedback=False, demonstration=False):
-        ''' trial subroutine: position test '''
+        ''' wrapper for position test'''
         # Init
         stimuli = self.stim_dict.copy()
         corResp = trial.correct_resp
