@@ -785,15 +785,15 @@ class Experiment:
         ''' return cue stimulus for a given mode '''
         # opt: randomize mode
         if mode == "random":
-            if np.random.randint(0, 2) == 1:
-                mode = "textual"
-            else:
-                mode = "visual"
+            mode = np.random.choice(["visual", "textual"])
+        
         # draw from resp. dict
         if mode == "visual":
             cue = self.vcue_dict.copy()[key]
         elif mode == "textual":
             cue = self.tcue_dict.copy()[key]
+        else:
+            raise ValueError("Chosen cue mode not implemented.")
         return cue, mode
 
     def drawCue(self, trial, mode="random", duration=0.5):
