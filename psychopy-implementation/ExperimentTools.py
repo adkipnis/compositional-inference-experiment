@@ -1052,25 +1052,45 @@ class Experiment:
         core.wait(1)
         return testRT, testResp        
     
-    def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
-                     self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
-                     durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-                     test=True, feedback=False,
-                     pause_between_runs=True,
-                     instruction_trial=False):
+    def genericTrial(self, trial, mode="random", self_paced=True, feedback=True,
+                     fixation_duration=0.3, cue_duration=1.0):
+        ''' subroutine for generic trials'''
+        # Init
+        self.win.flip()
+        trial["start_time"] = self.exp_clock.getTime()
 
-        # create the trial handler and optionally timer
-        if i_step is None:
-            i_step = len(trial_df) // self.maxn_blocks
-        df = trial_df[i:i+i_step].copy()
-        trials = data.TrialHandler(
-            df, 1, method="sequential")
+        # Send trigger
+        if self.use_pp:
+            self.send_trigger("trial_start")
 
-        # prepare progress bar
-        n_trials = len(trials.trialList)
-        trial_number = 1
-        start_width_initial = self.start_width
+        # Fixation
+        self.drawFixation(duration=fixation_duration)
 
+        # Display input
+        display_rt = self.tInput(trial, self_paced=self_paced)
+
+        # Cue
+        self.drawFixation()
+        mode = self.drawCue(trial, mode=mode, duration=cue_duration)
+        
+        # Transformation display
+        inter_rt = self.tEmptySquares(core.Clock())
+        
+        # Empty display
+        self.win.flip()
+        core.wait(1)
+        
+        # Test display
+        testMethod = self.tCount if trial.test_type == "count" else self.tPosition
+        test_rt, test_resp = testMethod(trial, feedback=feedback)
+        
+        # Save data
+        trial["display_RT"] = display_rt
+        trial["inter_RT"] = inter_rt
+        trial["resp_RT"] = test_rt
+        trial["emp_resp"] = test_resp
+        trial["cue_type"] = mode
+        core.wait(1)
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
