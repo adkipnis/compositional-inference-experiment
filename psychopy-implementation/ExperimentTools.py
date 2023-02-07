@@ -1091,6 +1091,16 @@ class Experiment:
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
         core.wait(1)
+
+    def updateStreak(self, streak, isCorrect):
+        ''' update streak counter and progress bar during generic blocks'''
+        modifier = 1 if isCorrect else -1
+        streak += modifier
+        if self.show_progress:
+            end_width = self.start_width + modifier * self.progbar_inc
+            self.move_prog_bar(end_width=end_width, wait_s=0)
+        return streak
+    
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
