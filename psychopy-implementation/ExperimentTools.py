@@ -932,51 +932,46 @@ class Experiment:
                 resp.draw()
         self.win.flip(clearBuffer=False)
 
-            # First cycle: Display stimuli
-            if inc == 0:
+    def tCount(self, trial, feedback=False, demonstration=False):
+        ''' trial subroutine: count test '''
+        # Init
+        stimuli = self.stim_dict.copy()
+        
+        # Draw stimuli
+        self.drawCountTarget(stimuli[trial.target])
+        self.drawCountResponses()
+        
+        # Send trigger    
                 if self.use_pp:
                     self.send_trigger("count")
-                self.win_flip()
-                continue
 
-            # Second cycle: Get test response
-            if inc == 1:
+        # Get response
                 if not demonstration:
-                    testRT, testResp = self.tTestresponse(
-                        TestClock, self.resp_keys)
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
                 else:
+            # simulate incorrect response
                     badoptions = np.array(range(4))
                     badoptions = np.delete(badoptions, trial.correct_resp)
                     core.wait(1)
                     testRT, testResp = 0, badoptions[0]
 
-            # Third cycle: Feedback
-            # immedeate feedback
+        # Feedback
             if feedback:
-                if type(testResp) in [int, np.int64]:
-                    self.rect.pos = self.resp_pos[testResp]
-                    if trial.correct_resp == testResp:
-                        self.rect.lineColor = self.color_dict["green"]
-                    else:
-                        self.rect.lineColor = self.color_dict["red"]
-                    self.rect.draw()
-                    self.rect.lineColor = self.color_dict["dark_grey"]
-                    resp = self.count_dict[str(testResp)]
-                    resp.pos = self.resp_pos_num[testResp]
-                    resp.draw()
-                if inc == 1:
-                    self.win_flip()
-                    continue
-
+            # immediate
+            self.redrawAfterResponse(self.count_dict[str(testResp)], 
+                                     pos=self.resp_pos[testResp], # TODO num pos deviates from resp pos
+                                     isCorrect=trial.correct_resp == testResp,
+                                     isQuick=True)
                 # correct solution
                 if trial.correct_resp != testResp:
+                self.redrawFeedback(self.count_dict[str(trial.correct_resp)], 
+                                    pos=self.resp_pos[trial.correct_resp])
         
         # Clear screen
         self.win.flip()
                     core.wait(1)
-                    if inc == 2:
-                        self.win_flip()
         return testRT, testResp
+
 
     def tPosition(self, trial, feedback=False, demonstration=False):
         TestClock = core.Clock()
