@@ -769,8 +769,8 @@ class Experiment:
             out.append(trial)
             
             if self.show_progress:
-                progress_length = sum(self.counter_dict.values()) * self.progbar_inc
-                self.move_prog_bar(end_width=start_width_initial + progress_length, wait_s=0)
+                end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
+                self.move_prog_bar(end_width=end_width, wait_s=0)
                 
         return out
     
@@ -779,12 +779,12 @@ class Experiment:
     # Normal Trials (methods prefaced with "t" may require response)
     ###########################################################################
     
-    def drawFixation(self, duration=0.3, jitter=0.0):
+    def drawFixation(self, duration=0.3):
         if self.use_pp:
             self.send_trigger("fix")
         self.fixation.draw()
         self.win.flip()
-        core.wait(duration + jitter)
+        core.wait(duration)
 
     def setCue(self, key, mode="random"):
         ''' return cue stimulus for a given mode '''
@@ -821,7 +821,7 @@ class Experiment:
         core.wait(duration)
         return mode
 
-    def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=10):
+    def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=10.0):
         ''' wait for intermediate response and return RT '''
         core.wait(min_wait)
         while True:
@@ -916,6 +916,9 @@ class Experiment:
         self.win.flip()
         intermediateRT = self.tIndermediateResponse(core.Clock(), max_wait=360)  # max 6 min break
         self.win.flip()
+        core.wait(1)   
+        if self.use_pp:
+            self.send_trigger("run")
         return intermediateRT
 
     def drawCountTarget(self, stimulus):
