@@ -762,7 +762,7 @@ class Experiment:
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
         
-        while not self.allMapsLearned(streak_goal=streak_goal):
+        while not self.allMapsLearned(streak_goal=streak_goal) and not trials.finished:
             trial = trials.next()
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
             self.updateCounterDict(trial, goal_rt=goal_rt)
@@ -1101,7 +1101,8 @@ class Experiment:
             self.move_prog_bar(end_width=end_width, wait_s=0)
         return streak
     
-    def genericBlock(self, trial_df, streak_goal=30, mode="random", 
+    def genericBlock(self, trial_df, streak_goal=30, mode="random",
+                     fixation_duration=0.3, cue_duration=1.0,
                      self_paced=True, feedback=True, pause_between_runs=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         # Init
@@ -1115,18 +1116,21 @@ class Experiment:
                 self.send_trigger("run")      
         
         # Run trials until goal is reached
-        while streak < streak_goal:
+        while streak < streak_goal and not trials.finished:
             trial = trials.next()
-            self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback)
+            self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
+                              fixation_duration=fixation_duration + trial.jitter[0],
+                              cue_duration=cue_duration + trial.jitter[1])
             streak = self.updateStreak(streak, trial.correct_resp == trial.emp_resp)
-            out.append(trial)
             
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
                 self.tPause()
                 timer.reset()
+                trial["run_number"] = run_number
                 run_number += 1
-        
+
+            out.append(trial)
         return out
                 
      
