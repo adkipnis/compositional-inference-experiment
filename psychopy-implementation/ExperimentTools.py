@@ -737,10 +737,10 @@ class Experiment:
         self.win.flip()
         core.wait(2)
     
-    def allMapsLearned(self, streak_length=5):
+    def allMapsLearned(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
         for _map in self.map_names:
-            if self.counter_dict[_map] < streak_length:
+            if self.counter_dict[_map] < streak_goal:
                 return False
         return True 
     
@@ -755,14 +755,14 @@ class Experiment:
             self.counter_dict[trial.map[0]] += 1
         # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
     
-    def adaptiveCuePractice(self, trials_prim_cue, streak_length=5, goal_rt=2.0, mode="random"):
-        ''' Practice cues until for each map the last streak_length trials are correct and below the goal_rt'''
+    def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
+        ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
         self.counter_dict = {map:0 for map in self.map_names}
         start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
         
-        while not self.allMapsLearned(streak_length=streak_length):
+        while not self.allMapsLearned(streak_goal=streak_goal):
             trial = trials.next()
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
             self.updateCounterDict(trial, goal_rt=goal_rt)
@@ -1058,14 +1058,14 @@ class Experiment:
         # Init
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-
+        
         # Send trigger
         if self.use_pp:
             self.send_trigger("trial_start")
-
+        
         # Fixation
         self.drawFixation(duration=fixation_duration)
-
+            
         # Display input
         display_rt = self.tInput(trial, self_paced=self_paced)
 
@@ -1101,7 +1101,7 @@ class Experiment:
             self.move_prog_bar(end_width=end_width, wait_s=0)
         return streak
     
-    def genericBlock(self, trial_df, goal=30, mode="random", 
+    def genericBlock(self, trial_df, streak_goal=30, mode="random", 
                      self_paced=True, feedback=True, pause_between_runs=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         # Init
@@ -1112,24 +1112,24 @@ class Experiment:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
-                self.send_trigger("run")
-
+                self.send_trigger("run")      
+        
         # Run trials until goal is reached
-        while streak < goal:
+        while streak < streak_goal:
             trial = trials.next()
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback)
             streak = self.updateStreak(streak, trial.correct_resp == trial.emp_resp)
             out.append(trial)
-
+            
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
                 self.tPause()
                 timer.reset()
                 run_number += 1
-
+        
         return out
-
-
+                
+     
         
     
     # def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
