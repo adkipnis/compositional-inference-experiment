@@ -980,26 +980,23 @@ class Experiment:
                     core.wait(1)
         return testRT, testResp
 
-
-    def tPosition(self, trial, feedback=False, demonstration=False):
-        TestClock = core.Clock()
-        for inc in range(2 + feedback*1):
-            # position cues
-            for i in range(len(self.rect_pos)):
-                self.rect.pos = self.rect_pos[i]
-                if trial.target == i:
-                    self.qm.pos = self.rect_pos[i]
+    def drawPositionTarget(self, target_idx):
+        for i, pos in enumerate(self.rect_pos):
+            self.rect.pos = pos
                 self.rect.draw()
-                self.rect.lineColor = self.color_dict["dark_grey"]
+            if target_idx == i:
+                self.qm.pos = pos
             self.qm.draw()
+        self.win.flip(clearBuffer=False)
 
-            # response options
-            for i in range(len(self.resp_pos)):
-                self.rect.pos = self.resp_pos[i]
+    def drawPositionResponses(self, stimuli, resp_options):
+        for i, pos in enumerate(self.resp_pos):
+            self.rect.pos = pos
                 self.rect.draw()
-                resp = self.stim_dict.copy()[trial.resp_options[i]]
-                resp.pos = self.resp_pos[i]
+            resp = stimuli[resp_options[i]]
+            resp.pos = pos
                 resp.draw()
+        self.win.flip(clearBuffer=False)
 
             # First cycle: Display stimuli
             if inc == 0:
