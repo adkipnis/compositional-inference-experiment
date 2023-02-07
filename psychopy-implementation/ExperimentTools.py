@@ -880,9 +880,11 @@ class Experiment:
         for i in range(self.set_size):
             stim_name = trial.input_disp[i]
             if stim_name is not None:
-                stim = self.stim_dict.copy()[stim_name]
+                stim = stimuli[stim_name]
                 stim.pos = self.rect_pos[i]
                 stim.draw()
+        
+        # send trigger
         if self.use_pp:
             self.send_trigger("disp")
 
@@ -904,7 +906,6 @@ class Experiment:
         return intermediateRT
 
     def tPause(self):
-        self.draw_background()
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
@@ -916,17 +917,20 @@ class Experiment:
             self.rect.pos = self.center_pos
             self.rect.size = self.center_size
             self.rect.draw()
-            self.rect.size = self.normal_size
+        self.rect.size = self.normal_size #reset size
+        stimulus.pos = self.center_pos
+        stimulus.draw()
+        self.win.flip(clearBuffer=False)
+    
+    def drawCountResponses(self):
             self.rect.lineColor = self.color_dict["dark_grey"]
-            stim = self.stim_dict.copy()[trial.target]
-            stim.pos = self.center_pos
-            stim.draw()
-            for i in range(len(self.resp_pos)):
-                self.rect.pos = self.resp_pos[i]
+        for i, pos in enumerate(self.resp_pos):
+            self.rect.pos = pos
                 self.rect.draw()
                 resp = self.count_dict[str(i)]
                 resp.pos = self.resp_pos_num[i]
                 resp.draw()
+        self.win.flip(clearBuffer=False)
 
             # First cycle: Display stimuli
             if inc == 0:
