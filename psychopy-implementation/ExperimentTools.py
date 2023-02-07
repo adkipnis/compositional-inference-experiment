@@ -388,28 +388,17 @@ class Experiment:
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
 
-    def draw_background(self):
-        self.progBack.length = self.bar_len
-        self.progBack.draw()
-        self.progTest.draw()
-
-    def win_flip(self):
-        if self.show_progress:
-            self.draw_background()
-        self.win.flip()
-
-    def move_prog_bar_step(self, bar_width_step, win_flip=True):
+    def move_prog_bar_step(self, bar_width_step, flip_win=True):
         # incrementally increase the bar width
         self.progTest.width += bar_width_step
         # re-center it accordingly on X-coordinate
         self.progTest.pos[0] = self.left_corner + self.progTest.width/2
         self.progTest.pos = self.progTest.pos.tolist()
-        self.draw_background()
-        if win_flip:
-            self.win_flip()
+        if flip_win:
+            self.win.flip()
 
     def move_prog_bar(self, start_width=None, end_width=1.0,
-                      n_steps=20, wait_s=0.75, win_flip=True):
+                      n_steps=20, wait_s=0.75, flip_win=True):
         if start_width is None:
             start_width = self.start_width
 
@@ -421,25 +410,24 @@ class Experiment:
         bar_width_step = total_increment/n_steps
 
         # First display
-        self.draw_background()
-        if win_flip:
-            self.win_flip()
+        if flip_win:
+            self.win.flip()
             core.wait(wait_s)
 
         if end_width > start_width:
             # Growing
             while self.progTest.width < self.progBack.width * end_width:
-                self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
+                self.move_prog_bar_step(bar_width_step, flip_win=flip_win)
         else:
             # Waning
             while self.progTest.width > self.progBack.width * end_width:
-                self.move_prog_bar_step(bar_width_step, win_flip=win_flip)
+                self.move_prog_bar_step(bar_width_step, flip_win=flip_win)
 
         # Last bit for completion
         self.move_prog_bar_step(
             self.progBack.width * end_width - self.progTest.width,
-            win_flip=win_flip)
-        if win_flip:
+            flip_win=flip_win)
+        if flip_win:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
@@ -453,7 +441,7 @@ class Experiment:
             arg.pos = [0, 0]
             # arg.size = [10, 10]
             arg.draw()
-            self.win_flip()
+            self.win.flip()
             core.wait(0.2)
 
     def iTransmutableObjects(self, *args,):
@@ -475,7 +463,7 @@ class Experiment:
             stim = self.stim_dict.copy()[categories[i]]
             stim.pos = category_pos[i]
             stim.draw()
-        self.win_flip()
+        self.win.flip()
 
     def iSpellExample(self, displays):
         # Input Display
@@ -489,14 +477,14 @@ class Experiment:
                 stim.pos = rect_pos[j]
                 stim.draw()
             if i == 0:
-                self.win_flip()
+                self.win.flip()
                 core.wait(1)
                 continue
 
             cue = self.magicWand
             cue.draw()
             if i == 1:
-                self.win_flip()
+                self.win.flip()
                 core.wait(1)
 
         if len(displays) > 1:
@@ -510,7 +498,7 @@ class Experiment:
                 stim = self.stim_dict.copy()[displays[1][j]]
                 stim.pos = rect_pos[j]
                 stim.draw()
-            self.win_flip()
+            self.win.flip()
             core.wait(1)
     
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
@@ -549,7 +537,7 @@ class Experiment:
                 finished = True
             else:
                 self.nextPrompt.draw()
-                self.win_flip()
+                self.win.flip()
                 _, contResp = self.tTestresponse(TestClock, ["left", "right"],
                                                  return_numeric=False)
                 if contResp == "right":
@@ -578,8 +566,8 @@ class Experiment:
         finished = False
         Part = self.instructions[part_key]
         page = 0
-        self.win_flip()
-        self.win_flip()
+        self.win.flip()
+        self.win.flip()
         if log_duration:
             instructions_clock = core.Clock()
         while not finished:
@@ -587,7 +575,7 @@ class Experiment:
             if isinstance(page_content, str):
                 self.instruct_stim.text = page_content
                 self.instruct_stim.draw()
-                self.win_flip()
+                self.win.flip()
             elif isinstance(page_content, int):
                 special_displays[page_content](
                     args[page_content])
@@ -597,16 +585,16 @@ class Experiment:
                 if complex_displays[int(page_content)].__name__ in\
                         ["tPosition", "tCount"]:
                     if "feedback" not in kwargs[int(page_content)].keys():
-                        self.win_flip()
+                        self.win.flip()
                     elif not kwargs[int(page_content)]["feedback"]:
-                        self.win_flip()
+                        self.win.flip()
             page, finished = self.iNavigate(page=page, max_page=len(Part),
                                             proceed_key=proceed_key,
                                             wait_s=proceed_wait)
         if log_duration:
             duration = instructions_clock.getTime()
             self.add2meta(f"duration_{part_key}", duration)
-        self.win_flip()
+        self.win.flip()
         core.wait(loading_time)
 
     
@@ -619,7 +607,7 @@ class Experiment:
         ''' Interactive display for learning cues for all maps, return viewing duration '''
         
         # Init
-        self.win_flip()
+        self.win.flip()
         finished = False
         cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
@@ -648,7 +636,7 @@ class Experiment:
                 cat.draw()
             self.leftArrow.pos = cat_center_pos
             self.leftArrow.draw()
-            self.win_flip()
+            self.win.flip()
             core.wait(0.2)
 
             page, finished = self.iNavigate(
@@ -790,7 +778,7 @@ class Experiment:
         if self.use_pp:
             self.send_trigger("fix")
         self.fixation.draw()
-        self.win_flip()
+        self.win.flip()
         core.wait(duration + jitter)
 
     def setCue(self, key, mode="random"):
@@ -821,11 +809,7 @@ class Experiment:
                 cue.pos = self.center_pos
             cue.draw()
         if self.use_pp:
-            if mode == "visual":
-                self.send_trigger("vcue")
-            elif mode == "textual":
-                self.send_trigger("tcue")
-        self.win_flip()
+        self.win.flip()
         core.wait(duration)
         return mode
 
@@ -863,7 +847,9 @@ class Experiment:
                 stim.draw()
         if self.use_pp:
             self.send_trigger("disp")
-        self.win_flip()
+
+        # flip
+        self.win.flip()
         if self_paced:
             intermediateRT = self.getIR(core.Clock())
         else:
@@ -944,14 +930,9 @@ class Experiment:
 
                 # correct solution
                 if trial.correct_resp != testResp:
-                    corResp = trial.correct_resp
-                    self.rect.pos = self.resp_pos[corResp]
-                    self.rect.fillColor = self.color_dict["blue"]
-                    self.rect.draw()
-                    self.rect.fillColor = self.color_dict["light_grey"]
-                    resp = self.count_dict[str(corResp)]
-                    resp.pos = self.resp_pos_num[corResp]
-                    resp.draw()
+        
+        # Clear screen
+        self.win.flip()
                     core.wait(1)
                     if inc == 2:
                         self.win_flip()
@@ -981,7 +962,7 @@ class Experiment:
             if inc == 0:
                 if self.use_pp:
                     self.send_trigger("position")
-                self.win_flip()
+                self.win.flip()
                 continue
 
             # Second cycle: Get test response
@@ -1010,7 +991,7 @@ class Experiment:
                     resp.pos = self.resp_pos[testResp]
                     resp.draw()
                 if inc == 1:
-                    self.win_flip()
+                    self.win.flip()
                     continue
 
             # correct solution
@@ -1025,32 +1006,7 @@ class Experiment:
                     resp.draw()
                     core.wait(1)
                     if inc == 2:
-                        self.win_flip()
-        return testRT, testResp
-
-    def tTestresponse(self, TestClock, respKeys,
-                      return_numeric=True, max_wait=np.inf):
-        testResp, testRT, pressed = None, None, None
-        while testResp is None:
-            pressed = event.waitKeys(timeStamped=TestClock, maxWait=max_wait)
-            
-            # case: tTestresponse is timed but no response is given, yet 
-            if max_wait < np.inf and pressed is None:
-                break
-            else:
-                thisKey, testRT = pressed[0]
-                
-                # case: valid response
-                if thisKey in respKeys:
-                    testResp = respKeys.index(thisKey) if return_numeric else thisKey
-                # case: don't know
-                elif thisKey == "space":
-                    testResp = "NA"
-                # case: abort
-                elif thisKey == "escape":
-                    self.add2meta("t_abort", data.getDateStr())
-                    core.quit()  # abort experiment
-                    
+                        self.win.flip()
         return testRT, testResp
 
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
@@ -1088,7 +1044,7 @@ class Experiment:
         for trial in trials:
             if add_jitter:
                 jitter = trial.jitter
-            self.win_flip()
+            self.win.flip()
             trial["start_time"] = self.exp_clock.getTime()
             if self.use_pp:
                 self.send_trigger("trial")
@@ -1116,7 +1072,7 @@ class Experiment:
 
                 # 5. Empty Display
                 if 5 in display_this:
-                    self.win_flip()
+                    self.win.flip()
                     core.wait(durations[2])
 
                 # 6. Test Display
@@ -1142,8 +1098,8 @@ class Experiment:
                     end_width=self.start_width + self.progbar_inc, wait_s=0)
 
             if 7 in display_this:
-                self.win_flip()
-                self.win_flip()
+                self.win.flip()
+                self.win.flip()
                 core.wait(durations[4])
 
             if pause_between_runs:
