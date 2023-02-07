@@ -840,7 +840,36 @@ class Experiment:
         
         return intermediateRT
 
-    def tDisplay(self, trial, duration=1, self_paced=False):
+    def tTestResponse(self, TestClock, respKeys,
+                      return_numeric=True, max_wait=np.inf):
+        ''' wait for test response in respKeys and return RT and response'''
+        testResp, testRT, pressed = None, None, None
+        while testResp is None:
+            pressed = event.waitKeys(timeStamped=TestClock, maxWait=max_wait)
+            
+            # case: tTestResponse is timed but no response is given, yet 
+            if max_wait < np.inf and pressed is None:
+                break
+            else:
+                thisKey, testRT = pressed[0]
+                
+                # case: valid response
+                if thisKey in respKeys:
+                    testResp = respKeys.index(thisKey) if return_numeric else thisKey
+                # case: don't know
+                elif thisKey == "space":
+                    testResp = "NA"
+                # case: abort
+                elif thisKey == "escape":
+                    self.add2meta("t_abort", data.getDateStr())
+                    core.quit()  # abort experiment
+                    
+        return testRT, testResp
+    
+    def tInput(self, trial, duration=1, self_paced=False):
+        # Init
+        stimuli = self.stim_dict.copy()
+        
         # draw rectangles
         self.rect.size = self.normal_size
         for pos in self.rect_pos:
