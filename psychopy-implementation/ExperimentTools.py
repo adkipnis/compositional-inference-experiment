@@ -1101,92 +1101,142 @@ class Experiment:
             self.move_prog_bar(end_width=end_width, wait_s=0)
         return streak
     
+    def genericBlock(self, trial_df, goal=30, mode="random", 
+                     self_paced=True, feedback=True, pause_between_runs=True):
+        ''' generic block of trials, with streak goal and pause between runs'''
+        # Init
+        streak = 0
+        trials = data.TrialHandler(trial_df, 1, method="sequential")
+        out = []
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
                 self.send_trigger("run")
 
-        # check if jitter is specified
-        if "jitter" in trials.trialList[0]:
-            add_jitter = True
-        else:
-            jitter = [0.0, 0.0, 0.0]
-            add_jitter = False
+        # Run trials until goal is reached
+        while streak < goal:
+            trial = trials.next()
+            self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback)
+            streak = self.updateStreak(streak, trial.correct_resp == trial.emp_resp)
+            out.append(trial)
 
-        for trial in trials:
-            if add_jitter:
-                jitter = trial.jitter
-            self.win.flip()
-            trial["start_time"] = self.exp_clock.getTime()
-            if self.use_pp:
-                self.send_trigger("trial")
+            # Pause display between runs
+            if pause_between_runs and timer.getTime() <= 0:
+                self.tPause()
+                timer.reset()
+                run_number += 1
 
-            # 1. Fixation
-            if 1 in display_this:
-                self.drawFixation(jitter=jitter[0])
+        return out
 
-            # 2. Display Family
-            if 2 in display_this:
-                displayRT = self.tInput(trial, 
-                                        duration=durations[1] + jitter[1],
-                                        self_paced=self_paced)
 
-            # 3. Map Cue
-            if 3 in display_this:
-                self.drawFixation()
-                cue_type = self.drawCue(trial, mode=mode,
-                                        duration=durations[0] + jitter[2])
+        
+    
+    # def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
+    #                  self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
+    #                  durations=[1.0, 3.0, 0.6, 1.0, 0.7],
+    #                  test=True, feedback=False,
+    #                  pause_between_runs=True,
+    #                  instruction_trial=False):
 
-            if test:
-                # 4. Transformation Display
-                if 4 in display_this:
-                    intermediateRT = self.tEmptySquares(core.Clock())
+    #     # create the trial handler and optionally timer
+    #     if i_step is None:
+    #         i_step = len(trial_df) // self.maxn_blocks
+    #     df = trial_df[i:i+i_step].copy()
+    #     trials = data.TrialHandler(
+    #         df, 1, method="sequential")
 
-                # 5. Empty Display
-                if 5 in display_this:
-                    self.win.flip()
-                    core.wait(durations[2])
+    #     # prepare progress bar
+    #     n_trials = len(trials.trialList)
+    #     trial_number = 1
+    #     start_width_initial = self.start_width
 
-                # 6. Test Display
-                if 6 in display_this:
-                    if trial.test_type == "count":
-                        testRT, testResp = self.tCount(
-                            trial, feedback=feedback)
-                    elif trial.test_type == "position":
-                        testRT, testResp = self.tPosition(
-                            trial, feedback=feedback)
+    #     if pause_between_runs:
+    #         run_number = 1
+    #         timer = core.CountdownTimer(self.run_length)
+    #         if self.use_pp:
+    #             self.send_trigger("run")
 
-                    # Save data
-                    trial["run_number"] = run_number
-                    trial["display_RT"] = displayRT
-                    trial["inter_RT"] = intermediateRT
-                    trial["emp_resp"] = testResp
-                    trial["resp_RT"] = testRT
-                    trial["cue_type"] = cue_type
-                    core.wait(durations[3])
+    #     # check if jitter is specified
+    #     if "jitter" in trials.trialList[0]:
+    #         add_jitter = True
+    #     else:
+    #         jitter = [0.0, 0.0, 0.0]
+    #         add_jitter = False
 
-            if self.show_progress and not instruction_trial:
-                self.move_prog_bar(
-                    end_width=self.start_width + self.progbar_inc, wait_s=0)
+    #     for trial in trials:
+    #         if add_jitter:
+    #             jitter = trial.jitter
+    #         self.win.flip()
+    #         trial["start_time"] = self.exp_clock.getTime()
+    #         if self.use_pp:
+    #             self.send_trigger("trial")
 
-            if 7 in display_this:
-                self.win.flip()
-                self.win.flip()
-                core.wait(durations[4])
+    #         # 1. Fixation
+    #         if 1 in display_this:
+    #             self.drawFixation(jitter=jitter[0])
 
-            if pause_between_runs:
-                if timer.getTime() <= 0:
-                    # Pause Display
-                    self.tPause()
-                    core.wait(1)
-                    timer.reset()
-                    run_number += 1
-                    if self.use_pp:
-                        self.send_trigger("run")
+    #         # 2. Display Family
+    #         if 2 in display_this:
+    #             displayRT = self.tInput(trial, 
+    #                                     duration=durations[1] + jitter[1],
+    #                                     self_paced=self_paced)
 
-            trial_number += 1
-        return trials.trialList
+    #         # 3. Map Cue
+    #         if 3 in display_this:
+    #             self.drawFixation()
+    #             cue_type = self.drawCue(trial, mode=mode,
+    #                                     duration=durations[0] + jitter[2])
+
+    #         if test:
+    #             # 4. Transformation Display
+    #             if 4 in display_this:
+    #                 intermediateRT = self.tEmptySquares(core.Clock())
+
+    #             # 5. Empty Display
+    #             if 5 in display_this:
+    #                 self.win.flip()
+    #                 core.wait(durations[2])
+
+    #             # 6. Test Display
+    #             if 6 in display_this:
+    #                 if trial.test_type == "count":
+    #                     testRT, testResp = self.tCount(
+    #                         trial, feedback=feedback)
+    #                 elif trial.test_type == "position":
+    #                     testRT, testResp = self.tPosition(
+    #                         trial, feedback=feedback)
+
+    #                 # Save data
+    #                 trial["run_number"] = run_number
+    #                 trial["display_RT"] = displayRT
+    #                 trial["inter_RT"] = intermediateRT
+    #                 trial["emp_resp"] = testResp
+    #                 trial["resp_RT"] = testRT
+    #                 trial["cue_type"] = cue_type
+    #                 core.wait(durations[3])
+
+    #         if self.show_progress and not instruction_trial:
+    #             self.move_prog_bar(
+    #                 end_width=self.start_width + self.progbar_inc, wait_s=0)
+
+    #         if 7 in display_this:
+    #             self.win.flip()
+    #             self.win.flip()
+    #             core.wait(durations[4])
+
+    #         if pause_between_runs:
+    #             if timer.getTime() <= 0:
+    #                 # Pause Display
+    #                 self.tPause()
+    #                 core.wait(1)
+    #                 timer.reset()
+    #                 run_number += 1
+    #                 if self.use_pp:
+    #                     self.send_trigger("run")
+
+    #         trial_number += 1
+    #     return trials.trialList
     
     def TestPracticeLoop(self, trial_df,
                          min_acc=0.95,
