@@ -656,8 +656,11 @@ class Experiment:
                 resp.draw()
         self.win.flip(clearBuffer=False)
     
-    def redrawAfterResponse(self, stimulus, pos=(0,0), isCorrect=False, isQuick=False):
+    def redrawAfterResponse(self, stimulus, rectPos=(0,0), stimPos=None, isCorrect=False, isQuick=False):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
+        if stimPos is None:
+            stimPos = rectPos
+        
         # set informative border color
         if not isCorrect:
             lc = self.color_dict["red"]
@@ -668,23 +671,25 @@ class Experiment:
                     
         # redraw rectangle
         self.rect.lineColor = lc
-        self.rect.pos = pos
+        self.rect.pos = rectPos
         self.rect.draw()
         self.rect.lineColor = self.color_dict["dark_grey"] #reset
-        stimulus.pos = pos
+        stimulus.pos = stimPos
         stimulus.draw()
         self.win.flip(clearBuffer=False)
         
-    def redrawFeedback(self, stimulus, pos=(0,0)):
+    def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None):
         ''' Mark the correct response option as feedback '''
+        if stimPos is None:
+            stimPos = rectPos
         core.wait(1)
-        self.rect.pos = pos
+        self.rect.pos = rectPos
         self.rect.lineColor = self.color_dict["dark_blue"]
         self.rect.fillColor = self.color_dict["blue"]
         self.rect.draw()
         self.rect.lineColor = self.color_dict["dark_grey"] #reset
         self.rect.fillColor = self.color_dict["light_grey"] #reset
-        stimulus.pos = pos
+        stimulus.pos = stimPos
         stimulus.draw()
         self.win.flip(clearBuffer=False)
         
@@ -715,7 +720,7 @@ class Experiment:
             testRTList.append(testRT)
             testRespList.append(testResp)
             self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
-                                     pos=self.cuepractice_pos[testResp],
+                                     rectPos=self.cuepractice_pos[testResp],
                                      isCorrect=correctResp == testResp,
                                      isQuick=sum(testRTList) <= goal_rt)
         
@@ -723,7 +728,7 @@ class Experiment:
         if trial.correct_resp != testRespList:
             for correctResp in trial.correct_resp:
                 self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
-                                    pos=self.cuepractice_pos[correctResp])
+                                    rectPos=self.cuepractice_pos[correctResp])
         
         # Save data and clear screen
         trial["emp_resp"] = testRespList
@@ -936,6 +941,7 @@ class Experiment:
         ''' trial subroutine: count test '''
         # Init
         stimuli = self.stim_dict.copy()
+        corResp = trial.correct_resp
         
         # Draw stimuli
         self.drawCountTarget(stimuli[trial.target])
@@ -951,7 +957,7 @@ class Experiment:
                 else:
             # simulate incorrect response
                     badoptions = np.array(range(4))
-                    badoptions = np.delete(badoptions, trial.correct_resp)
+            badoptions = np.delete(badoptions, corResp)
                     core.wait(1)
                     testRT, testResp = 0, badoptions[0]
 
@@ -959,13 +965,15 @@ class Experiment:
             if feedback:
             # immediate
             self.redrawAfterResponse(self.count_dict[str(testResp)], 
-                                     pos=self.resp_pos[testResp], # TODO num pos deviates from resp pos
-                                     isCorrect=trial.correct_resp == testResp,
+                                     rectPos=self.resp_pos[testResp],
+                                     stimPos=self.resp_pos_num[testResp],
+                                     isCorrect=corResp == testResp,
                                      isQuick=True)
                 # correct solution
-                if trial.correct_resp != testResp:
-                self.redrawFeedback(self.count_dict[str(trial.correct_resp)], 
-                                    pos=self.resp_pos[trial.correct_resp])
+            if corResp != testResp:
+                self.redrawFeedback(self.count_dict[str(corResp)], 
+                                    rectPos=self.resp_pos[corResp],
+                                    stimPos=self.resp_pos_num[corResp])
         
         # Clear screen
         self.win.flip()
