@@ -800,14 +800,18 @@ class Experiment:
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
         n_cues = len(trial.map)
-        for i in range(n_cues):
-            cue, mode = self.setCue(trial.map[i], mode=mode)
-            if n_cues > 1:  # move first cue up and the third cue down 6 degrees
-                cue.pos = [sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
-            else:
-                cue.pos = self.center_pos
+        
+        # draw each cue
+        for i, _map in enumerate(trial.map):
+            cue, mode = self.setCue(_map, mode=mode)
+            cue.pos = self.center_pos if n_cues == 1 else [sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
             cue.draw()
+        
+        # send triggers            
         if self.use_pp:
+            self.send_trigger("vcue") if mode == "visual" else self.send_trigger("tcue")
+        
+        # flip
         self.win.flip()
         core.wait(duration)
         return mode
