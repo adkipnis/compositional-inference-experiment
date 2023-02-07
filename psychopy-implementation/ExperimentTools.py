@@ -771,7 +771,7 @@ class Experiment:
             if self.show_progress:
                 progress_length = sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=start_width_initial + progress_length, wait_s=0)
-        
+                
         return out
     
     
@@ -840,8 +840,8 @@ class Experiment:
                 
             # case: abort
             elif thisKey == "escape":
-                    self.add2meta("t_abort", data.getDateStr())
-                    core.quit()  # abort experiment
+                self.add2meta("t_abort", data.getDateStr())
+                core.quit()  # abort experiment
         
         return intermediateRT
 
@@ -901,7 +901,7 @@ class Experiment:
             core.wait(duration)
             intermediateRT = duration
         return intermediateRT
-
+    
     def tEmptySquares(self, IRClock):
         for pos in self.rect_pos:
             self.rect.pos = pos
@@ -919,24 +919,24 @@ class Experiment:
         return intermediateRT
 
     def drawCountTarget(self, stimulus):
-            self.rect.pos = self.center_pos
-            self.rect.size = self.center_size
-            self.rect.draw()
+        self.rect.pos = self.center_pos
+        self.rect.size = self.center_size
+        self.rect.draw()
         self.rect.size = self.normal_size #reset size
         stimulus.pos = self.center_pos
         stimulus.draw()
         self.win.flip(clearBuffer=False)
     
     def drawCountResponses(self):
-            self.rect.lineColor = self.color_dict["dark_grey"]
+        self.rect.lineColor = self.color_dict["dark_grey"]
         for i, pos in enumerate(self.resp_pos):
             self.rect.pos = pos
-                self.rect.draw()
-                resp = self.count_dict[str(i)]
-                resp.pos = self.resp_pos_num[i]
-                resp.draw()
+            self.rect.draw()
+            resp = self.count_dict[str(i)]
+            resp.pos = self.resp_pos_num[i]
+            resp.draw()
         self.win.flip(clearBuffer=False)
-
+    
     def tCount(self, trial, feedback=False, demonstration=False):
         ''' trial subroutine: count test '''
         # Init
@@ -948,28 +948,28 @@ class Experiment:
         self.drawCountResponses()
         
         # Send trigger    
-                if self.use_pp:
-                    self.send_trigger("count")
-
+        if self.use_pp:
+            self.send_trigger("count")
+        
         # Get response
-                if not demonstration:
+        if not demonstration:
             testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
-                else:
+        else:
             # simulate incorrect response
-                    badoptions = np.array(range(4))
+            badoptions = np.array(range(4))
             badoptions = np.delete(badoptions, corResp)
-                    core.wait(1)
-                    testRT, testResp = 0, badoptions[0]
+            core.wait(1)
+            testRT, testResp = 0, badoptions[0]
 
         # Feedback
-            if feedback:
+        if feedback:
             # immediate
             self.redrawAfterResponse(self.count_dict[str(testResp)], 
                                      rectPos=self.resp_pos[testResp],
                                      stimPos=self.resp_pos_num[testResp],
                                      isCorrect=corResp == testResp,
                                      isQuick=True)
-                # correct solution
+            # correct solution
             if corResp != testResp:
                 self.redrawFeedback(self.count_dict[str(corResp)], 
                                     rectPos=self.resp_pos[corResp],
@@ -977,78 +977,69 @@ class Experiment:
         
         # Clear screen
         self.win.flip()
-                    core.wait(1)
-        return testRT, testResp
+        core.wait(1)
+        return testRT, testResp        
 
     def drawPositionTarget(self, target_idx):
         for i, pos in enumerate(self.rect_pos):
             self.rect.pos = pos
-                self.rect.draw()
+            self.rect.draw()
             if target_idx == i:
                 self.qm.pos = pos
-            self.qm.draw()
+                self.qm.draw()
         self.win.flip(clearBuffer=False)
-
+    
     def drawPositionResponses(self, stimuli, resp_options):
         for i, pos in enumerate(self.resp_pos):
             self.rect.pos = pos
-                self.rect.draw()
+            self.rect.draw()
             resp = stimuli[resp_options[i]]
             resp.pos = pos
-                resp.draw()
+            resp.draw()
         self.win.flip(clearBuffer=False)
+    
+    def tPosition(self, trial, feedback=False, demonstration=False):
+        ''' trial subroutine: position test '''
+        # Init
+        stimuli = self.stim_dict.copy()
+        corResp = trial.correct_resp
 
-            # First cycle: Display stimuli
-            if inc == 0:
-                if self.use_pp:
-                    self.send_trigger("position")
-                self.win.flip()
-                continue
-
-            # Second cycle: Get test response
-            if inc == 1:
-                if not demonstration:
-                    testRT, testResp = self.tTestResponse(
-                        TestClock, self.resp_keys)
-                else:
-                    badoptions = np.array(range(4))
-                    badoptions = np.delete(badoptions, trial.correct_resp)
-                    core.wait(1)
-                    testRT, testResp = 0, badoptions[0]
-
-            # Third cycle: Feedback
-            # immedeate feedback
-            if feedback:
-                if type(testResp) in [int, np.int64]:
-                    self.rect.pos = self.resp_pos[testResp]
-                    if trial.correct_resp == testResp:
-                        self.rect.lineColor = self.color_dict["green"]
-                    else:
-                        self.rect.lineColor = self.color_dict["red"]
-                    self.rect.draw()
-                    self.rect.lineColor = self.color_dict["dark_grey"]
-                    resp = self.stim_dict.copy()[trial.resp_options[testResp]]
-                    resp.pos = self.resp_pos[testResp]
-                    resp.draw()
-                if inc == 1:
-                    self.win.flip()
-                    continue
-
+        # Draw stimuli
+        self.drawPositionTarget(trial.target)
+        self.drawPositionResponses(stimuli, trial.resp_options)
+        
+        # Send trigger
+        if self.use_pp:
+            self.send_trigger("position")
+        
+        # Get response
+        if not demonstration:
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
+        else:
+            # simulate incorrect response
+            badoptions = np.array(range(4))
+            badoptions = np.delete(badoptions, corResp)
+            core.wait(1)
+            testRT, testResp = 0, badoptions[0]
+        
+        # Feedback
+        if feedback:
+            # immediate
+            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]], 
+                                     rectPos=self.resp_pos[testResp],
+                                     isCorrect=corResp == testResp,
+                                     isQuick=True)
             # correct solution
-                if trial.correct_resp != testResp:
-                    corResp = trial.correct_resp
-                    self.rect.pos = self.resp_pos[corResp]
-                    self.rect.fillColor = self.color_dict["blue"]
-                    self.rect.draw()
-                    self.rect.fillColor = self.color_dict["light_grey"]
-                    resp = self.stim_dict.copy()[trial.resp_options[corResp]]
-                    resp.pos = self.resp_pos[corResp]
-                    resp.draw()
-                    core.wait(1)
-                    if inc == 2:
-                        self.win.flip()
-        return testRT, testResp
-
+            
+            if corResp != testResp:
+                self.redrawFeedback(stimuli[trial.resp_options[corResp]], 
+                                    rectPos=self.resp_pos[corResp])
+        
+        # Clear screen
+        self.win.flip()
+        core.wait(1)
+        return testRT, testResp        
+    
     def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
                      self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
                      durations=[1.0, 3.0, 0.6, 1.0, 0.7],
@@ -1096,8 +1087,8 @@ class Experiment:
             # 2. Display Family
             if 2 in display_this:
                 displayRT = self.tInput(trial, 
-                                          duration=durations[1] + jitter[1],
-                                          self_paced=self_paced)
+                                        duration=durations[1] + jitter[1],
+                                        self_paced=self_paced)
 
             # 3. Map Cue
             if 3 in display_this:
