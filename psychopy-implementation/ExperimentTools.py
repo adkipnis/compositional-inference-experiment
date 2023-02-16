@@ -505,6 +505,8 @@ class Experiment:
                   proceed_key="/k", wait_s=3):
 
         assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
+        left = "a"
+        right = "ö"
         finished = False
         testResp = None
         TestClock = core.Clock()
@@ -512,7 +514,7 @@ class Experiment:
         # get response or wait or something in between
         if proceed_key == "/k":  # keypress
             _, testResp = self.tTestResponse(
-                TestClock, ["left", "right"],
+                TestClock, [left, right],
                 return_numeric=False)
         if proceed_key == "/m":  # meg keypress
             _, testResp = self.tTestResponse(
@@ -523,14 +525,14 @@ class Experiment:
             testResp = "right"
         elif proceed_key == "/e":  # either
             _, testResp = self.tTestResponse(
-                TestClock, ["left", "right"],
+                TestClock, [left, right],
                 return_numeric=False,
                 max_wait=wait_s)
             if testResp is None:
-                testResp = "right"
+                testResp = right
 
         # Proceed accordingly
-        if testResp in ["right", self.resp_keys_vpixx[-1]]:
+        if testResp in [right, self.resp_keys_vpixx[-1]]:
             if page < max_page-1:
                 page += 1
             elif continue_after_last_page:
@@ -538,11 +540,11 @@ class Experiment:
             else:
                 self.nextPrompt.draw()
                 self.win.flip()
-                _, contResp = self.tTestResponse(TestClock, ["left", "right"],
+                _, contResp = self.tTestResponse(TestClock, [left, right],
                                                  return_numeric=False)
-                if contResp == "right":
+                if contResp == right:
                     finished = True
-        elif testResp in ["left", self.resp_keys_vpixx[-2]] and page > 0:
+        elif testResp in [left, self.resp_keys_vpixx[-2]] and page > 0:
             page -= 1
 
         return page, finished
