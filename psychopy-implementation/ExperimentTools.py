@@ -740,10 +740,10 @@ class Experiment:
         self.win.flip()
         core.wait(2)
     
-    def allMapsLearned(self, streak_goal=5):
+    def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
-        for _map in self.map_names:
-            if self.counter_dict[_map] < streak_goal:
+        for key in self.counter_dict:
+            if self.counter_dict[key] < streak_goal:
                 return False
         return True 
     
@@ -756,7 +756,6 @@ class Experiment:
             self.counter_dict[trial["map"][0]] = 0
         elif sum(trial["resp_RT"]) <= goal_rt:
             self.counter_dict[trial["map"][0]] += 1
-        # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
     
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
@@ -765,7 +764,7 @@ class Experiment:
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
         
-        while not self.allMapsLearned(streak_goal=streak_goal) and not trials.finished:
+        while not self.streakGoalReached(streak_goal=streak_goal) and not trials.finished:
             trial = trials.next()
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
             self.updateCounterDict(trial, goal_rt=goal_rt)
