@@ -170,22 +170,23 @@ Feedback1 = ["In this training run, your score was:",
              0, 
              "This is good, you are confident to continue..."]
 
-Intro = ["You are a magic novice, preparing for your Alteration studies.",
+Intro = [0, 
+         "You are a magic novice, preparing for your Alteration studies.",
          "As you may know, Alteration spells change the world around you.",
          "Luckily, you own a copy of the famous book series"\
              " 'Principles of Alteration Magic'...",
-         0,
-         "... famously written by Philbertine:",
          1,
-         "The introductory chapter\nlists the following beginner objects:",
+         "... famously written by Philbertine:",
          2,
+         "The introductory chapter\nlists the following beginner objects:",
+         3,
          "With the correct spell, each beginner object\ncan be transformed into "\
              "another beginner object!",
          "Here you see an example of such an Alteration spell:",
-         3,
+         4,
          "Note, that these spells have an area effect: If you cast it,"\
              " all susceptible objects will be transformed.",
-         4,
+         5,
          "Each spell has a specific name and symbol. Philbertine provides a"\
              " cheat-sheet for the " + str(nMaps) + " beginner spells.",
          "You need to spend some time to study them really well.",
