@@ -1263,12 +1263,8 @@ class Experiment:
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
 
-        self.df_out_3 = self.TestPracticeLoop(trials_test_1,
-                                              i_step=2 if self.test_mode else None,
-                                              min_acc=min_acc,
-                                              self_paced=True,
-                                              feedback=True,
-                                              pause_between_runs=True)
+        self.df_out_3 = self.adaptiveBlock(trials_test_1,
+                                           streak_goal=1 if self.test_mode else goal_streak)
 
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1281,12 +1277,8 @@ class Experiment:
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
 
-        self.df_out_4 = self.TestPracticeLoop(trials_test_2,
-                                              i_step=2 if self.test_mode else None,
-                                              min_acc=min_acc,
-                                              self_paced=True,
-                                              feedback=True,
-                                              pause_between_runs=True)
+        self.df_out_4 = self.adaptiveBlock(trials_test_2,
+                                           streak_goal=1 if self.test_mode else goal_streak)
 
         # Save test type data
         fname = self.writeFileName("testPractice")
