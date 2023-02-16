@@ -1351,7 +1351,7 @@ class Experiment:
                                 [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
                                 [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
-        # ''' --- 2. Learn Cues --------------------------------------------------------'''
+        ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Learn first cue type
         self.learnDuration_1 = self.learnCues()
         self.add2meta("learnDuration_1", self.learnDuration_1)
@@ -1360,10 +1360,10 @@ class Experiment:
         self.Instructions(part_key="Intermezzo1",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
-        self.df_out_1 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step=2 if self.test_mode else None,
-                                             mode=first_modality,
-                                             min_acc=min_acc)
+        self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
+                                                 streak_goal=1 if self.test_mode else 5,
+                                                 mode=first_modality)
+                                             
 
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
@@ -1374,11 +1374,9 @@ class Experiment:
         
 
         # Test second cue type
-        self.df_out_2 = self.CuePracticeLoop(self.trials_prim_cue,
-                                             i_step=2 if self.test_mode else None,
-                                             mode=second_modality,
-                                             i=len(self.df_out_1),
-                                             min_acc=min_acc)
+        self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
+                                                 streak_goal=1 if self.test_mode else 5,
+                                                 mode=second_modality)
 
         # Save cue memory data
         fname = self.writeFileName("cueMemory")
