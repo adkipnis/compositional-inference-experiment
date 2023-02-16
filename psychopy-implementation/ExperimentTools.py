@@ -1246,9 +1246,9 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.magicWand],
                           complex_displays=[self.genericTrial],
-                          kwargs=[{"trial": trials_test_1[0],
+                          kwargs=[{"trial": demoTrial1,
                                    "self_paced": False,
-                                   "skip_test": True,}],                          
+                                   "skip_test": True}],                          
                           loading_time=0)
 
         self.Instructions(part_key=first_test + "First",
@@ -1274,20 +1274,12 @@ class Experiment:
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]],
-                          complex_displays=[
-                              self.GenericBlock, tSecond, tSecond],
-                          kwargs=[{"trial_df": trials_test_2,
-                                   "display_this": [2, 3],
-                                   "durations": [0, 2, 0, 0, 0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False},
-                                  {"trial": demoTrial2,
-                                   "feedback": False,
-                                   "demonstration": True},
-                                  {"trial": demoTrial2,
-                                   "feedback": True,
-                                   "demonstration": True}])
+                          complex_displays=[self.genericTrial,
+                                            tSecond,
+                                            tSecond],
+                          kwargs=[{"trial": demoTrial2, "self_paced": False, "skip_test": True},
+                                  {"trial": demoTrial2, "duration": 0.0, "demonstration": True},
+                                  {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
 
         self.df_out_4 = self.TestPracticeLoop(trials_test_2,
                                               i_step=2 if self.test_mode else None,
