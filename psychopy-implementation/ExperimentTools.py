@@ -970,6 +970,7 @@ class Experiment:
             # simulate incorrect response
             badoptions = np.array(range(4))
             badoptions = np.delete(badoptions, corResp)
+            if feedback:
             core.wait(1)
             testRT, testResp = 0, badoptions[0]
 
@@ -1012,7 +1013,7 @@ class Experiment:
             resp.draw()
         self.win.flip(clearBuffer=False)
     
-    def tPosition(self, trial, feedback=False, demonstration=False):
+    def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0):
         ''' wrapper for position test'''
         # Init
         stimuli = self.stim_dict.copy()
@@ -1033,6 +1034,7 @@ class Experiment:
             # simulate incorrect response
             badoptions = np.array(range(4))
             badoptions = np.delete(badoptions, corResp)
+            if feedback:
             core.wait(1)
             testRT, testResp = 0, badoptions[0]
         
@@ -1051,7 +1053,7 @@ class Experiment:
         
         # Clear screen
         self.win.flip()
-        core.wait(1)
+        core.wait(duration)
         return testRT, testResp        
     
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
