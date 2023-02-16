@@ -1115,26 +1115,27 @@ class Experiment:
         elif correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
     
+    def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=1.0,
                      self_paced=True, feedback=True, pause_between_runs=True):
         ''' generic block of trials, with streak goal and pause between runs'''
-        # Init
-        streak = 0
+        self.counter_dict = {map:0 for map in self.map_names}
+        start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         out = []
+        
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
                 self.send_trigger("run")      
         
-        # Run trials until goal is reached
-        while streak < streak_goal and not trials.finished:
+        while not self.streakGoalReached(streak_goal=streak_goal) and not trials.finished:
             trial = trials.next()
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1])
-            streak = self.updateStreak(streak, trial["correct_resp"] == trial["emp_resp"])
+            self.updateCounterDictPM(trial, streak_goal=streak_goal)
             
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
@@ -1142,163 +1143,14 @@ class Experiment:
                 timer.reset()
                 trial["run_number"] = run_number
                 run_number += 1
-
             out.append(trial)
-        return out
                 
+            # Update progress bar
+            if self.show_progress:
+                end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
+                self.move_prog_bar(end_width=end_width, wait_s=0)
      
-        
-    
-    # def GenericBlock(self, trial_df, mode="random", i=0, i_step=None,
-    #                  self_paced=False, display_this=[1, 2, 3, 4, 5, 6, 7],
-    #                  durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-    #                  test=True, feedback=False,
-    #                  pause_between_runs=True,
-    #                  instruction_trial=False):
-
-    #     # create the trial handler and optionally timer
-    #     if i_step is None:
-    #         i_step = len(trial_df) // self.maxn_blocks
-    #     df = trial_df[i:i+i_step].copy()
-    #     trials = data.TrialHandler(
-    #         df, 1, method="sequential")
-
-    #     # prepare progress bar
-    #     n_trials = len(trials.trialList)
-    #     trial_number = 1
-    #     start_width_initial = self.start_width
-
-    #     if pause_between_runs:
-    #         run_number = 1
-    #         timer = core.CountdownTimer(self.run_length)
-    #         if self.use_pp:
-    #             self.send_trigger("run")
-
-    #     # check if jitter is specified
-    #     if "jitter" in trials.trialList[0]:
-    #         add_jitter = True
-    #     else:
-    #         jitter = [0.0, 0.0, 0.0]
-    #         add_jitter = False
-
-    #     for trial in trials:
-    #         if add_jitter:
-    #             jitter = trial.jitter
-    #         self.win.flip()
-    #         trial["start_time"] = self.exp_clock.getTime()
-    #         if self.use_pp:
-    #             self.send_trigger("trial")
-
-    #         # 1. Fixation
-    #         if 1 in display_this:
-    #             self.drawFixation(jitter=jitter[0])
-
-    #         # 2. Display Family
-    #         if 2 in display_this:
-    #             displayRT = self.tInput(trial, 
-    #                                     duration=durations[1] + jitter[1],
-    #                                     self_paced=self_paced)
-
-    #         # 3. Map Cue
-    #         if 3 in display_this:
-    #             self.drawFixation()
-    #             cue_type = self.drawCue(trial, mode=mode,
-    #                                     duration=durations[0] + jitter[2])
-
-    #         if test:
-    #             # 4. Transformation Display
-    #             if 4 in display_this:
-    #                 intermediateRT = self.tEmptySquares(core.Clock())
-
-    #             # 5. Empty Display
-    #             if 5 in display_this:
-    #                 self.win.flip()
-    #                 core.wait(durations[2])
-
-    #             # 6. Test Display
-    #             if 6 in display_this:
-    #                 if trial.test_type == "count":
-    #                     testRT, testResp = self.tCount(
-    #                         trial, feedback=feedback)
-    #                 elif trial.test_type == "position":
-    #                     testRT, testResp = self.tPosition(
-    #                         trial, feedback=feedback)
-
-    #                 # Save data
-    #                 trial["run_number"] = run_number
-    #                 trial["display_RT"] = displayRT
-    #                 trial["inter_RT"] = intermediateRT
-    #                 trial["emp_resp"] = testResp
-    #                 trial["resp_RT"] = testRT
-    #                 trial["cue_type"] = cue_type
-    #                 core.wait(durations[3])
-
-    #         if self.show_progress and not instruction_trial:
-    #             self.move_prog_bar(
-    #                 end_width=self.start_width + self.progbar_inc, wait_s=0)
-
-    #         if 7 in display_this:
-    #             self.win.flip()
-    #             self.win.flip()
-    #             core.wait(durations[4])
-
-    #         if pause_between_runs:
-    #             if timer.getTime() <= 0:
-    #                 # Pause Display
-    #                 self.tPause()
-    #                 core.wait(1)
-    #                 timer.reset()
-    #                 run_number += 1
-    #                 if self.use_pp:
-    #                     self.send_trigger("run")
-
-    #         trial_number += 1
-    #     return trials.trialList
-    
-    def TestPracticeLoop(self, trial_df,
-                         min_acc=0.95,
-                         mode="random",
-                         i=0,
-                         i_step=None,
-                         durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-                         test=True,
-                         feedback=False,
-                         self_paced=False,
-                         pause_between_runs=True):
-        mean_acc = 0.0
-        df_list = []
-        if i_step is None:
-            i_step = len(trial_df)//self.maxn_blocks
-        while mean_acc < min_acc:
-            start_width_initial = self.start_width
-            result = self.GenericBlock(trial_df, mode=mode, i=i, i_step=i_step,
-                                       durations=durations, test=test, feedback=feedback,
-                                       self_paced=self_paced,
-                                       pause_between_runs=pause_between_runs)
-            df_list.append(result)
-            errors = [trial["correct_resp"] == trial["emp_resp"]
-                      for trial in result]
-            mean_acc = np.mean(list(map(int, errors)))  # convert to integers
-
-            accPrompt = visual.TextStim(
-                self.win, text=str(np.round(mean_acc * 100)) + "%", height=2.5,
-                wrapWidth=30, font="Times New Roman",
-                color=self.color_dict["black"])
-
-            # repeat or wrap up
-            i += i_step if i < len(trial_df) else 0
-            if mean_acc < min_acc:
-                feedbacktype = "Feedback0Test"
-            else:
-                feedbacktype = "Feedback1"
-            self.Instructions(part_key=feedbacktype,
-                              special_displays=[self.iSingleImage],
-                              args=[accPrompt])
-            if mean_acc < min_acc:
-                # reset progress bar
-                self.move_prog_bar(end_width=start_width_initial)
-        df_out = [item for sublist in df_list for item in sublist]
-        return df_out
+        return out
 
         
     ###########################################################################
