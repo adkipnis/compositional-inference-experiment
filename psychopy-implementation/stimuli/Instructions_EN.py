@@ -261,6 +261,11 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                0,
                "The blue keys will correspond to your options\nfrom left to right.",
                "If you don't know the answer,\npress the (red) 'next' key.",
+               "There is a counter for each spell cue:",
+               "If you answer correctly within 2 seconds,\nthe counter will increase.",
+               "If your answer is correct but slow,\nthe counter will stay the same.",
+               "If you answer incorrectly,\nthe counter will drop to 0.",
+               "Your goal is to reach a counter of 5\nfor each spell cue.",
                "Place your fingers\non only the marked keys now.",
                "Ready?"]
     
