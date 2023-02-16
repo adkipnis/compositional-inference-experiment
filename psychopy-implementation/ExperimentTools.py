@@ -229,9 +229,8 @@ class Experiment:
 
         self.rect = visual.Rect(
             win=self.win,
-            units="deg",
-            width=6,
-            height=6,
+            width=self.normal_size[0],
+            height=self.normal_size[1],
             fillColor=self.color_dict["light_grey"],
             lineColor=self.color_dict["dark_grey"])
 
