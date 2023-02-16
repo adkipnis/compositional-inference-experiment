@@ -443,23 +443,24 @@ class Experiment:
             self.win.flip()
             core.wait(0.2)
 
-    def iTransmutableObjects(self, *args,):
-        categories = list(self.stim_dict.keys())
-        categories.sort()
-        n_cats = self.n_cats  # alternatively show all using len(categories)
+    def iTransmutableObjects(self, none):
+        stimuli = self.stim_dict.copy()
+        categories = sorted(list(stimuli.keys()))
+        n_cats = self.n_cats
+        
+        # determine positions        
         if n_cats > 4:
             dim = [2, np.ceil(n_cats/2)]
         else:
             dim = [1, n_cats]
-
         category_pos = rectangularGridPositions(
-            center_pos=[0, 0], h_dist=10, dim=dim)
+            center_pos=[0, 0], h_dist=8, dim=dim)
 
         # draw categories
         for i in range(n_cats):
             self.rect.pos = category_pos[i]
             self.rect.draw()
-            stim = self.stim_dict.copy()[categories[i]]
+            stim = stimuli[categories[i]]
             stim.pos = category_pos[i]
             stim.draw()
         self.win.flip()
