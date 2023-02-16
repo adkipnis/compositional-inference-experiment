@@ -714,27 +714,27 @@ class Experiment:
         self.win.flip()
         
         # Map Cue and Response Options
-        cue, cue_type = self.setCue(trial.map[0], mode=mode)
+        cue, cue_type = self.setCue(trial["map"][0], mode=mode)
         cue.pos = cue_pos
         cue.draw()
-        self.drawResponseOptions(stimuli, trial.resp_options)
+        self.drawResponseOptions(stimuli, trial["resp_options"])
         
         # Wait for response(s)
-        for correctResp in trial.correct_resp:
+        for correctResp in trial["correct_resp"]:
             if testResp == "NA":
                 continue
             testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
             testRTList.append(testRT)
             testRespList.append(testResp)
-            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]],
+            self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]],
                                      rectPos=self.cuepractice_pos[testResp],
                                      isCorrect=correctResp == testResp,
                                      isQuick=sum(testRTList) <= goal_rt)
         
         # Feedback (if incorrect)
-        if trial.correct_resp != testRespList:
-            for correctResp in trial.correct_resp:
-                self.redrawFeedback(stimuli[trial.resp_options[correctResp]],
+        if trial["correct_resp"] != testRespList:
+            for correctResp in trial["correct_resp"]:
+                self.redrawFeedback(stimuli[trial["resp_options"][correctResp]],
                                     rectPos=self.cuepractice_pos[correctResp])
         
         # Save data and clear screen
@@ -756,10 +756,10 @@ class Experiment:
             - reset counter if incorrect response
             - increase counter if quick correct response
         '''
-        if trial.correct_resp != trial.emp_resp: 
-            self.counter_dict[trial.map[0]] = 0
-        elif sum(trial.resp_RT) <= goal_rt:
-            self.counter_dict[trial.map[0]] += 1
+        if trial["correct_resp"] != trial["emp_resp"]: 
+            self.counter_dict[trial["map"][0]] = 0
+        elif sum(trial["resp_RT"]) <= goal_rt:
+            self.counter_dict[trial["map"][0]] += 1
         # print(f"Map: {trial.map[0]}, Counter: {self.counter_dict[trial.map[0]]}, RTs: {trial.resp_RT}")
     
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
@@ -813,10 +813,10 @@ class Experiment:
         ''' draw cue(s) for a given trial, return the mode'''
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
-        n_cues = len(trial.map)
+        n_cues = len(trial["map"])
         
         # draw each cue
-        for i, _map in enumerate(trial.map):
+        for i, _map in enumerate(trial["map"]):
             cue, mode = self.setCue(_map, mode=mode)
             cue.pos = self.center_pos if n_cues == 1 else [sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
             cue.draw()
@@ -893,7 +893,7 @@ class Experiment:
 
         # draw stimuli
         for i in range(self.set_size):
-            stim_name = trial.input_disp[i]
+            stim_name = trial["input_disp"][i]
             if stim_name is not None:
                 stim = stimuli[stim_name]
                 stim.pos = self.rect_pos[i]
@@ -958,10 +958,10 @@ class Experiment:
         ''' wrapper for count test'''
         # Init
         stimuli = self.stim_dict.copy()
-        corResp = trial.correct_resp
+        corResp = trial["correct_resp"]
         
         # Draw stimuli
-        self.drawCountTarget(stimuli[trial.target])
+        self.drawCountTarget(stimuli[trial["target"]])
         self.drawCountResponses()
         
         # Send trigger    
@@ -1021,11 +1021,11 @@ class Experiment:
         ''' wrapper for position test'''
         # Init
         stimuli = self.stim_dict.copy()
-        corResp = trial.correct_resp
+        corResp = trial["correct_resp"]
 
         # Draw stimuli
-        self.drawPositionTarget(trial.target)
-        self.drawPositionResponses(stimuli, trial.resp_options)
+        self.drawPositionTarget(trial["target"])
+        self.drawPositionResponses(stimuli, trial["resp_options"])
         
         # Send trigger
         if self.use_pp:
@@ -1044,14 +1044,14 @@ class Experiment:
         # Feedback
         if feedback:
             # immediate
-            self.redrawAfterResponse(stimuli[trial.resp_options[testResp]], 
+            self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
                                      rectPos=self.resp_pos[testResp],
                                      isCorrect=corResp == testResp,
                                      isQuick=True)
             # correct solution
             
             if corResp != testResp:
-                self.redrawFeedback(stimuli[trial.resp_options[corResp]], 
+                self.redrawFeedback(stimuli[trial["resp_options"][corResp]], 
                                     rectPos=self.resp_pos[corResp])
         
         # Clear screen
@@ -1088,7 +1088,7 @@ class Experiment:
         core.wait(1)
         
         # Test display
-        testMethod = self.tCount if trial.test_type == "count" else self.tPosition
+        testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
         test_rt, test_resp = testMethod(trial, feedback=feedback)
         
         # Save data
@@ -1128,7 +1128,7 @@ class Experiment:
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
                               fixation_duration=fixation_duration + trial.jitter[0],
                               cue_duration=cue_duration + trial.jitter[1])
-            streak = self.updateStreak(streak, trial.correct_resp == trial.emp_resp)
+            streak = self.updateStreak(streak, trial["correct_resp"] == trial["emp_resp"])
             
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
