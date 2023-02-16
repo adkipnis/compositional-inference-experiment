@@ -1102,16 +1102,19 @@ class Experiment:
         trial["cue_type"] = mode
         core.wait(1)
 
-    def updateStreak(self, streak, isCorrect):
-        ''' update streak counter and progress bar during generic blocks'''
-        modifier = 1 if isCorrect else -1
-        streak += modifier
-        if self.show_progress:
-            end_width = self.start_width + modifier * self.progbar_inc
-            self.move_prog_bar(end_width=end_width, wait_s=0)
-        return streak
+    def updateCounterDictPM(self, trial, streak_goal=10):
+        ''' Updates the counter dict for the adaptive generic blocks:
+            - increase counter if correct response if below streak goal
+            - decrease counter if incorrect response if above 0
+        '''
+        map_name = trial["map"][0]
+        correct = trial["correct_resp"] == trial["emp_resp"]
     
-    def genericBlock(self, trial_df, streak_goal=30, mode="random",
+        if correct and self.counter_dict[map_name] <= streak_goal: 
+            self.counter_dict[map_name] += 1
+        elif correct and self.counter_dict[map_name] > 0:
+            self.counter_dict[map_name] -= 1
+    
                      fixation_duration=0.3, cue_duration=1.0,
                      self_paced=True, feedback=True, pause_between_runs=True):
         ''' generic block of trials, with streak goal and pause between runs'''
