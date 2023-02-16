@@ -568,29 +568,34 @@ class Experiment:
         finished = False
         Part = self.instructions[part_key]
         page = 0
-        self.win.flip()
+        self.instruct_stim.font = font
+        self.instruct_stim.color = fontcolor
+        self.win.clearBuffer()
         self.win.flip()
         if log_duration:
             instructions_clock = core.Clock()
+        
+        # Navigate through instructions    
         while not finished:
             page_content, proceed_key, proceed_wait = Part[page]
+            
+            # draw page content
             if isinstance(page_content, str):
                 self.instruct_stim.text = page_content
                 self.instruct_stim.draw()
                 self.win.flip()
             elif isinstance(page_content, int):
-                special_displays[page_content](
-                    args[page_content])
+                idx = page_content
+                arg = args[idx]
+                special_displays[idx](arg)
             elif isinstance(page_content, float):
-                complex_displays[int(page_content)](
-                    **kwargs[int(page_content)])
-                if complex_displays[int(page_content)].__name__ in\
-                        ["tPosition", "tCount"]:
-                    if "feedback" not in kwargs[int(page_content)].keys():
-                        self.win.flip()
-                    elif not kwargs[int(page_content)]["feedback"]:
-                        self.win.flip()
-            page, finished = self.iNavigate(page=page, max_page=len(Part),
+                idx = int(page_content)
+                kwarg = kwargs[idx]
+                complex_displays[idx](**kwarg)
+            
+            # wait for response
+            page, finished = self.iNavigate(page=page,
+                                            max_page=len(Part),
                                             proceed_key=proceed_key,
                                             wait_s=proceed_wait)
         if log_duration:
