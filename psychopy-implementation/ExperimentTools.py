@@ -880,7 +880,7 @@ class Experiment:
                     
         return testRT, testResp
     
-    def tInput(self, trial, duration=1, self_paced=False):
+    def tInput(self, trial, duration=1.0, self_paced=False):
         ''' draw input stimuli and wait for response if self_paced'''
         # Init
         stimuli = self.stim_dict.copy()
@@ -954,7 +954,7 @@ class Experiment:
             resp.draw()
         self.win.flip(clearBuffer=False)
     
-    def tCount(self, trial, feedback=False, demonstration=False):
+    def tCount(self, trial, feedback=False, demonstration=False, duration=1.0):
         ''' wrapper for count test'''
         # Init
         stimuli = self.stim_dict.copy()
@@ -994,7 +994,7 @@ class Experiment:
         
         # Clear screen
         self.win.flip()
-        core.wait(1)
+        core.wait(duration)
         return testRT, testResp        
 
     def drawPositionTarget(self, target_idx):
