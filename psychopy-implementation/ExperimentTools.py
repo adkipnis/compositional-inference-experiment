@@ -466,37 +466,33 @@ class Experiment:
         self.win.flip()
 
     def iSpellExample(self, displays):
+        assert len(displays) == 2, "displays must be a list of two lists"
+        stimuli = self.stim_dict.copy()
+        rect_pos = circularGridPositions(
+            center_pos=[0,0], set_size=self.set_size, radius=7)
+        
         # Input Display
-        for i in range(2):
-            rect_pos = circularGridPositions(center_pos=[0, 0],
-                                             set_size=len(displays[0]), radius=8)
-            for j in range(len(displays[0])):
-                self.rect.pos = rect_pos[j]
+        for i, key in enumerate(displays[0]):
+            self.rect.pos = rect_pos[i]
                 self.rect.draw()
-                stim = self.stim_dict.copy()[displays[0][j]]
-                stim.pos = rect_pos[j]
+            stim = stimuli[key]
+            stim.pos = rect_pos[i]
                 stim.draw()
-            if i == 0:
-                self.win.flip()
+        self.win.flip(clearBuffer=False)
                 core.wait(1)
-                continue
 
+        # Let the magic happen
             cue = self.magicWand
             cue.draw()
-            if i == 1:
                 self.win.flip()
                 core.wait(1)
 
-        if len(displays) > 1:
             # Output Display
-            rect_pos = circularGridPositions(center_pos=[0, 0],
-                                             set_size=len(displays[1]),
-                                             radius=8)
-            for j in range(len(displays[1])):
-                self.rect.pos = rect_pos[j]
+        for i, key in enumerate(displays[1]):
+            self.rect.pos = rect_pos[i]
                 self.rect.draw()
-                stim = self.stim_dict.copy()[displays[1][j]]
-                stim.pos = rect_pos[j]
+            stim = stimuli[key]
+            stim.pos = rect_pos[i]
                 stim.draw()
             self.win.flip()
             core.wait(1)
