@@ -1059,7 +1059,7 @@ class Experiment:
         core.wait(1)
         return testRT, testResp        
     
-    def genericTrial(self, trial, mode="random", self_paced=True, feedback=True,
+    def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
                      fixation_duration=0.3, cue_duration=1.0):
         ''' subroutine for generic trials'''
         # Init
@@ -1079,6 +1079,12 @@ class Experiment:
         # Cue
         self.drawFixation()
         mode = self.drawCue(trial, mode=mode, duration=cue_duration)
+        
+        # End trial for demonstration purposes
+        if skip_test:
+            self.win.clearBuffer()
+            self.win.flip()
+            return
         
         # Transformation display
         inter_rt = self.tEmptySquares(core.Clock())
