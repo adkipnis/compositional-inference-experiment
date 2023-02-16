@@ -435,11 +435,11 @@ class Experiment:
     # Instructions
     ###########################################################################
     
-    def iSingleImage(self, *args):
-        for arg in args:
-            arg.pos = [0, 0]
-            # arg.size = [10, 10]
-            arg.draw()
+    def iSingleImage(self, img):
+        pos_tmp = img.pos
+        img.pos = [0, 0]
+        img.draw()
+        img.pos = pos_tmp
             self.win.flip()
             core.wait(0.2)
 
