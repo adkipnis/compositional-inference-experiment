@@ -1160,12 +1160,9 @@ class Experiment:
     def Session1(self):
         # init session variables
         self.win.mouseVisible = False
-        min_acc = 0.9
-
-        # number of trials: 2 * cue practice, 2 * test practice (based on i_step)
-        n_trials_total = (len(self.trials_prim_cue) +
-                          len(self.trials_prim_prac_p) +
-                          len(self.trials_prim_prac_c)) // self.maxn_blocks
+        goal_streak = 10 # per map
+        n_trials_total = (2 * self.n_primitives * goal_streak//2 + # cue practice
+                          2 * self.n_primitives * goal_streak) # test practice
         self.progbar_inc = 1/n_trials_total
 
         # Balance out which cue modality is learned first
@@ -1178,10 +1175,8 @@ class Experiment:
         second_test = "position" if id_is_odd else "count"
         tFirst = self.tCount if id_is_odd else self.tPosition
         tSecond = self.tPosition if id_is_odd else self.tCount
-        trials_test_1 = self.trials_prim_prac_c.copy(
-        ) if id_is_odd else self.trials_prim_prac_p.copy()
-        trials_test_2 = self.trials_prim_prac_p.copy(
-        ) if id_is_odd else self.trials_prim_prac_c.copy()
+        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
 
         # Get Demo trials
         demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
@@ -1224,7 +1219,7 @@ class Experiment:
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
-                                                 streak_goal=1 if self.test_mode else 5,
+                                                 streak_goal=1 if self.test_mode else goal_streak//2,
                                                  mode=first_modality)
                                              
 
@@ -1238,7 +1233,7 @@ class Experiment:
 
         # Test second cue type
         self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
-                                                 streak_goal=1 if self.test_mode else 5,
+                                                 streak_goal=1 if self.test_mode else goal_streak//2,
                                                  mode=second_modality)
 
         # Save cue memory data
