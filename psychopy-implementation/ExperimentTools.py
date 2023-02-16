@@ -1126,8 +1126,8 @@ class Experiment:
         while streak < streak_goal and not trials.finished:
             trial = trials.next()
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
-                              fixation_duration=fixation_duration + trial.jitter[0],
-                              cue_duration=cue_duration + trial.jitter[1])
+                              fixation_duration=fixation_duration + trial["jitter"][0],
+                              cue_duration=cue_duration + trial["jitter"][1])
             streak = self.updateStreak(streak, trial["correct_resp"] == trial["emp_resp"])
             
             # Pause display between runs
