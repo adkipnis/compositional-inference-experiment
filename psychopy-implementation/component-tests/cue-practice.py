@@ -11,14 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ExperimentTools import Experiment
 
 # Initialize
-Exp = Experiment()
-Exp.init_window(screen = 1, fullscr = False)
-Exp.dialogue_box(show = False, participant=1, session = "1")
-Exp.load_trials()
-Exp.render_visuals()
-Exp.init_progbar()
-Exp.win.mouseVisible = False
+exp = Experiment()
+exp.dialogue_box(show=True, participant=1, session=1,test_mode=False)
+exp.init_window(screen=0, fullscr=True)
+exp.load_trials()
+exp.render_visuals()
+exp.init_progbar()
 
 # Run Cue Practice Session task
-df_out = Exp.CuePracticeLoop(Exp.trials_prim_cue, "visual", "textual", i_step = 10)
-Exp.win.close()
+out = exp.adaptiveCuePractice(exp.trials_prim_cue, streak_goal=1, mode="visual")
+exp.win.close()
