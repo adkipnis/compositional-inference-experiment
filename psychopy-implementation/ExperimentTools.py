@@ -50,6 +50,7 @@ class Experiment:
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
         self.color_dict = {"light_grey": [0.7, 0.7, 0.7],
+                           "light_grey2": [0.6, 0.6, 0.6],
                            "mid_grey": [0.0, 0.0, 0.0],
                            "dark_grey": [-0.6, -0.6, -0.6],
                            "black": [-0.9, -0.9, -0.9],
@@ -358,7 +359,7 @@ class Experiment:
         with open(f"{self.meta_fname}.csv", "a") as f:
             f.write(f"{var},{val}\n")
             
-    def init_progbar(self, bar_len=None, bar_height=None):
+    def init_progbar(self, bar_len=None, bar_height=None, milestones=[0.25, 0.5, 0.75]):
         if bar_len is None:
             bar_len = self.win.size[0]
         if bar_height is None:
@@ -376,6 +377,16 @@ class Experiment:
             pos=self.bar_pos,
             fillColor=self.color_dict["light_grey"],
             autoDraw=True)
+        self.mileStones = []
+        for m in [m-0.5 for m in milestones]:
+            self.mileStones.append(visual.Rect(
+                self.win,
+                units="pix",
+                width=self.win.size[1]/256,
+                height=self.bar_height,
+                pos=[m*bar_len, self.bar_pos[1]],
+                fillColor=self.color_dict["light_grey2"],
+                autoDraw=True))
         self.progTest = visual.Rect(
             self.win,
             units="pix",
