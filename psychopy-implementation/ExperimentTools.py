@@ -738,6 +738,7 @@ class Experiment:
             testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
             testRTList.append(testRT)
             testRespList.append(testResp)
+            if testResp != "NA":
             self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]],
                                      rectPos=self.cuepractice_pos[testResp],
                                      isCorrect=correctResp == testResp,
