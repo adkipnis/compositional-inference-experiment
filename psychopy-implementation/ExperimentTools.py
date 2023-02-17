@@ -977,6 +977,7 @@ class Experiment:
         # Feedback
         if feedback:
             # immediate
+            if testResp != "NA":
             self.redrawAfterResponse(self.count_dict[str(testResp)], 
                                      rectPos=self.resp_pos[testResp],
                                      stimPos=self.resp_pos_num[testResp],
@@ -1041,12 +1042,12 @@ class Experiment:
         # Feedback
         if feedback:
             # immediate
+            if testResp != "NA":
             self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
                                      rectPos=self.resp_pos[testResp],
                                      isCorrect=corResp == testResp,
                                      isQuick=True)
             # correct solution
-            
             if corResp != testResp:
                 self.redrawFeedback(stimuli[trial["resp_options"][corResp]], 
                                     rectPos=self.resp_pos[corResp])
