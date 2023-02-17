@@ -402,7 +402,7 @@ class Experiment:
             autoDraw=True)
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
-
+                                         
     def move_prog_bar_step(self, bar_width_step, flip_win=True):
         # incrementally increase the bar width
         self.progTest.width += bar_width_step
@@ -456,8 +456,8 @@ class Experiment:
         img.pos = [0, 0]
         img.draw()
         img.pos = pos_tmp
-            self.win.flip()
-            core.wait(0.2)
+        self.win.flip()
+        core.wait(0.2)
 
     def iTransmutableObjects(self, none):
         stimuli = self.stim_dict.copy()
@@ -490,28 +490,28 @@ class Experiment:
         # Input Display
         for i, key in enumerate(displays[0]):
             self.rect.pos = rect_pos[i]
-                self.rect.draw()
+            self.rect.draw()
             stim = stimuli[key]
             stim.pos = rect_pos[i]
-                stim.draw()
+            stim.draw()
         self.win.flip(clearBuffer=False)
-                core.wait(1)
+        core.wait(1)
 
         # Let the magic happen
-            cue = self.magicWand
-            cue.draw()
-                self.win.flip()
-                core.wait(1)
+        cue = self.magicWand
+        cue.draw()
+        self.win.flip()
+        core.wait(1)
 
-            # Output Display
+        # Output Display
         for i, key in enumerate(displays[1]):
             self.rect.pos = rect_pos[i]
-                self.rect.draw()
+            self.rect.draw()
             stim = stimuli[key]
             stim.pos = rect_pos[i]
-                stim.draw()
-            self.win.flip()
-            core.wait(1)
+            stim.draw()
+        self.win.flip()
+        core.wait(1)
     
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
                   proceed_key="/k", wait_s=3):
@@ -739,10 +739,10 @@ class Experiment:
             testRTList.append(testRT)
             testRespList.append(testResp)
             if testResp != "NA":
-            self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]],
-                                     rectPos=self.cuepractice_pos[testResp],
-                                     isCorrect=correctResp == testResp,
-                                     isQuick=sum(testRTList) <= goal_rt)
+                self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]],
+                                        rectPos=self.cuepractice_pos[testResp],
+                                        isCorrect=correctResp == testResp,
+                                        isQuick=sum(testRTList) <= goal_rt)
         
         # Feedback (if incorrect)
         if trial["correct_resp"] != testRespList:
@@ -992,18 +992,18 @@ class Experiment:
             badoptions = np.array(range(4))
             badoptions = np.delete(badoptions, corResp)
             if feedback:
-            core.wait(1)
+                core.wait(1)
             testRT, testResp = 0, badoptions[0]
 
         # Feedback
         if feedback:
             # immediate
             if testResp != "NA":
-            self.redrawAfterResponse(self.count_dict[str(testResp)], 
-                                     rectPos=self.resp_pos[testResp],
-                                     stimPos=self.resp_pos_num[testResp],
-                                     isCorrect=corResp == testResp,
-                                     isQuick=True)
+                self.redrawAfterResponse(self.count_dict[str(testResp)], 
+                                        rectPos=self.resp_pos[testResp],
+                                        stimPos=self.resp_pos_num[testResp],
+                                        isCorrect=corResp == testResp,
+                                        isQuick=True)
             # correct solution
             if corResp != testResp:
                 self.redrawFeedback(self.count_dict[str(corResp)], 
@@ -1057,17 +1057,17 @@ class Experiment:
             badoptions = np.array(range(4))
             badoptions = np.delete(badoptions, corResp)
             if feedback:
-            core.wait(1)
+                core.wait(1)
             testRT, testResp = 0, badoptions[0]
         
         # Feedback
         if feedback:
             # immediate
             if testResp != "NA":
-            self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
-                                     rectPos=self.resp_pos[testResp],
-                                     isCorrect=corResp == testResp,
-                                     isQuick=True)
+                self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
+                                         rectPos=self.resp_pos[testResp],
+                                         isCorrect=corResp == testResp,
+                                         isQuick=True)
             # correct solution
             if corResp != testResp:
                 self.redrawFeedback(stimuli[trial["resp_options"][corResp]], 
@@ -1111,7 +1111,7 @@ class Experiment:
         # Empty display
         self.win.flip()
         core.wait(1)
-        
+                
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
         test_rt, test_resp = testMethod(trial, feedback=feedback)
@@ -1131,10 +1131,10 @@ class Experiment:
         '''
         map_name = trial["map"][0]
         correct = trial["correct_resp"] == trial["emp_resp"]
-    
+        
         if correct and self.counter_dict[map_name] <= streak_goal: 
             self.counter_dict[map_name] += 1
-        elif correct and self.counter_dict[map_name] > 0:
+        elif not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
@@ -1166,14 +1166,14 @@ class Experiment:
                 trial["run_number"] = run_number
                 run_number += 1
             out.append(trial)
-                
+
             # Update progress bar
             if self.show_progress:
                 end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-     
+        
         return out
-
+    
         
     ###########################################################################
     # Introduction Session
@@ -1191,7 +1191,7 @@ class Experiment:
         milestones = np.cumsum(n_trials)/n_total
         self.init_progbar(milestones=milestones[:-1])
         self.progbar_inc = 1/n_total
-
+        
         # Balance out which cue modality is learned first
         id_is_odd = int(self.expInfo["participant"]) % 2
         first_modality = "visual" if id_is_odd else "textual"
@@ -1294,10 +1294,9 @@ class Experiment:
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
 
-        # TODO add instructions for counter
         self.df_out_3 = self.adaptiveBlock(trials_test_1,
                                            streak_goal=1 if self.test_mode else goal_streak)
-
+        
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],

@@ -7,11 +7,10 @@ from ExperimentTools import Experiment
 
 # Initialize
 exp = Experiment()
-exp.dialogue_box(show=False, participant=1, session=1, test_mode=True)
+exp.dialogue_box(show=False, participant=1, session=1,test_mode=False)
 exp.init_window(screen=0, fullscr=False)
 exp.load_trials()
 exp.render_visuals()
-exp.init_progbar()
 
 # Start experiment
 if exp.expInfo['session'] in [1, 2]:
