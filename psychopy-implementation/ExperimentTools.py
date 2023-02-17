@@ -259,6 +259,14 @@ class Experiment:
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}leftArrow.png")[0])
 
+        self.magicBooks = visual.ImageStim(
+            self.win,
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0])
+        
+        self.magicChart = visual.ImageStim(
+            self.win,
+            image=glob.glob(f"{self.stim_dir}{os.sep}magicChart.png")[0])
+        
         self.magicWand = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0])
@@ -281,9 +289,6 @@ class Experiment:
             self.win, image=glob.glob(
                 f"{self.stim_dir}{os.sep}philbertine.png")[0])
 
-        self.magicBooks = visual.ImageStim(
-            self.win,
-            image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0])
 
         # Count responses
         self.count_dict = {
@@ -1233,8 +1238,10 @@ class Experiment:
 
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"]])
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoard4"],
+                                self.magicChart])
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
                                                  streak_goal=1 if self.test_mode else goal_streak//2,
                                                  mode=first_modality)
@@ -1269,8 +1276,10 @@ class Experiment:
                           loading_time=0)
 
         self.Instructions(part_key=first_test + "First",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"]],
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage],
+                          args=[self.magicChart,
+                                self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue,
                                             tFirst,
