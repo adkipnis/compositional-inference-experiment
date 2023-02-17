@@ -1173,9 +1173,14 @@ class Experiment:
         # init session variables
         self.win.mouseVisible = False
         goal_streak = 10 # per map
-        n_trials_total = (2 * self.n_primitives * goal_streak//2 + # cue practice
-                          2 * self.n_primitives * goal_streak) # test practice
-        self.progbar_inc = 1/n_trials_total
+        n_trials = [self.n_primitives * goal_streak//2, # cue practice
+                    self.n_primitives * goal_streak//2,
+                    self.n_primitives * goal_streak, # test practice
+                    self.n_primitives * goal_streak]
+        n_total = sum(n_trials)
+        milestones = np.cumsum(n_trials)/n_total
+        self.init_progbar(milestones=milestones[:-1])
+        self.progbar_inc = 1/n_total
 
         # Balance out which cue modality is learned first
         id_is_odd = int(self.expInfo["participant"]) % 2
