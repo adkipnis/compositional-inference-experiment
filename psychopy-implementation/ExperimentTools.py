@@ -764,15 +764,16 @@ class Experiment:
                 return False
         return True 
     
-    def updateCounterDict(self, trial, goal_rt=2.0):
+    def updateCounterDictPC(self, trial, streak_goal=5, goal_rt=2.0):
         ''' Updates the counter dict for the adaptive cue practice:
             - reset counter if incorrect response
             - increase counter if quick correct response
         '''
+        key = trial["map"][0]
         if trial["correct_resp"] != trial["emp_resp"]: 
-            self.counter_dict[trial["map"][0]] = 0
-        elif sum(trial["resp_RT"]) <= goal_rt:
-            self.counter_dict[trial["map"][0]] += 1
+            self.counter_dict[key] = 0
+        elif sum(trial["resp_RT"]) <= goal_rt and self.counter_dict[key] < streak_goal:
+            self.counter_dict[key] += 1
     
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
@@ -783,8 +784,11 @@ class Experiment:
         
         while not self.streakGoalReached(streak_goal=streak_goal) and not trials.finished:
             trial = trials.next()
+            # probabilistically skip if this cue has already been mastered
+            if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
+                continue
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
-            self.updateCounterDict(trial, goal_rt=goal_rt)
+            self.updateCounterDictPC(trial, streak_goal, goal_rt)
             out.append(trial)
             
             if self.show_progress:
