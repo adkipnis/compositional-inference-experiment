@@ -804,7 +804,7 @@ class Experiment:
             raise ValueError("Chosen cue mode not implemented.")
         return cue, mode
 
-    def drawCue(self, trial, mode="random", duration=0.5):
+    def drawCue(self, trial, mode="random", duration=0.3):
         ''' draw cue(s) for a given trial, return the mode'''
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
@@ -1057,7 +1057,7 @@ class Experiment:
         return testRT, testResp        
     
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
-                     fixation_duration=0.3, cue_duration=1.0):
+                     fixation_duration=0.3, cue_duration=0.3):
         ''' subroutine for generic trials'''
         # Init
         self.win.flip()
@@ -1116,7 +1116,7 @@ class Experiment:
             self.counter_dict[map_name] -= 1
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
-                     fixation_duration=0.3, cue_duration=1.0,
+                     fixation_duration=0.3, cue_duration=0.3,
                      self_paced=True, feedback=True, pause_between_runs=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         self.counter_dict = {map:0 for map in self.map_names}
@@ -1263,6 +1263,7 @@ class Experiment:
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
 
+        # TODO add instructions for counter
         self.df_out_3 = self.adaptiveBlock(trials_test_1,
                                            streak_goal=1 if self.test_mode else goal_streak)
 
