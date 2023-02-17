@@ -23,6 +23,7 @@ convert s_heart.png -scale 220x220 s_heart.png
 # rest
 convert leftArrow.png -scale 128x128 leftArrow.png
 convert magicWand.png -scale 200x200 magicWand.png
+convert magicChart.png -scale 256x256 magicChart.png
 convert pauseClock.png -scale 256x256 pauseClock.png
 convert magicBooks.png -scale 60% magicBooks.png
 
