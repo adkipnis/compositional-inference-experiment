@@ -1430,34 +1430,13 @@ class Experiment:
                                             self.iSingleImage],
                           args=[self.magicWand,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
-                          complex_displays=[self.GenericBlock,
-                                            self.GenericBlock,
-                                            self.GenericBlock],
-                          kwargs=[{"trial_df": self.trials_bin_MEG,
-                                   "display_this": [2],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                   "instruction_trial": True,
-                                   "i_step": 1,
-                                   "test": False},
-                                  {"trial_df": self.trials_bin_MEG,
-                                   "display_this": [3, 7],
-                                   "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
-                                   "instruction_trial": True,
-                                   "i_step": 1,
-                                   "test": False},
-                                  {"trial_df": self.trials_bin_MEG,
-                                   "display_this": [4],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                   "instruction_trial": True,
-                                   "i_step": 1,
-                                   "test": True}])
-        self.df_out_7 = self.TestPracticeLoop(self.trials_bin_MEG,
-                                               i_step=2 if self.test_mode else None,
-                                               min_acc=0.75,
-                                               durations=[1.5, 3.0, 0.6, 1.0, 0.7],
-                                               self_paced=True,
-                                               feedback=True,
-                                               pause_between_runs=True)
+                          complex_displays=[self.tInput,
+                                            self.drawCue],
+                          kwargs=[{"trial": demoBin, "duration": 0.0},
+                                  {"trial": demoBin, "duration": 0.0}])
+        self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
+                                           cue_duration=0.7, decrease=False,
+                                           streak_goal=1 if self.test_mode else goal_streak_b)                          
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
