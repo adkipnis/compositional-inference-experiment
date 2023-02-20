@@ -742,12 +742,20 @@ for i in range(first_participant, first_participant+n_participants):
         for prim in selection_prim:
             for pos in range(display_size):
                 for correct_resp in [0, 1, 2, 3]:
-                    output = prim[2]
+                    for applicable in [True, False]:
+                        if applicable:
+                            input, output = prim[0], prim[2]
+                        else:
+                            stim_tmp = stimuli.copy().tolist()
+                            stim_tmp.remove(prim[0])
+                            input = np.random.choice(stim_tmp)
+                            output = input
                     input_disp = [None] * display_size
-                    input_disp[pos] = prim[0]
+                        input_disp[pos] = input
                     output_disp = input_disp.copy()
                     output_disp[pos] = output
                     resp_options = np.random.permutation(stimuli)
+                        
                     # if the desired response is not at the correct location
                     # swap the two response options
                     if resp_options[correct_resp] != output:
@@ -759,6 +767,7 @@ for i in range(first_participant, first_participant+n_participants):
                              'input_disp': np.array(input_disp),
                              'output_disp': np.array(output_disp),
                              'map': [prim],
+                                'applicable': applicable,
                              'test_type': 'position',
                              'resp_options': resp_options,
                              'correct_resp': correct_resp,
