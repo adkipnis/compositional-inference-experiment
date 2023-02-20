@@ -1173,7 +1173,52 @@ class Experiment:
                 self.move_prog_bar(end_width=end_width, wait_s=0)
         
         return out
-    
+
+    def adaptiveDecoderBlock(self, trial_df,
+                             fixation_duration=0.3, cue_duration=0.3,
+                             pause_between_runs=True):
+        ''' block of decoder trials, enqueueing failed trials'''
+        start_width_initial = self.start_width # progbar
+        trials = data.TrialHandler(trial_df, 1, method="sequential")
+        failed = []
+        out = []
+        
+        if pause_between_runs:
+            run_number = 1
+            timer = core.CountdownTimer(self.run_length)
+            if self.use_pp:
+                self.send_trigger("run")      
+        
+        while not trials.finished:
+            trial = trials.next()
+            self.genericTrial(trial, self_paced=True, feedback=True,
+                              fixation_duration=fixation_duration + trial["jitter"][0],
+                              cue_duration=cue_duration + trial["jitter"][1])
+            
+            # Pause display between runs
+            if pause_between_runs and timer.getTime() <= 0:
+                self.tPause()
+                timer.reset()
+                trial["run_number"] = run_number
+                run_number += 1
+                
+            # Enqueue trial according to accuracy
+            if trial["applicable"] and trial["correct_resp"] == trial["emp_resp"]:
+                out.append(trial)
+            elif trial["applicable"]:
+                failed.append(trial)
+
+            # Restart failed trials
+            if trials.finished and len(failed) > 0:
+                trials = data.TrialHandler(failed, 1, method="random")
+                failed = []
+            
+            # Update progress bar
+            if self.show_progress:
+                end_width = start_width_initial + len(out) * self.progbar_inc
+                self.move_prog_bar(end_width=end_width, wait_s=0)
+            
+        return out
         
     ###########################################################################
     # Introduction Session
