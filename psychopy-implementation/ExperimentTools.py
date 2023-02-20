@@ -1410,42 +1410,17 @@ class Experiment:
                                             self.iSingleImage],
                           args=[self.magicWand,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
-                          complex_displays=[self.GenericBlock,
-                                            self.GenericBlock,
-                                            self.GenericBlock,
+                          complex_displays=[self.tInput,
+                                            self.drawCue,
                                             self.tCount,
                                             self.tPosition],
-                          kwargs=[{"trial_df": self.trials_prim_prac_c,
-                                   "display_this": [2],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False},
-                                  {"trial_df": self.trials_prim_prac_c,
-                                   "display_this": [3, 7],
-                                   "durations": [1.0, 0.0, 0.0, 0.0, 0.0],
-                                   "i_step": 1,
-                                   "instruction_trial": True,
-                                   "test": False},
-                                  {"trial_df": self.trials_prim_prac_c,
-                                   "display_this": [4],
-                                   "durations": [0.0, 0.0, 0.0, 0.0, 0.0],
-                                   "instruction_trial": True,
-                                   "i_step": 1,
-                                   "test": True},
-                                  {"trial": demoCount,
-                                   "feedback": False,
-                                   "demonstration": True},
-                                  {"trial": demoPosition,
-                                   "feedback": False,
-                                   "demonstration": True}])
-
-        self.df_out_6 = self.TestPracticeLoop(self.trials_prim_MEG,
-                                              i_step=2 if self.test_mode else None,
-                                              min_acc=min_acc,
-                                              durations=[1.0, 3.0, 0.6, 1.0, 0.7],
-                                              self_paced=True,
-                                              pause_between_runs=True)
+                          kwargs=[{"trial": demoCount, "duration": 0.0},
+                                  {"trial": demoCount, "duration": 0.0},
+                                  {"trial": demoCount, "duration": 0.0, "demonstration": True},
+                                  {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
+        
+        self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
+                                           streak_goal=1 if self.test_mode else goal_streak_p)
         fname = self.writeFileName("primitiveTrials")
         save_object(self.df_out_6, fname, ending='csv')
         
