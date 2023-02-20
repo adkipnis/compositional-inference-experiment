@@ -1124,7 +1124,7 @@ class Experiment:
         trial["cue_type"] = mode
         core.wait(1)
 
-    def updateCounterDictPM(self, trial, streak_goal=10):
+    def updateCounterDictPM(self, trial, streak_goal=10, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
             - decrease counter if incorrect response if above 0
@@ -1134,12 +1134,12 @@ class Experiment:
         
         if correct and self.counter_dict[map_name] <= streak_goal: 
             self.counter_dict[map_name] += 1
-        elif not correct and self.counter_dict[map_name] > 0:
+        elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=0.3,
-                     self_paced=True, feedback=True, pause_between_runs=True):
+                     self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         self.counter_dict = {map:0 for map in self.map_names}
         start_width_initial = self.start_width # progbar
@@ -1157,7 +1157,7 @@ class Experiment:
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1])
-            self.updateCounterDictPM(trial, streak_goal=streak_goal)
+            self.updateCounterDictPM(trial, streak_goal=streak_goal, decrease=decrease)
             
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
