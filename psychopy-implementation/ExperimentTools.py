@@ -1399,13 +1399,8 @@ class Experiment:
         self.Instructions(part_key="IntroMEG",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-
-        self.df_out_5 = self.TestPracticeLoop(self.trials_prim_dec,
-                                              i_step=2 if self.test_mode else None,
-                                              min_acc=min_acc,
-                                              test=True,
-                                              feedback=True,
-                                              self_paced=True)
+        
+        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec)
         fname = self.writeFileName("functionDecoder")
         save_object(self.df_out_5, fname, ending='csv')
 
