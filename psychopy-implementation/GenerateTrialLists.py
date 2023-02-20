@@ -750,33 +750,33 @@ for i in range(first_participant, first_participant+n_participants):
                             stim_tmp.remove(prim[0])
                             input = np.random.choice(stim_tmp)
                             output = input
-                    input_disp = [None] * display_size
+                        input_disp = [None] * display_size
                         input_disp[pos] = input
-                    output_disp = input_disp.copy()
-                    output_disp[pos] = output
-                    resp_options = np.random.permutation(stimuli)
+                        output_disp = input_disp.copy()
+                        output_disp[pos] = output
+                        resp_options = np.random.permutation(stimuli)
                         
-                    # if the desired response is not at the correct location
-                    # swap the two response options
-                    if resp_options[correct_resp] != output:
-                        idx = np.where(resp_options == output)[0][0]
-                        resp_options[idx] = resp_options[correct_resp]
-                        resp_options[correct_resp] = output
+                        # if the desired response is not at the correct location
+                        # swap the two response options
+                        if resp_options[correct_resp] != output:
+                            idx = np.where(resp_options == output)[0][0]
+                            resp_options[idx] = resp_options[correct_resp]
+                            resp_options[correct_resp] = output
 
-                    trial = {'trial_type': 'prim_decoder',
-                             'input_disp': np.array(input_disp),
-                             'output_disp': np.array(output_disp),
-                             'map': [prim],
+                        trial = {'trial_type': 'prim_decoder',
+                                'input_disp': np.array(input_disp),
+                                'output_disp': np.array(output_disp),
+                                'map': [prim],
                                 'applicable': applicable,
-                             'test_type': 'position',
-                             'resp_options': resp_options,
-                             'correct_resp': correct_resp,
-                             'target': pos,
-                             'map_type': 'primitive',
-                             'jitter': np.random.choice(
-                                 jitter_interval, 3, replace=True)/1000
-                             }
-                    df_list.append(trial)
+                                'test_type': 'position',
+                                'resp_options': resp_options,
+                                'correct_resp': correct_resp,
+                                'target': pos,
+                                'map_type': 'primitive',
+                                'jitter': np.random.choice(
+                                    jitter_interval, 3, replace=True)/1000
+                                }
+                        df_list.append(trial)
     trials_prim_decoder = np.random.permutation(df_list).tolist()
     fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_dec"
     if save_this:
