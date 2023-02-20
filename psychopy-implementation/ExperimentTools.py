@@ -1372,15 +1372,20 @@ class Experiment:
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
-        min_acc = 0.9
-        n_trials_total = (len(self.trials_prim_dec) +
-                          len(self.trials_prim_MEG) +
-                          len(self.trials_bin_MEG)) // self.maxn_blocks
-        self.progbar_inc = 1/n_trials_total
+        goal_streak_d = 16 # decoder
+        goal_streak_p = 30 # primitives
+        goal_streak_b = 15 # binaries
+        n_trials = [self.n_primitives * goal_streak_d,
+                    self.n_primitives * goal_streak_p,
+                    self.n_primitives * goal_streak_b]
+        n_total = sum(n_trials)
+        milestones = np.cumsum(n_trials)/n_total
+        self.init_progbar(milestones=milestones[:-1])
+        self.progbar_inc = 1/n_total
 
-        demoCounts = data.TrialHandler(self.trials_prim_prac_c[0:1], 1, method="sequential")
-        demoPositions = data.TrialHandler(self.trials_prim_prac_p[0:1], 1, method="sequential")
-        demoCount, demoPosition = demoCounts.trialList[0], demoPositions.trialList[0]
+        demoCount = data.TrialHandler(self.trials_prim_prac_c[:1], 1, method="sequential").trialList[0]
+        demoPosition = data.TrialHandler(self.trials_prim_prac_p[:1], 1, method="sequential").trialList[0]
+        demoBin = data.TrialHandler(self.trials_bin[:1], 1, method="sequential").trialList[0]
 
         ''' --- 1. Initial instructions and function decoder ------------------------'''
         # Navigation
