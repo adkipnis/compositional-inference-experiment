@@ -17,7 +17,8 @@ import numpy as np
 # ==============================================================================
 # User settings
 first_participant = 1
-n_participants = 10
+n_participants = 1
+verbose = False
 save_this = True
 ending = 'pkl'
 sep = '-'
@@ -36,7 +37,7 @@ n_exposure_loc_quick = round(n_exposure_loc * (1-percentage_catch))
 n_exposure_loc_catch = round(n_exposure_loc * percentage_catch)
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
-
+np.random.seed(1)
 
 # ==============================================================================
 # Directories
@@ -592,6 +593,10 @@ selection_prim_conj, comps_dict_binary_conj = gen_binary_compositions(
     sep=sep)
 selection_binary_conj = select_binary_compositions(comps_dict_binary_conj)
 
+if verbose:
+    print("Primitives:", selection_prim)
+    print("Binaries:", selection_binary)
+    
 # Localizer lists
 print("Generating localizer lists...")
 selection_prim_loc = np.tile(selection_prim, n_exposure_loc_quick)
@@ -610,6 +615,8 @@ vcue_list = [Path(fname).stem for fname in vcue_list]  # remove trunk
 stim_list = glob.glob(stim_dir + os.sep + "s_*.png")
 stim_list = [Path(fname).stem for fname in stim_list]
 
+
+
 for i in range(first_participant, first_participant+n_participants):
     print(f"Generating trial lists for participant {i}...")
     # Mappings between cues and stimuli
@@ -620,7 +627,12 @@ for i in range(first_participant, first_participant+n_participants):
     data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
     if save_this:
         save_object(data, fname, ending=ending)
-
+    
+    if verbose:
+        print("tcue_list:", tcue_list)
+        print("vcue_list:", vcue_list)
+        print("stim_list:", stim_list)
+        
     # 0. Practice blocks
     # Cue Memory
     df_list = []
@@ -633,6 +645,9 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(trials_prim_cue, fname, ending=ending)
 
+    if verbose:
+        print("prim cue trial:", trials_prim_cue[0])
+    
     # Test Practice: Count
     df_list = []
     for _ in range(maxn_repeats):
