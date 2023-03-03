@@ -18,7 +18,7 @@ import numpy as np
 # User settings
 first_participant = 1
 n_participants = 1
-verbose = False
+verbose = True
 save_this = True
 ending = 'pkl'
 sep = '-'
@@ -37,7 +37,6 @@ n_exposure_loc_quick = round(n_exposure_loc * (1-percentage_catch))
 n_exposure_loc_catch = round(n_exposure_loc * percentage_catch)
 stimuli = np.array(list(string.ascii_uppercase)[:n_stim])
 resp_list = list(range(4))
-np.random.seed(1)
 
 # ==============================================================================
 # Directories
@@ -577,21 +576,25 @@ selection_prim, comps_dict_binary = gen_binary_compositions(
     min_type=min_type,
     sd_max=0.5,
     sep=sep)
-
+    
 # Select binary maps such that the first primitive of only one second-only map
 # does not appear in other compositions
 selection_binary = select_binary_compositions(comps_dict_binary)
 
-
-# Generate structural conjugates for the selected binary maps (second draft)
-unique_prim_rest = np.setdiff1d(unique_prim, selection_prim)
-selection_prim_conj, comps_dict_binary_conj = gen_binary_compositions(
-    unique_prim_rest,
-    n_primitives=n_primitives,
-    min_type=min_type,
-    sd_max=0.5,
-    sep=sep)
-selection_binary_conj = select_binary_compositions(comps_dict_binary_conj)
+# # Generate structural conjugates for the selected binary maps (second draft)
+# unique_prim_rest = np.setdiff1d(unique_prim, selection_prim)
+# selection_prim_conj, comps_dict_binary_conj = gen_binary_compositions(
+#     unique_prim_rest,
+#     n_primitives=n_primitives,
+#     min_type=min_type,
+#     sd_max=0.5,
+#     sep=sep)
+# selection_binary_conj = select_binary_compositions(comps_dict_binary_conj)
+selection_prim = ['A-B', 'B-A', 'C-D']
+selection_binary = [['A-B', 'B-A'],
+                    ['B-A', 'A-B'],
+                    ['A-B', 'C-D'],
+                    ['C-D', 'B-A']]
 
 if verbose:
     print("Primitives:", selection_prim)
