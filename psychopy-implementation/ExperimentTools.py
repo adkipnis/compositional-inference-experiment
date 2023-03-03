@@ -86,7 +86,7 @@ class Experiment:
             dlg = gui.DlgFromDict(dictionary=expInfo,
                                   sortKeys=False,
                                   title=expName,
-                                  fixed=["dateStr", "psychopyVersion", "frameRate"])
+                                  fixed=["session", "dateStr", "psychopyVersion", "frameRate"])
             if not dlg.OK:
                 core.quit()
 
