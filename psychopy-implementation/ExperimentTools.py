@@ -1370,7 +1370,8 @@ class Experiment:
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
                                                  streak_goal=streak_goal//2,
                                                  mode=first_modality)
-                                             
+        fname = self.writeFileName("cueMemory"+first_modality.capitalize())
+        self.save_object(self.df_out_1, fname, ending='csv')
 
         # Learn second cue type
         self.Instructions(part_key="Intermezzo2",
@@ -1384,6 +1385,7 @@ class Experiment:
         self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
                                                  streak_goal=streak_goal//2,
                                                  mode=second_modality)
+        fname = self.writeFileName("cueMemory"+second_modality.capitalize())
         self.save_object(self.df_out_2, fname, ending='csv')
 
         ''' --- 3. Test Types --------------------------------------------------------'''
@@ -1396,7 +1398,6 @@ class Experiment:
                                    "self_paced": False,
                                    "skip_test": True}],                          
                           loading_time=0)
-
         self.Instructions(part_key=first_test + "First",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage],
@@ -1410,9 +1411,10 @@ class Experiment:
                                   {"trial": demoTrial1, "duration": 0.0},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
-
         self.df_out_3 = self.adaptiveBlock(trials_test_1,
                                            streak_goal=streak_goal)
+        fname = self.writeFileName("testPractice"+first_test.capitalize())
+        self.save_object(self.df_out_3, fname, ending='csv')
         
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1424,9 +1426,9 @@ class Experiment:
                           kwargs=[{"trial": demoTrial2, "self_paced": False, "skip_test": True},
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True},
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
-
         self.df_out_4 = self.adaptiveBlock(trials_test_2,
                                            streak_goal=streak_goal)
+        fname = self.writeFileName("testPractice"+second_test.capitalize())
         self.save_object(self.df_out_4, fname, ending='csv')
 
         # Wrap up
