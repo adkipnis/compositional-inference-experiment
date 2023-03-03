@@ -15,7 +15,7 @@ import numpy as np
 
 # Initialize
 exp = Experiment()
-exp.dialogue_box(show=False, participant=1, session=1,test_mode=False)
+exp.dialogue_box(show=True, participant=1, session=1, test_mode=False)
 exp.init_window(screen=0, fullscr=True)
 exp.load_trials()
 exp.render_visuals()
@@ -25,11 +25,11 @@ exp.init_progbar()
 def Session1(self):
     # init session variables
     self.win.mouseVisible = False
-    goal_streak = 10 # per map
-    n_trials = [self.n_primitives * goal_streak//2, # cue practice
-                self.n_primitives * goal_streak//2,
-                self.n_primitives * goal_streak, # test practice
-                self.n_primitives * goal_streak]
+    streak_goal = 2 if self.test_mode else 10 # per map
+    n_trials = [self.n_primitives * streak_goal//2, # cue practice
+                self.n_primitives * streak_goal//2,
+                self.n_primitives * streak_goal, # test practice
+                self.n_primitives * streak_goal]
     n_total = sum(n_trials)
     milestones = np.cumsum(n_trials)/n_total
     self.init_progbar(milestones=milestones[:-1])
@@ -54,46 +54,47 @@ def Session1(self):
     demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
     print("Starting Session 1.")
 
-    # ''' --- 1. Initial instructions ---------------------------------------------'''
-    # # Navigation
-    # self.Instructions(part_key="Navigation1",
-    #                     special_displays=[self.iSingleImage,
-    #                                     self.iSingleImage],
-    #                     args=[self.keyboard_dict["keyBoardArrows"],
-    #                         self.keyboard_dict["keyBoardEsc"]],
-    #                     font="mono",
-    #                     fontcolor=self.color_dict["mid_grey"])
+    ''' --- 1. Initial instructions ---------------------------------------------'''
+    # Navigation
+    self.Instructions(part_key="Navigation1",
+                        special_displays=[self.iSingleImage,
+                                        self.iSingleImage],
+                        args=[self.keyboard_dict["keyBoardArrows"],
+                            self.keyboard_dict["keyBoardEsc"]],
+                        font="mono",
+                        fontcolor=self.color_dict["mid_grey"])
 
-    # # Introduction
-    # self.Instructions(part_key="Intro",
-    #                     special_displays=[self.iSingleImage,
-    #                                     self.iSingleImage,
-    #                                     self.iSingleImage,
-    #                                     self.iTransmutableObjects,
-    #                                     self.iSpellExample,
-    #                                     self.iSpellExample],
-    #                     args=[self.magicWand,
-    #                         self.magicBooks,
-    #                         self.philbertine,
-    #                         None,
-    #                         [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
-    #                         [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
-    #  
-    # ''' --- 2. Learn Cues --------------------------------------------------------'''
-    # # Learn first cue type
-    # self.learnDuration_1 = self.learnCues()
-    # self.add2meta("learnDuration_1", self.learnDuration_1)
+    # Introduction
+    self.Instructions(part_key="Intro",
+                        special_displays=[self.iSingleImage,
+                                        self.iSingleImage,
+                                        self.iSingleImage,
+                                        self.iTransmutableObjects,
+                                        self.iSpellExample,
+                                        self.iSpellExample],
+                        args=[self.magicWand,
+                            self.magicBooks,
+                            self.philbertine,
+                            None,
+                            [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
+                            [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
-    # # Test first cue type
-    # self.Instructions(part_key="Intermezzo1",
-    #                     special_displays=[self.iSingleImage,
-    #                                     self.iSingleImage],
-    #                     args=[self.keyboard_dict["keyBoard4"],
-    #                           self.magicChart])
+    ''' --- 2. Learn Cues --------------------------------------------------------'''
+    # Learn first cue type
+    self.learnDuration_1 = self.learnCues()
+    self.add2meta("learnDuration_1", self.learnDuration_1)
+
+    # Test first cue type
+    self.Instructions(part_key="Intermezzo1",
+                        special_displays=[self.iSingleImage,
+                                        self.iSingleImage],
+                        args=[self.keyboard_dict["keyBoard4"],
+                            self.magicChart])
     self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
-                                                streak_goal=1 if self.test_mode else goal_streak//2,
+                                                streak_goal=streak_goal//2,
                                                 mode=first_modality)
-                                            
+    fname = self.writeFileName("cueMemory"+first_modality.capitalize())
+    self.save_object(self.df_out_1, fname, ending='csv')
 
     # Learn second cue type
     self.Instructions(part_key="Intermezzo2",
@@ -105,12 +106,10 @@ def Session1(self):
 
     # Test second cue type
     self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
-                                                streak_goal=1 if self.test_mode else goal_streak//2,
+                                                streak_goal=streak_goal//2,
                                                 mode=second_modality)
-
-    # Save cue memory data
-    fname = self.writeFileName("cueMemory")
-    save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+    fname = self.writeFileName("cueMemory"+second_modality.capitalize())
+    self.save_object(self.df_out_2, fname, ending='csv')
 
     ''' --- 3. Test Types --------------------------------------------------------'''
     # First Test-Type
@@ -122,7 +121,6 @@ def Session1(self):
                                 "self_paced": False,
                                 "skip_test": True}],                          
                         loading_time=0)
-
     self.Instructions(part_key=first_test + "First",
                         special_displays=[self.iSingleImage,
                                         self.iSingleImage],
@@ -136,9 +134,10 @@ def Session1(self):
                                 {"trial": demoTrial1, "duration": 0.0},
                                 {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
                                 {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
-
     self.df_out_3 = self.adaptiveBlock(trials_test_1,
-                                        streak_goal=1 if self.test_mode else goal_streak)
+                                        streak_goal=streak_goal)
+    fname = self.writeFileName("testPractice"+first_test.capitalize())
+    self.save_object(self.df_out_3, fname, ending='csv')
     
     # Second Test-Type
     self.Instructions(part_key=second_test + "Second",
@@ -150,19 +149,15 @@ def Session1(self):
                         kwargs=[{"trial": demoTrial2, "self_paced": False, "skip_test": True},
                                 {"trial": demoTrial2, "duration": 0.0, "demonstration": True},
                                 {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
-
     self.df_out_4 = self.adaptiveBlock(trials_test_2,
-                                        streak_goal=1 if self.test_mode else goal_streak)
-
-    # Save test type data
-    fname = self.writeFileName("testPractice")
-    save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
+                                        streak_goal=streak_goal)
+    fname = self.writeFileName("testPractice"+second_test.capitalize())
+    self.save_object(self.df_out_4, fname, ending='csv')
 
     # Wrap up
     self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
     self.Instructions(part_key="Bye")
     self.add2meta("t_end", data.getDateStr())
     self.win.close()
-
 Session1(exp)
 exp.win.close()
