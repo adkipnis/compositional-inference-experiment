@@ -1302,11 +1302,11 @@ class Experiment:
     def Session1(self):
         # init session variables
         self.win.mouseVisible = False
-        goal_streak = 10 # per map
-        n_trials = [self.n_primitives * goal_streak//2, # cue practice
-                    self.n_primitives * goal_streak//2,
-                    self.n_primitives * goal_streak, # test practice
-                    self.n_primitives * goal_streak]
+        streak_goal = 2 if self.test_mode else 10 # per map
+        n_trials = [self.n_primitives * streak_goal//2, # cue practice
+                    self.n_primitives * streak_goal//2,
+                    self.n_primitives * streak_goal, # test practice
+                    self.n_primitives * streak_goal]
         n_total = sum(n_trials)
         milestones = np.cumsum(n_trials)/n_total
         self.init_progbar(milestones=milestones[:-1])
@@ -1368,7 +1368,7 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoard4"],
                                 self.magicChart])
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
-                                                 streak_goal=1 if self.test_mode else goal_streak//2,
+                                                 streak_goal=streak_goal//2,
                                                  mode=first_modality)
                                              
 
@@ -1382,7 +1382,7 @@ class Experiment:
 
         # Test second cue type
         self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
-                                                 streak_goal=1 if self.test_mode else goal_streak//2,
+                                                 streak_goal=streak_goal//2,
                                                  mode=second_modality)
         self.save_object(self.df_out_2, fname, ending='csv')
 
@@ -1412,7 +1412,7 @@ class Experiment:
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
 
         self.df_out_3 = self.adaptiveBlock(trials_test_1,
-                                           streak_goal=1 if self.test_mode else goal_streak)
+                                           streak_goal=streak_goal)
         
         # Second Test-Type
         self.Instructions(part_key=second_test + "Second",
@@ -1426,6 +1426,7 @@ class Experiment:
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
 
         self.df_out_4 = self.adaptiveBlock(trials_test_2,
+                                           streak_goal=streak_goal)
         self.save_object(self.df_out_4, fname, ending='csv')
 
         # Wrap up
