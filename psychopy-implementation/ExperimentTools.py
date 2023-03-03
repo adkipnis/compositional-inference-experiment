@@ -852,7 +852,7 @@ class Experiment:
         out = []
         
         while not self.streakGoalReached(streak_goal=streak_goal) and not trials.finished:
-            trial = trials.next()
+            trial = trials.next().copy()
             # probabilistically skip if this cue has already been mastered
             if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
                 continue
@@ -1221,8 +1221,7 @@ class Experiment:
             if self.use_pp:
                 self.send_trigger("run")      
         
-        while not self.streakGoalReached(streak_goal=streak_goal) and not trials.finished:
-            trial = trials.next()
+            trial = trials.next().copy()
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1])
@@ -1259,7 +1258,7 @@ class Experiment:
                 self.send_trigger("run")      
         
         while not trials.finished:
-            trial = trials.next()
+            trial = trials.next().copy()
             self.genericTrial(trial, self_paced=True, feedback=True,
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1])
