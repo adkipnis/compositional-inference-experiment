@@ -5,6 +5,7 @@ Methods for running the compositional inference experiment
 """
 import os
 import glob
+import warnings
 import pickle
 import sys
 import csv
@@ -210,13 +211,13 @@ class Experiment:
         self.maxn_blocks = 4  # this value should match in GenerateTrialLists
 
         # Determine_positions
-        self.rect_pos = circularGridPositions(
+        self.rect_pos = self.circularGridPositions(
             center_pos=self.center_pos, set_size=self.set_size, radius=7)
-        self.resp_pos = rectangularGridPositions(
+        self.resp_pos = self.rectangularGridPositions(
             center_pos=[0, -10], h_dist=10, dim=(1, 4))
-        self.resp_pos_num = rectangularGridPositions(
+        self.resp_pos_num = self.rectangularGridPositions(
             center_pos=[0, -9.6], h_dist=10, dim=(1, 4))
-        self.cuepractice_pos = rectangularGridPositions(
+        self.cuepractice_pos = self.rectangularGridPositions(
             center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
 
     def render_visuals(self):
@@ -357,6 +358,41 @@ class Experiment:
 
 
     # Background Components --------------------------------------------------------
+
+    def listofdicts2csv(self, trials, fname):
+        # Failsafe
+        n_keys_per_trial = set([len(t.keys()) for t in trials])
+        if len(n_keys_per_trial) != 1:
+            warnings.warn("Not all trials have the same number of keys, saving as pickle instead")
+            with open(fname + '.pkl', "wb") as f:
+                pickle.dump(trials, f)
+            return
+        
+        # spread keys which are n-long lists into n separate elements
+        unique_keys = trials[0].keys()
+        list_keys = [key for key in unique_keys if isinstance(trials[0][key], (set, list, np.ndarray))]
+        for trial in trials:
+            for key in list_keys:
+                items = trial.pop(key)
+                n = len(items)
+                newkeys = [f"{key}_{i}" for i in range(n)]
+                trial.update(dict(zip(newkeys, items)))
+        unique_keys = trials[0].keys()
+        
+        # write to csv
+        with open(fname, 'w', newline='') as output_file:
+            dict_writer = csv.DictWriter(output_file, unique_keys)
+            dict_writer.writeheader()
+            dict_writer.writerows(trials)
+    
+    
+    def save_object(self, obj, fname, ending='pkl'):
+        if ending == 'csv':
+            self.listofdicts2csv(obj, fname + '.csv')
+        elif ending == 'pkl':
+            with open(fname + '.pkl', "wb") as f:
+                pickle.dump(obj, f)
+                
     def writeFileName(self, dataset_name):
         return  f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
     
@@ -446,7 +482,40 @@ class Experiment:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
+    def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=10):
+        angle = 2*np.pi/set_size
+        rect_pos = np.empty((set_size, 2), dtype=float).copy()
+        for i in range(set_size):
+            rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
+                        center_pos[1] + radius * np.cos(i * angle)]
+        return rect_pos
+    
+    def rectangularGridPositions(self, center_pos=[0, 0], v_dist=10, h_dist=10, dim=(2, 3)):
+        # horizontal positions
+        c = np.floor(dim[1]/2)
+        if dim[1] % 2 != 0:  # odd number of items on vertical tile => center
+            rect_hpos = np.arange(-c * h_dist + center_pos[0],
+                                c * h_dist + 1 + center_pos[0], h_dist).tolist()
+        else:
+            rect_hpos = np.arange(-c * h_dist + h_dist/2 + center_pos[0],
+                                c * h_dist - h_dist/2 + center_pos[0] + 1,
+                                h_dist).tolist()
 
+        # vertical positions
+        c = np.round(dim[0]/2)
+        if dim[0] % 2 != 0:
+            rect_vpos = np.arange(-c * v_dist + center_pos[1],
+                                c * v_dist + 1 + center_pos[1], v_dist).tolist()
+        else:  # even number of items on horizontal tile => shift upwards
+            rect_vpos = np.arange(-c * v_dist + v_dist/2 + center_pos[1],
+                                c * v_dist - v_dist/2 + center_pos[1] + 1,
+                                v_dist).tolist()
+
+        # combine
+        rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
+                                np.repeat(rect_vpos, len(rect_hpos))])
+        return rect_pos
+    
     ###########################################################################
     # Instructions
     ###########################################################################
@@ -469,7 +538,7 @@ class Experiment:
             dim = [2, np.ceil(n_cats/2)]
         else:
             dim = [1, n_cats]
-        category_pos = rectangularGridPositions(
+        category_pos = self.rectangularGridPositions(
             center_pos=[0, 0], h_dist=8, dim=dim)
 
         # draw categories
@@ -484,7 +553,7 @@ class Experiment:
     def iSpellExample(self, displays):
         assert len(displays) == 2, "displays must be a list of two lists"
         stimuli = self.stim_dict.copy()
-        rect_pos = circularGridPositions(
+        rect_pos = self.circularGridPositions(
             center_pos=[0,0], set_size=self.set_size, radius=7)
         
         # Input Display
@@ -630,7 +699,7 @@ class Experiment:
         finished = False
         cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
-        category_pos = rectangularGridPositions(
+        category_pos = self.rectangularGridPositions(
             center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
         stimuli = self.stim_dict.copy()
         learn_clock = core.Clock()
@@ -1309,10 +1378,7 @@ class Experiment:
         self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
                                                  streak_goal=1 if self.test_mode else goal_streak//2,
                                                  mode=second_modality)
-
-        # Save cue memory data
-        fname = self.writeFileName("cueMemory")
-        save_object(self.df_out_1 + self.df_out_2, fname, ending='csv')
+        self.save_object(self.df_out_2, fname, ending='csv')
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
@@ -1354,11 +1420,7 @@ class Experiment:
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
 
         self.df_out_4 = self.adaptiveBlock(trials_test_2,
-                                           streak_goal=1 if self.test_mode else goal_streak)
-
-        # Save test type data
-        fname = self.writeFileName("testPractice")
-        save_object(self.df_out_3 + self.df_out_4, fname, ending='csv')
+        self.save_object(self.df_out_4, fname, ending='csv')
 
         # Wrap up
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
@@ -1402,7 +1464,7 @@ class Experiment:
         
         self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec)
         fname = self.writeFileName("functionDecoder")
-        save_object(self.df_out_5, fname, ending='csv')
+        self.save_object(self.df_out_5, fname, ending='csv')
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",
@@ -1422,7 +1484,7 @@ class Experiment:
         self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
                                            streak_goal=1 if self.test_mode else goal_streak_p)
         fname = self.writeFileName("primitiveTrials")
-        save_object(self.df_out_6, fname, ending='csv')
+        self.save_object(self.df_out_6, fname, ending='csv')
         
         ''' --- 3. Binary trials ------------------------------------------------'''
         self.Instructions(part_key="BinariesMEGR",
@@ -1440,90 +1502,8 @@ class Experiment:
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
-        save_object(self.df_out_7, fname, ending='csv')
+        self.save_object(self.df_out_7, fname, ending='csv')
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="ByeBye")
         self.add2meta("t_end", data.getDateStr())
         self.win.close()
-
-
-# =============================================================================
-# Helper Functions
-# =============================================================================
-
-# Positions -------------------------------------------------------------------
-def rectangularGridPositions(center_pos=[0, 0],
-                             v_dist=10, h_dist=10, dim=(2, 3)):
-    # horizontal positions
-    c = np.floor(dim[1]/2)
-    if dim[1] % 2 != 0:  # odd number of items on vertical tile => center
-        rect_hpos = np.arange(-c * h_dist + center_pos[0],
-                              c * h_dist + 1 + center_pos[0], h_dist).tolist()
-    else:
-        rect_hpos = np.arange(-c * h_dist + h_dist/2 + center_pos[0],
-                              c * h_dist - h_dist/2 + center_pos[0] + 1,
-                              h_dist).tolist()
-
-    # vertical positions
-    c = np.round(dim[0]/2)
-    if dim[0] % 2 != 0:
-        rect_vpos = np.arange(-c * v_dist + center_pos[1],
-                              c * v_dist + 1 + center_pos[1], v_dist).tolist()
-    else:  # even number of items on horizontal tile => shift upwards
-        rect_vpos = np.arange(-c * v_dist + v_dist/2 + center_pos[1],
-                              c * v_dist - v_dist/2 + center_pos[1] + 1,
-                              v_dist).tolist()
-
-    # combine
-    rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
-                             np.repeat(rect_vpos, len(rect_hpos))])
-    return rect_pos
-
-
-def circularGridPositions(center_pos=[0, 0], set_size=6, radius=10):
-    angle = 2*np.pi/set_size
-    rect_pos = np.empty((set_size, 2), dtype=float).copy()
-    for i in range(set_size):
-        rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
-                       center_pos[1] + radius * np.cos(i * angle)]
-    return rect_pos
-
-
-# Data handling ---------------------------------------------------------------
-def readpkl(fname):
-    with open(fname) as f:
-        listofdicts = [{k: v for k, v in row.items()}
-                       for row in csv.DictReader(f, skipinitialspace=True)]
-    return listofdicts
-
-
-def listofdicts2csv(listofdicts, fname):
-    # spread dictionary entries which are n-long lists into n separate elements
-    keys = listofdicts[0].keys()
-    list_keys = []
-    # find out which keys point to lists
-    for key in keys:
-        if type(listofdicts[0][key]) in [set, list, np.ndarray]:
-            list_keys.append(key)
-
-    # for each such key, pop it from the dict and add its elements back to dict
-    for dictionary in listofdicts:
-        for key in list_keys:
-            items = dictionary.pop(key)
-            newkeys = [key + "_" + str(i) for i in range(len(items))]
-            subdictionary = dict(zip(newkeys, items))
-            dictionary.update(subdictionary)
-
-    # write to csv
-    with open(fname, 'w', newline='') as output_file:
-        dict_writer = csv.DictWriter(output_file, keys)
-        dict_writer.writeheader()
-        dict_writer.writerows(listofdicts)
-
-
-def save_object(obj, fname, ending='pkl'):
-    if ending == 'csv':
-        listofdicts2csv(obj, fname + '.csv')
-    elif ending == 'pkl':
-        with open(fname + '.pkl', "wb") as f:
-            pickle.dump(obj, f)
