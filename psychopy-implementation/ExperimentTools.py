@@ -1039,7 +1039,7 @@ class Experiment:
             resp.draw()
         self.win.flip(clearBuffer=False)
     
-    def tCount(self, trial, feedback=False, demonstration=False, duration=1.0):
+    def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
         # Init
         stimuli = self.stim_dict.copy()
@@ -1062,7 +1062,7 @@ class Experiment:
             badoptions = np.delete(badoptions, corResp)
             if feedback:
                 core.wait(1)
-            testRT, testResp = 0, badoptions[0]
+            testRT, testResp = 0.0, badoptions[0]
 
         # Feedback
         if feedback:
@@ -1072,7 +1072,7 @@ class Experiment:
                                         rectPos=self.resp_pos[testResp],
                                         stimPos=self.resp_pos_num[testResp],
                                         isCorrect=corResp == testResp,
-                                        isQuick=True)
+                                        isQuick=testRT <= goal_rt)
             # correct solution
             if corResp != testResp:
                 self.redrawFeedback(self.count_dict[str(corResp)], 
@@ -1104,7 +1104,7 @@ class Experiment:
             resp.draw()
         self.win.flip(clearBuffer=False)
     
-    def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0):
+    def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
         # Init
         stimuli = self.stim_dict.copy()
@@ -1127,7 +1127,7 @@ class Experiment:
             badoptions = np.delete(badoptions, corResp)
             if feedback:
                 core.wait(1)
-            testRT, testResp = 0, badoptions[0]
+            testRT, testResp = 0.0, badoptions[0]
         
         # Feedback
         if feedback:
@@ -1136,7 +1136,7 @@ class Experiment:
                 self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
                                          rectPos=self.resp_pos[testResp],
                                          isCorrect=corResp == testResp,
-                                         isQuick=True)
+                                         isQuick=testRT <= goal_rt)
             # correct solution
             if corResp != testResp:
                 self.redrawFeedback(stimuli[trial["resp_options"][corResp]], 
@@ -1148,7 +1148,7 @@ class Experiment:
         return testRT, testResp        
     
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
-                     fixation_duration=0.3, cue_duration=0.3):
+                     fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0):
         ''' subroutine for generic trials'''
         # Init
         self.win.flip()
@@ -1183,7 +1183,7 @@ class Experiment:
                 
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
-        test_rt, test_resp = testMethod(trial, feedback=feedback)
+        test_rt, test_resp = testMethod(trial, feedback=feedback, goal_rt=goal_rt)
         
         # Save data
         trial["display_RT"] = display_rt
@@ -1193,21 +1193,22 @@ class Experiment:
         trial["cue_type"] = mode
         core.wait(1)
 
-    def updateCounterDictPM(self, trial, streak_goal=10, decrease=True):
+    def updateCounterDictPM(self, trial, streak_goal=10, goal_rt=2.0, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
             - decrease counter if incorrect response if above 0
         '''
         map_name = trial["map"][0]
         correct = trial["correct_resp"] == trial["emp_resp"]
+        fast = trial["resp_RT"] <= goal_rt
         
-        if correct and self.counter_dict[map_name] < streak_goal: 
+        if correct and fast and self.counter_dict[map_name] < streak_goal: 
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
-                     fixation_duration=0.3, cue_duration=0.3,
+                     fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
                      self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         self.counter_dict = {map:0 for map in self.map_names}
@@ -1230,8 +1231,10 @@ class Experiment:
             
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
                               fixation_duration=fixation_duration + trial["jitter"][0],
-                              cue_duration=cue_duration + trial["jitter"][1])
-            self.updateCounterDictPM(trial, streak_goal=streak_goal, decrease=decrease)
+                              cue_duration=cue_duration + trial["jitter"][1],
+                              goal_rt=goal_rt)
+            self.updateCounterDictPM(trial, streak_goal=streak_goal, goal_rt=goal_rt,
+                                     decrease=decrease)
             
             # Update progress bar
             if self.show_progress:
@@ -1444,7 +1447,7 @@ class Experiment:
         # init session variables
         self.win.mouseVisible = False
         goal_streak_d = 16 # decoder
-        goal_streak_p = 30 # primitives
+        goal_streak_p = 20 # primitives
         goal_streak_b = 15 # binaries
         n_trials = [self.n_primitives * goal_streak_d,
                     self.n_primitives * goal_streak_p,
