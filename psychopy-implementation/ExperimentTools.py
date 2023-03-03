@@ -1201,7 +1201,7 @@ class Experiment:
         map_name = trial["map"][0]
         correct = trial["correct_resp"] == trial["emp_resp"]
         
-        if correct and self.counter_dict[map_name] <= streak_goal: 
+        if correct and self.counter_dict[map_name] < streak_goal: 
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
