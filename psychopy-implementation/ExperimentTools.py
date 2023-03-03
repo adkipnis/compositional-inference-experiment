@@ -1233,19 +1233,20 @@ class Experiment:
                               cue_duration=cue_duration + trial["jitter"][1])
             self.updateCounterDictPM(trial, streak_goal=streak_goal, decrease=decrease)
             
-            # Pause display between runs
-            if pause_between_runs and timer.getTime() <= 0:
-                self.tPause()
-                timer.reset()
-                trial["run_number"] = run_number
-                run_number += 1
-            out.append(trial)
-
             # Update progress bar
             if self.show_progress:
                 end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
         
+            # Pause display between runs
+            if pause_between_runs:
+                trial["run_number"] = run_number
+                if timer.getTime() <= 0:
+                    self.tPause()
+                    timer.reset()
+                    run_number += 1
+            # finally
+            out.append(trial)
         return out
 
     def adaptiveDecoderBlock(self, trial_df,
