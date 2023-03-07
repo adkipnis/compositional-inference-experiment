@@ -628,11 +628,6 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(data, fname, ending=ending)
     
-    if verbose:
-        print("tcue_list:", tcue_list)
-        print("vcue_list:", vcue_list)
-        print("stim_list:", stim_list)
-        
     # 0. Practice blocks
     # Cue Memory
     df_list = []
@@ -645,9 +640,6 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(trials_prim_cue, fname, ending=ending)
 
-    if verbose:
-        print("prim cue trial:", trials_prim_cue[0])
-    
     # Test Practice: Count
     df_list = []
     for _ in range(maxn_repeats):
