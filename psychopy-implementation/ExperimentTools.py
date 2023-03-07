@@ -1260,8 +1260,8 @@ class Experiment:
             out.append(trial)
         return out
 
-    def adaptiveDecoderBlock(self, trial_df,
-                             fixation_duration=0.3, cue_duration=0.3,
+    def adaptiveDecoderBlock(self, trial_df, 
+                             fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
                              pause_between_runs=True):
         ''' block of decoder trials, enqueueing failed trials'''
         start_width_initial = self.start_width # progbar
@@ -1280,7 +1280,8 @@ class Experiment:
             
             self.genericTrial(trial, self_paced=True, feedback=True,
                               fixation_duration=fixation_duration + trial["jitter"][0],
-                              cue_duration=cue_duration + trial["jitter"][1])
+                              cue_duration=cue_duration + trial["jitter"][1],
+                              goal_rt=goal_rt)
             
             # Pause display between runs
             if pause_between_runs and timer.getTime() <= 0:
