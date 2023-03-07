@@ -766,7 +766,7 @@ class Experiment:
         stimulus.draw()
         # self.win.flip(clearBuffer=False)
         
-    def redrawFeedback(self, stimulus, rectPos=(0,0), wait_s=1, stimPos=None,):
+    def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None, wait_s=1):
         ''' Mark the correct response option as feedback '''
         if stimPos is None:
             stimPos = rectPos
@@ -825,7 +825,7 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(stimuli[trial["resp_options"][testResp]],
                                        self.cuepractice_pos[testResp],
-                                       None, correctResp == testResp,
+                                       correctResp == testResp,
                                        sum(testRTList) <= goal_rt))
         # Feedback (if incorrect)
         if trial["correct_resp"] != testRespList:
@@ -833,6 +833,7 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawFeedback,
                                  args=(stimuli[trial["resp_options"][correctResp]],
                                        self.cuepractice_pos[correctResp],
+                                       None,
                                        1-i))
                 
         # Save data and clear screen
@@ -1098,7 +1099,6 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawFeedback,
                                  args=(self.count_dict[str(corResp)], 
                                        self.resp_pos[corResp],
-                                       1,
                                        self.resp_pos_num[corResp]))
         
         # Clear screen
