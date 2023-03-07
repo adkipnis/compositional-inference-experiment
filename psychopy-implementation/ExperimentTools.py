@@ -837,8 +837,8 @@ class Experiment:
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
-        core.wait(1)
-        self.win.flip()
+        self.drawAllAndFlip()
+        core.wait(0.5)
     
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
@@ -877,7 +877,7 @@ class Experiment:
             if self.show_progress:
                 end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-                
+        core.wait(1)        
         return out
     
     
@@ -1202,6 +1202,7 @@ class Experiment:
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
         test_rt, test_resp = testMethod(trial, feedback=feedback, goal_rt=goal_rt)
+        self.drawAllAndFlip()
         
         # Save data
         trial["display_RT"] = display_rt
@@ -1209,7 +1210,7 @@ class Experiment:
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
-        core.wait(1)
+        core.wait(0.5)
 
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
@@ -1272,6 +1273,7 @@ class Experiment:
                     run_number += 1
             # finally
             out.append(trial)
+            core.wait(1)
         return out
 
     def adaptiveDecoderBlock(self, trial_df, 
