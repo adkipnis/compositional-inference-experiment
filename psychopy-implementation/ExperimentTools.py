@@ -643,9 +643,6 @@ class Experiment:
         assert part_key in self.instructions.keys(),\
             "No instructions provided for this part"
 
-        self.instruct_stim.font = font
-        self.instruct_stim.color = fontcolor
-
         # Initialize parameters
         finished = False
         Part = self.instructions[part_key]
@@ -1287,8 +1284,6 @@ class Experiment:
             if pause_between_runs:
                 trial["run_number"] = run_number
                 if timer.getTime() <= 0:
-                    self.tPause()   
-                self.tPause()
                     self.tPause()   
                     timer.reset()
                     run_number += 1
