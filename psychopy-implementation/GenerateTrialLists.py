@@ -17,8 +17,7 @@ import numpy as np
 # ==============================================================================
 # User settings
 first_participant = 1
-n_participants = 1
-verbose = True
+n_participants = 10
 save_this = True
 ending = 'pkl'
 sep = '-'
@@ -403,7 +402,7 @@ def gen_trial_dict(stimuli, general_map, resp,
                    "trans_ub": past_transforms,
                    "trans_lb": past_transforms_sparse,
                    "map_type": map_type,
-                   "arg_set": get_arg_set(general_map, sep=sep),
+                #    "arg_set": get_arg_set(general_map, sep=sep),
                    "jitter": jitter}
     return output_dict
 
