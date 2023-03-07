@@ -1096,9 +1096,7 @@ class Experiment:
                                        self.resp_pos[corResp],
                                        self.resp_pos_num[corResp]))
         
-        # Clear screen
         core.wait(duration)
-        self.win.flip()
         return testRT, testResp        
 
     def drawPositionTarget(self, target_idx):
@@ -1160,9 +1158,7 @@ class Experiment:
                                  args=(stimuli[trial["resp_options"][corResp]],
                                        self.resp_pos[corResp]))
         
-        # Clear screen
         core.wait(duration)
-        self.win.flip()
         return testRT, testResp        
     
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
@@ -1293,7 +1289,6 @@ class Experiment:
         
         while trials.nRemaining > 0:
             trial = trials.next()
-            
             self.genericTrial(trial, self_paced=True, feedback=True,
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1],
@@ -1325,8 +1320,7 @@ class Experiment:
             if self.show_progress:
                 end_width = start_width_initial + len(out) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-            
-            
+            core.wait(1)
         return out
         
     ###########################################################################
