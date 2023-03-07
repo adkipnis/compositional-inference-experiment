@@ -1207,7 +1207,7 @@ class Experiment:
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
         core.wait(0.5)
-
+        
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
         map_names = self.map_names if map_type == "primitive" else self.map_names_bin
