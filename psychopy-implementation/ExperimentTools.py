@@ -1414,7 +1414,7 @@ class Experiment:
         
 
         # Test second cue type
-        self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
+        self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1)+1:],
                                                  streak_goal=streak_goal//2,
                                                  mode=second_modality)
         fname = self.writeFileName("cueMemory"+second_modality.capitalize())
