@@ -1463,12 +1463,12 @@ class Experiment:
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
-        goal_streak_d = 16 # decoder
-        goal_streak_p = 20 # primitives
-        goal_streak_b = 15 # binaries
+        goal_streak_d = 0 if self.test_mode else 16 # decoder
+        goal_streak_p = 1 if self.test_mode else 20 # primitives
+        goal_streak_b = 1 if self.test_mode else 15 # binaries
         n_trials = [self.n_primitives * goal_streak_d,
                     self.n_primitives * goal_streak_p,
-                    self.n_primitives * goal_streak_b]
+                    self.n_binaries * goal_streak_b]
         n_total = sum(n_trials)
         milestones = np.cumsum(n_trials)/n_total
         self.init_progbar(milestones=milestones[:-1])
@@ -1511,7 +1511,7 @@ class Experiment:
                                   {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
         
         self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
-                                           streak_goal=1 if self.test_mode else goal_streak_p)
+                                           streak_goal=goal_streak_p)
         fname = self.writeFileName("primitiveTrials")
         self.save_object(self.df_out_6, fname, ending='csv')
         
@@ -1527,7 +1527,7 @@ class Experiment:
                                   {"trial": demoBin, "duration": 0.0}])
         self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
                                            cue_duration=0.7, decrease=False,
-                                           streak_goal=1 if self.test_mode else goal_streak_b)                          
+                                           streak_goal=goal_streak_b)                          
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
