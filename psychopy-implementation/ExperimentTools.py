@@ -1196,7 +1196,11 @@ class Experiment:
         trial["cue_type"] = mode
         core.wait(1)
 
-    def updateCounterDictPM(self, trial, streak_goal=10, goal_rt=2.0, decrease=True):
+    def generateCounterDict(self, map_type="primitive"):
+        ''' Generates a dictionary with the counter for each map'''
+        map_names = self.map_names if map_type == "primitive" else self.map_names_bin
+        self.counter_dict = {map:0 for map in map_names}
+    
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
             - decrease counter if incorrect response if above 0
