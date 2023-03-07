@@ -1201,15 +1201,16 @@ class Experiment:
         map_names = self.map_names if map_type == "primitive" else self.map_names_bin
         self.counter_dict = {map:0 for map in map_names}
     
+    def updateCounterDictPM(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
             - decrease counter if incorrect response if above 0
         '''
-        map_name = trial["map"][0]
+        map_name = "+".join(trial["map"])
         correct = trial["correct_resp"] == trial["emp_resp"]
         fast = trial["resp_RT"] <= goal_rt
         
-        if correct and fast and self.counter_dict[map_name] < streak_goal: 
+        if correct and fast and applicable and self.counter_dict[map_name] < streak_goal: 
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
