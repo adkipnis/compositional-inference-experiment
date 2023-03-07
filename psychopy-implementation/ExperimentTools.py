@@ -1526,7 +1526,7 @@ class Experiment:
                           kwargs=[{"trial": demoBin, "duration": 0.0},
                                   {"trial": demoBin, "duration": 0.0}])
         self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
-                                           cue_duration=0.7, decrease=False,
+                                           cue_duration=0.9, decrease=False,
                                            streak_goal=goal_streak_b)                          
 
         # Finalization
