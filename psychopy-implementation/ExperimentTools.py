@@ -50,7 +50,9 @@ class Experiment:
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
-        self.color_dict = {"light_grey": [0.7, 0.7, 0.7],
+        self.color_dict = {"white": [0.9, 0.9, 0.9],
+                           "instructions": [0.85, 0.85, 0.85],
+                           "light_grey": [0.7, 0.7, 0.7],
                            "light_grey2": [0.6, 0.6, 0.6],
                            "mid_grey": [0.0, 0.0, 0.0],
                            "dark_grey": [-0.6, -0.6, -0.6],
@@ -119,7 +121,7 @@ class Experiment:
         self.win = visual.Window(
             res,
             fullscr=fullscr,
-            color=[0.85, 0.85, 0.85],
+            color=self.color_dict["instructions"],
             screen=screen,
             monitor="testMonitor",
             units="deg")
@@ -649,6 +651,7 @@ class Experiment:
         finished = False
         Part = self.instructions[part_key]
         page = 0
+        self.win.color = self.color_dict["instructions"]
         self.instruct_stim.font = font
         self.instruct_stim.color = fontcolor
         self.win.clearBuffer()
@@ -682,6 +685,7 @@ class Experiment:
         if log_duration:
             duration = instructions_clock.getTime()
             self.add2meta(f"duration_{part_key}", duration)
+        self.win.color = self.color_dict["white"]
         self.win.flip()
         core.wait(loading_time)
 
