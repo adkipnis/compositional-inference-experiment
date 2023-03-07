@@ -208,7 +208,11 @@ class Experiment:
         self.n_resp = len(self.trials_prim[0]["resp_options"])
         self.map_names = np.unique([trial["map"]
                                     for trial in self.trials_prim])
+        self.map_names_bin = np.unique(["+".join(trial["map"])
+                                        for trial in self.trials_bin],
+                                       axis=0)
         self.n_primitives = len(self.map_names)
+        self.n_binaries = len(self.map_names_bin)
         self.n_exposure = 30  # this value should match in GenerateTrialLists
         self.maxn_blocks = 4  # this value should match in GenerateTrialLists
 
