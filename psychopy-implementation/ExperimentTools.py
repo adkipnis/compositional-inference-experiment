@@ -744,7 +744,7 @@ class Experiment:
                 resp.draw()
         # self.win.flip(clearBuffer=False)
     
-    def redrawAfterResponse(self, stimulus, rectPos=(0,0), stimPos=None, isCorrect=False, isQuick=False):
+    def redrawAfterResponse(self, stimulus, rectPos=(0,0), isCorrect=False, isQuick=False, stimPos=None):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
         if stimPos is None:
             stimPos = rectPos
@@ -1059,12 +1059,13 @@ class Experiment:
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
         # Init
+        self.drawList = []
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
         
         # Draw stimuli
-        self.drawCountTarget(stimuli[trial["target"]])
-        self.drawCountResponses()
+        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCountResponses)
         
         # Send trigger    
         if self.use_pp:
@@ -1085,20 +1086,24 @@ class Experiment:
         if feedback:
             # immediate
             if testResp != "NA":
-                self.redrawAfterResponse(self.count_dict[str(testResp)], 
-                                        rectPos=self.resp_pos[testResp],
-                                        stimPos=self.resp_pos_num[testResp],
-                                        isCorrect=corResp == testResp,
-                                        isQuick=testRT <= goal_rt)
+                self.enqueueDraw(func=self.redrawAfterResponse,
+                                 args=(self.count_dict[str(testResp)], 
+                                       self.resp_pos[testResp],
+                                       corResp == testResp,
+                                       testRT <= goal_rt,
+                                       self.resp_pos_num[testResp]))
+                
             # correct solution
             if corResp != testResp:
-                self.redrawFeedback(self.count_dict[str(corResp)], 
-                                    rectPos=self.resp_pos[corResp],
-                                    stimPos=self.resp_pos_num[corResp])
+                self.enqueueDraw(func=self.redrawFeedback,
+                                 args=(self.count_dict[str(corResp)], 
+                                       self.resp_pos[corResp],
+                                       1,
+                                       self.resp_pos_num[corResp]))
         
         # Clear screen
-        self.win.flip()
         core.wait(duration)
+        self.win.flip()
         return testRT, testResp        
 
     def drawPositionTarget(self, target_idx):
@@ -1124,12 +1129,13 @@ class Experiment:
     def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
         # Init
+        self.drawList = []
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
 
         # Draw stimuli
-        self.drawPositionTarget(trial["target"])
-        self.drawPositionResponses(stimuli, trial["resp_options"])
+        self.enqueueDraw(func=self.drawPositionTarget, args=(trial["target"],), unroll=False)
+        self.enqueueDraw(func=self.drawPositionResponses, args=(stimuli, trial["resp_options"],))
         
         # Send trigger
         if self.use_pp:
@@ -1150,18 +1156,20 @@ class Experiment:
         if feedback:
             # immediate
             if testResp != "NA":
-                self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]], 
-                                         rectPos=self.resp_pos[testResp],
-                                         isCorrect=corResp == testResp,
-                                         isQuick=testRT <= goal_rt)
+                self.enqueueDraw(func=self.redrawAfterResponse,
+                                 args=(stimuli[trial["resp_options"][testResp]],
+                                       self.resp_pos[testResp],
+                                       corResp == testResp,
+                                       testRT <= goal_rt))
             # correct solution
             if corResp != testResp:
-                self.redrawFeedback(stimuli[trial["resp_options"][corResp]], 
-                                    rectPos=self.resp_pos[corResp])
+                self.enqueueDraw(func=self.redrawFeedback,
+                                 args=(stimuli[trial["resp_options"][corResp]],
+                                       self.resp_pos[corResp]))
         
         # Clear screen
-        self.win.flip()
         core.wait(duration)
+        self.win.flip()
         return testRT, testResp        
     
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
