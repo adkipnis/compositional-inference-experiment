@@ -12,7 +12,7 @@ from ExperimentTools import Experiment
 
 # Initialize
 exp = Experiment()
-exp.dialogue_box(show=True, participant=1, session=1,test_mode=False)
+exp.dialogue_box(show=False, participant=1, session=1, test_mode=False)
 exp.init_window(screen=0, fullscr=True)
 exp.load_trials()
 exp.render_visuals()

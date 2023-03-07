@@ -742,7 +742,7 @@ class Experiment:
                 resp = stimuli[resp_options[i]]
                 resp.pos = pos
                 resp.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
     
     def redrawAfterResponse(self, stimulus, rectPos=(0,0), stimPos=None, isCorrect=False, isQuick=False):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
@@ -764,7 +764,7 @@ class Experiment:
         self.rect.lineColor = self.color_dict["dark_grey"] #reset
         stimulus.pos = stimPos
         stimulus.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
         
     def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None):
         ''' Mark the correct response option as feedback '''
@@ -779,8 +779,8 @@ class Experiment:
         self.rect.fillColor = self.color_dict["light_grey"] #reset
         stimulus.pos = stimPos
         stimulus.draw()
-        self.win.flip(clearBuffer=False)
-        
+        # self.win.flip(clearBuffer=False)
+    
     def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
         ''' Subroutine for the cue practice trials'''
         # Init
@@ -792,14 +792,14 @@ class Experiment:
         
         # Fixation Cross
         self.drawFixation()
-        self.win.flip()
         
         # Map Cue and Response Options
         cue, cue_type = self.setCue(trial["map"][0], mode=mode)
         cue.pos = cue_pos
         cue.draw()
         self.drawResponseOptions(stimuli, trial["resp_options"])
-        
+        self.win.flip(clearBuffer=False)
+            
         # Wait for response(s)
         for correctResp in trial["correct_resp"]:
             if testResp == "NA":
@@ -812,19 +812,21 @@ class Experiment:
                                         rectPos=self.cuepractice_pos[testResp],
                                         isCorrect=correctResp == testResp,
                                         isQuick=sum(testRTList) <= goal_rt)
+                self.win.flip(clearBuffer=False)
         
         # Feedback (if incorrect)
         if trial["correct_resp"] != testRespList:
             for correctResp in trial["correct_resp"]:
                 self.redrawFeedback(stimuli[trial["resp_options"][correctResp]],
                                     rectPos=self.cuepractice_pos[correctResp])
-        
+                self.win.flip(clearBuffer=False)
+    
         # Save data and clear screen
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
         self.win.flip()
-        core.wait(2)
+        core.wait(1)
     
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
@@ -1027,7 +1029,7 @@ class Experiment:
         self.rect.size = self.normal_size #reset size
         stimulus.pos = self.center_pos
         stimulus.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
     
     def drawCountResponses(self):
         ''' draw response options for count test'''
@@ -1038,7 +1040,7 @@ class Experiment:
             resp = self.count_dict[str(i)]
             resp.pos = self.resp_pos_num[i]
             resp.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
     
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
@@ -1093,7 +1095,7 @@ class Experiment:
             if target_idx == i:
                 self.qm.pos = pos
                 self.qm.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
     
     def drawPositionResponses(self, stimuli, resp_options):
         ''' draw response options for position test'''
@@ -1103,7 +1105,7 @@ class Experiment:
             resp = stimuli[resp_options[i]]
             resp.pos = pos
             resp.draw()
-        self.win.flip(clearBuffer=False)
+        # self.win.flip(clearBuffer=False)
     
     def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
