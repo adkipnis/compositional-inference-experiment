@@ -742,7 +742,6 @@ class Experiment:
                 resp = stimuli[resp_options[i]]
                 resp.pos = pos
                 resp.draw()
-        # self.win.flip(clearBuffer=False)
     
     def redrawAfterResponse(self, stimulus, rectPos=(0,0), isCorrect=False, isQuick=False, stimPos=None):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
@@ -764,7 +763,6 @@ class Experiment:
         self.rect.lineColor = self.color_dict["dark_grey"] #reset
         stimulus.pos = stimPos
         stimulus.draw()
-        # self.win.flip(clearBuffer=False)
         
     def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None, wait_s=1):
         ''' Mark the correct response option as feedback '''
@@ -779,7 +777,6 @@ class Experiment:
         self.rect.fillColor = self.color_dict["light_grey"] #reset
         stimulus.pos = stimPos
         stimulus.draw()
-        # self.win.flip(clearBuffer=False)
     
     def drawAllAndFlip(self):
         for func, args in self.drawList:
@@ -1044,7 +1041,6 @@ class Experiment:
         self.rect.size = self.normal_size #reset size
         stimulus.pos = self.center_pos
         stimulus.draw()
-        # self.win.flip(clearBuffer=False)
     
     def drawCountResponses(self):
         ''' draw response options for count test'''
@@ -1055,7 +1051,6 @@ class Experiment:
             resp = self.count_dict[str(i)]
             resp.pos = self.resp_pos_num[i]
             resp.draw()
-        # self.win.flip(clearBuffer=False)
     
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
@@ -1114,7 +1109,6 @@ class Experiment:
             if target_idx == i:
                 self.qm.pos = pos
                 self.qm.draw()
-        # self.win.flip(clearBuffer=False)
     
     def drawPositionResponses(self, stimuli, resp_options):
         ''' draw response options for position test'''
@@ -1124,7 +1118,6 @@ class Experiment:
             resp = stimuli[resp_options[i]]
             resp.pos = pos
             resp.draw()
-        # self.win.flip(clearBuffer=False)
     
     def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
