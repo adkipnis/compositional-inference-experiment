@@ -467,14 +467,9 @@ class Experiment:
             self.win.flip()
             core.wait(wait_s)
 
-        if end_width > start_width:
-            # Growing
-            while self.progTest.width < self.progBack.width * end_width:
-                self.move_prog_bar_step(bar_width_step, flip_win=flip_win)
-        else:
-            # Waning
-            while self.progTest.width > self.progBack.width * end_width:
-                self.move_prog_bar_step(bar_width_step, flip_win=flip_win)
+        # Move progress bar
+        for _ in range(n_steps):
+            self.move_prog_bar_step(bar_width_step, flip_win=flip_win)
 
         # Last bit for completion
         self.move_prog_bar_step(
