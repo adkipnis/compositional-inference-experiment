@@ -1015,7 +1015,7 @@ class Experiment:
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
-        intermediateRT = self.tIndermediateResponse(core.Clock(), max_wait=360)  # max 6 min break
+        intermediateRT = self.tIndermediateResponse(core.Clock(), max_wait=float('inf'))
         self.win.flip()
         core.wait(1)   
         if self.use_pp:
