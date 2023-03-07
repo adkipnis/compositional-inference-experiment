@@ -766,11 +766,11 @@ class Experiment:
         stimulus.draw()
         # self.win.flip(clearBuffer=False)
         
-    def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None):
+    def redrawFeedback(self, stimulus, rectPos=(0,0), wait_s=1, stimPos=None,):
         ''' Mark the correct response option as feedback '''
         if stimPos is None:
             stimPos = rectPos
-        core.wait(1)
+        core.wait(wait_s)
         self.rect.pos = rectPos
         self.rect.lineColor = self.color_dict["dark_blue"]
         self.rect.fillColor = self.color_dict["blue"]
@@ -781,9 +781,23 @@ class Experiment:
         stimulus.draw()
         # self.win.flip(clearBuffer=False)
     
+    def drawAllAndFlip(self):
+        for func, args in self.drawList:
+            if args is None:
+                func()
+            else:
+                func(*args)
+        self.win.flip()
+    
+    def enqueueDraw(self, func=None, args=None, unroll=True):
+        self.drawList += [(func, args)]
+        if unroll:
+            self.drawAllAndFlip()
+    
     def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
         ''' Subroutine for the cue practice trials'''
         # Init
+        self.drawList = []
         stimuli = self.stim_dict.copy()
         testResp = ""
         testRespList = []
@@ -796,10 +810,10 @@ class Experiment:
         # Map Cue and Response Options
         cue, cue_type = self.setCue(trial["map"][0], mode=mode)
         cue.pos = cue_pos
-        cue.draw()
-        self.drawResponseOptions(stimuli, trial["resp_options"])
-        self.win.flip(clearBuffer=False)
-            
+        self.enqueueDraw(func=cue.draw, unroll=False)
+        self.enqueueDraw(func=self.drawResponseOptions,
+                         args=(stimuli, trial["resp_options"]))
+
         # Wait for response(s)
         for correctResp in trial["correct_resp"]:
             if testResp == "NA":
@@ -808,25 +822,25 @@ class Experiment:
             testRTList.append(testRT)
             testRespList.append(testResp)
             if testResp != "NA":
-                self.redrawAfterResponse(stimuli[trial["resp_options"][testResp]],
-                                        rectPos=self.cuepractice_pos[testResp],
-                                        isCorrect=correctResp == testResp,
-                                        isQuick=sum(testRTList) <= goal_rt)
-                self.win.flip(clearBuffer=False)
-        
+                self.enqueueDraw(func=self.redrawAfterResponse,
+                                 args=(stimuli[trial["resp_options"][testResp]],
+                                       self.cuepractice_pos[testResp],
+                                       None, correctResp == testResp,
+                                       sum(testRTList) <= goal_rt))
         # Feedback (if incorrect)
         if trial["correct_resp"] != testRespList:
-            for correctResp in trial["correct_resp"]:
-                self.redrawFeedback(stimuli[trial["resp_options"][correctResp]],
-                                    rectPos=self.cuepractice_pos[correctResp])
-                self.win.flip(clearBuffer=False)
-    
+            for i, correctResp in enumerate(trial["correct_resp"]):
+                self.enqueueDraw(func=self.redrawFeedback,
+                                 args=(stimuli[trial["resp_options"][correctResp]],
+                                       self.cuepractice_pos[correctResp],
+                                       1-i))
+                
         # Save data and clear screen
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
-        self.win.flip()
         core.wait(1)
+        self.win.flip()
     
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
