@@ -590,14 +590,12 @@ selection_binary = select_binary_compositions(comps_dict_binary)
 #     sep=sep)
 # selection_binary_conj = select_binary_compositions(comps_dict_binary_conj)
 selection_prim = ['A-B', 'B-A', 'C-D']
-selection_binary = [['A-B', 'B-A'],
-                    ['B-A', 'A-B'],
+selection_binary = [['B-A', 'A-B'],
                     ['A-B', 'C-D'],
                     ['C-D', 'B-A']]
 
-if verbose:
-    print("Primitives:", selection_prim)
-    print("Binaries:", selection_binary)
+print("Primitives:", selection_prim)
+print("Binaries:", selection_binary)
     
 # Localizer lists
 print("Generating localizer lists...")
