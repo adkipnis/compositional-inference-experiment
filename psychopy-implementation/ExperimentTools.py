@@ -876,6 +876,7 @@ class Experiment:
     
     def drawFixation(self, duration=0.3):
         ''' draw fixation cross'''
+        self.win.flip()
         self.fixation.draw()
         self.win.flip()
         if self.use_pp:
