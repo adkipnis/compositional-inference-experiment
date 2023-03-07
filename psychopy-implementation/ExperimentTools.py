@@ -1219,9 +1219,9 @@ class Experiment:
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
                      self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
-        self.counter_dict = {map:0 for map in self.map_names}
         start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
+        self.generateCounterDict(map_type=trials.trialList[0]["map_type"])
         out = []
         
         if pause_between_runs:
@@ -1234,7 +1234,7 @@ class Experiment:
             trial = trials.next().copy()
             
             # probabilistically skip if this cue has already been mastered
-            if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
+            if self.counter_dict["+".join(trial["map"])] == streak_goal and np.random.random() > 0.2:
                 continue
             
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
