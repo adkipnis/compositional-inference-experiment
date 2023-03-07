@@ -1290,12 +1290,15 @@ class Experiment:
                 trial["run_number"] = run_number
                 run_number += 1
                 
-            # Enqueue trial according to accuracy
-            if trial["applicable"] and trial["correct_resp"] == trial["emp_resp"]:
-                out.append(trial)
-            elif trial["applicable"]:
-                failed.append(trial)
-
+            # Enqueue trials with applicable map according to performance
+            if trial["applicable"]:
+                if trial["correct_resp"] == trial["emp_resp"] and trial["resp_RT"] <= goal_rt:
+                    out.append(trial)
+                    print("# correct:", len(out))
+                else:
+                    failed.append(trial)
+                    print("# repeat:", len(failed))
+                    # TODO do not fully discard non-applicable trials
             # Restart failed trials
             if trials.nRemaining == 0 and len(failed) > 0:
                 trials = data.TrialHandler(failed, 1, method="random")
