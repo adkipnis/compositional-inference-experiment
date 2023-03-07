@@ -1284,11 +1284,14 @@ class Experiment:
                               goal_rt=goal_rt)
             
             # Pause display between runs
-            if pause_between_runs and timer.getTime() <= 0:
-                self.tPause()
-                timer.reset()
+            if pause_between_runs:
                 trial["run_number"] = run_number
-                run_number += 1
+                if timer.getTime() <= 0:
+                    self.tPause()   
+                self.tPause()
+                    self.tPause()   
+                    timer.reset()
+                    run_number += 1
                 
             # Enqueue trials with applicable map according to performance
             if trial["applicable"]:
@@ -1308,6 +1311,7 @@ class Experiment:
             if self.show_progress:
                 end_width = start_width_initial + len(out) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
+            
             
         return out
         
