@@ -51,7 +51,7 @@ class Experiment:
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
         self.color_dict = {"white": [0.9, 0.9, 0.9],
-                           "instructions": [0.85, 0.85, 0.85],
+                           "instructions": [0.8, 0.8, 0.8],
                            "light_grey": [0.7, 0.7, 0.7],
                            "light_grey2": [0.6, 0.6, 0.6],
                            "mid_grey": [0.0, 0.0, 0.0],
@@ -1226,6 +1226,7 @@ class Experiment:
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
+        # print(self.counter_dict)
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
