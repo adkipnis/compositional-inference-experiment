@@ -76,6 +76,8 @@ class Experiment:
         expName = "Alteration Magic School"
         expInfo = {"participant": str(participant).zfill(2),
                    "session": int(session),
+                   "age": "",
+                   "gender (f/m/d)": "",
                    "MEG": meg,
                    "runLength": run_length,
                    "testMode": test_mode,
