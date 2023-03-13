@@ -8,3 +8,5 @@ psychopy-implementation/data-pilot/*
 psychopy-implementation/trial-lists/*
 psychopy-implementation/stimuli/instructions_en.pkl
 psychopy-testing/testing.py
+experiment-documents/consent-sheet.pdf
+experiment-documents/pay-sheet.pdf
