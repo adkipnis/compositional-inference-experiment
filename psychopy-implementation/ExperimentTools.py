@@ -7,6 +7,7 @@ import os
 import glob
 import warnings
 import pickle
+import copy
 import sys
 import csv
 from string import ascii_uppercase
@@ -90,7 +91,7 @@ class Experiment:
             dlg = gui.DlgFromDict(dictionary=expInfo,
                                   sortKeys=False,
                                   title=expName,
-                                  fixed=["session", "dateStr", "psychopyVersion", "frameRate"])
+                                  fixed=["dateStr", "psychopyVersion", "frameRate"])
             if not dlg.OK:
                 core.quit()
 
@@ -368,6 +369,8 @@ class Experiment:
     # Background Components --------------------------------------------------------
 
     def listofdicts2csv(self, trials, fname):
+        trials = copy.deepcopy(trials)
+        
         # Failsafe
         n_keys_per_trial = set([len(t.keys()) for t in trials])
         if len(n_keys_per_trial) != 1:
@@ -1413,7 +1416,7 @@ class Experiment:
         
 
         # Test second cue type
-        self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1)+1:],
+        self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
                                                  streak_goal=streak_goal//2,
                                                  mode=second_modality)
         fname = self.writeFileName("cueMemory"+second_modality.capitalize())
