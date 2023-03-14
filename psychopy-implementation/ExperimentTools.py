@@ -862,6 +862,7 @@ class Experiment:
             self.counter_dict[key] = 0
         elif sum(trial["resp_RT"]) <= goal_rt and self.counter_dict[key] < streak_goal:
             self.counter_dict[key] += 1
+        print(self.counter_dict)
     
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
@@ -1231,7 +1232,7 @@ class Experiment:
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
-        # print(self.counter_dict)
+        print(self.counter_dict)
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
