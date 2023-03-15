@@ -710,7 +710,25 @@ class Experiment:
     ###########################################################################
     # Cues
     ###########################################################################
-
+    def drawPracticeCue(self, map_idx, cue_center_pos, vert_dist):
+        # Draw map cue
+        map_name = self.map_names[map_idx]
+        for j, mode in enumerate(["textual", "visual"]):
+            cue, _ = self.setCue(map_name, mode=mode)
+            cue.pos = [sum(x) for x in
+                        zip(cue_center_pos, [0, (1-j)*vert_dist])]
+            cue.draw()    
+        return map_name.split("-")
+    
+    def drawMapInstruction(self, categories, category_pos, stimuli):
+        for i, category in enumerate(categories):
+            self.rect.pos = category_pos[i]
+            self.rect.draw()
+            cat = stimuli[category]
+            cat.pos = category_pos[i]
+            cat.draw()
+        self.leftArrow.draw()
+    
     def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   modes=["textual", "visual"]):
         ''' Interactive display for learning cues for all maps, return viewing duration '''
