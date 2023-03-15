@@ -871,7 +871,10 @@ class Experiment:
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
         
-        while not self.streakGoalReached(streak_goal=streak_goal) and trials.nRemaining > 0:
+        while not self.streakGoalReached(streak_goal=streak_goal):
+            if trials.nRemaining == 0:
+                raise ValueError("No trials remaining, but streak goal not reached. Aborting.")
+            
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
             if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
@@ -1249,7 +1252,10 @@ class Experiment:
             if self.use_pp:
                 self.send_trigger("run")      
         
-        while not self.streakGoalReached(streak_goal=streak_goal) and trials.nRemaining > 0: 
+        while not self.streakGoalReached(streak_goal=streak_goal):
+            if trials.nRemaining == 0:
+                raise ValueError("No trials remaining, but streak goal not reached. Aborting.")
+             
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
             if self.counter_dict["+".join(trial["map"])] == streak_goal and np.random.random() > 0.2:
