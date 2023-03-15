@@ -852,16 +852,19 @@ class Experiment:
                 return False
         return True 
     
-    def updateCounterDictPC(self, trial, streak_goal=5, goal_rt=2.0):
-        ''' Updates the counter dict for the adaptive cue practice:
-            - reset counter if incorrect response
-            - increase counter if quick correct response
+    def updateCounterDict(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
+        ''' Updates the counter dict for the adaptive generic blocks:
+            - increase counter if correct response if below streak goal
+            - decrease counter if incorrect response if above 0
         '''
-        key = trial["map"][0]
-        if trial["correct_resp"] != trial["emp_resp"]: 
-            self.counter_dict[key] = 0
-        elif sum(trial["resp_RT"]) <= goal_rt and self.counter_dict[key] < streak_goal:
-            self.counter_dict[key] += 1
+        map_name = "+".join(trial["map"])
+        correct = trial["correct_resp"] == trial["emp_resp"]
+        fast = sum(trial["resp_RT"]) <= goal_rt
+        
+        if correct and fast and applicable and self.counter_dict[map_name] < streak_goal: 
+            self.counter_dict[map_name] += 1
+        elif decrease and not correct and self.counter_dict[map_name] > 0:
+            self.counter_dict[map_name] -= 1
         print(self.counter_dict)
     
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
@@ -880,7 +883,7 @@ class Experiment:
             if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
                 continue
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
-            self.updateCounterDictPC(trial, streak_goal, goal_rt)
+            self.updateCounterDict(trial, streak_goal, goal_rt)
             out.append(trial)
             
             if self.show_progress:
@@ -1222,21 +1225,6 @@ class Experiment:
         map_names = self.map_names if map_type == "primitive" else self.map_names_bin
         self.counter_dict = {map:0 for map in map_names}
     
-    def updateCounterDictPM(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
-        ''' Updates the counter dict for the adaptive generic blocks:
-            - increase counter if correct response if below streak goal
-            - decrease counter if incorrect response if above 0
-        '''
-        map_name = "+".join(trial["map"])
-        correct = trial["correct_resp"] == trial["emp_resp"]
-        fast = trial["resp_RT"] <= goal_rt
-        
-        if correct and fast and applicable and self.counter_dict[map_name] < streak_goal: 
-            self.counter_dict[map_name] += 1
-        elif decrease and not correct and self.counter_dict[map_name] > 0:
-            self.counter_dict[map_name] -= 1
-        print(self.counter_dict)
-    
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
                      self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
@@ -1265,7 +1253,7 @@ class Experiment:
                               fixation_duration=fixation_duration + trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1],
                               goal_rt=goal_rt)
-            self.updateCounterDictPM(trial, streak_goal=streak_goal, goal_rt=goal_rt,
+            self.updateCounterDict(trial, streak_goal=streak_goal, goal_rt=goal_rt,
                                      decrease=decrease)
             
             # Update progress bar
