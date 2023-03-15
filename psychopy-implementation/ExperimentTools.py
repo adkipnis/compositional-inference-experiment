@@ -257,6 +257,14 @@ class Experiment:
                                   height=4,
                                   color=self.color_dict["black"])
 
+        self.moreTime = visual.TextStim(
+            self.win,
+            text="Go back, you need to spend more time on this.",
+            height=1.5,
+            wrapWidth=40,
+            font="mono",
+            color=self.color_dict["mid_grey"])
+        
         self.nextPrompt = visual.TextStim(
             self.win,
             text="Navigate 'left' if you are not finished,\notherwise navigate 'right' to continue.",
@@ -624,6 +632,7 @@ class Experiment:
                 page += 1
             elif continue_after_last_page:
                 finished = True
+                self.moreTime.draw()
             else:
                 self.nextPrompt.draw()
                 self.win.flip()
