@@ -196,7 +196,7 @@ Intro = [0,
          5,
          "Each spell has a specific name and symbol. Philbertine provides a"\
              " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-         "You need to spend some time to study them really well.",
+         "You need to spend a minute to study them really well.",
              "Specifically, you need to learn the exact name and symbol "\
          "which are associated with each respective spell.",
          "You may go back across the cheat sheet pages.",
