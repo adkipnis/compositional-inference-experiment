@@ -1410,7 +1410,7 @@ class Experiment:
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
         # Learn first cue type
-        self.learnDuration_1 = self.learnCues()
+        self.learnDuration_1 = self.learnCues(min_duration=60)
         self.add2meta("learnDuration_1", self.learnDuration_1)
 
         # Test first cue type
@@ -1429,7 +1429,7 @@ class Experiment:
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
-        self.learnDuration_2 = self.learnCues()
+        self.learnDuration_2 = self.learnCues(min_duration=30)
         self.add2meta("learnDuration_2", self.learnDuration_2)
         
 
