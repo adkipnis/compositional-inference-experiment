@@ -597,11 +597,12 @@ class Experiment:
         core.wait(1)
     
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
-                  proceed_key="/k", wait_s=3):
+                  proceed_key="/k", wait_s=3, timer=None):
 
         assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
         left = "a"
         right = "ö"
+        skip = "return"
         finished = False
         testResp = None
         TestClock = core.Clock()
@@ -632,7 +633,13 @@ class Experiment:
                 page += 1
             elif continue_after_last_page:
                 finished = True
+            elif timer is not None and timer.getTime() > 0:
                 self.moreTime.draw()
+                self.win.flip()
+                _, contResp = self.tTestResponse(TestClock, [left, skip],
+                                                 return_numeric=False)
+                if contResp == skip:
+                    finished = True
             else:
                 self.nextPrompt.draw()
                 self.win.flip()
