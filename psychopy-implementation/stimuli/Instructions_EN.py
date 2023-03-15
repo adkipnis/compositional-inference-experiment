@@ -270,7 +270,7 @@ Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"
                "If you don't know the answer,\npress the (red) 'next' key.",
                "Importantly, there is a counter for each spell cue:",
                1,
-               "If you answer incorrectly,\nthe counter will drop to 0.\nYour response will be marked red.",
+               "If you answer incorrectly,\nthe counter will decrease.\nYour response will be marked red.",
                "If you answer correctly within 2 seconds,\nthe counter will increase.\nYour response will be marked green.",
                "If your answer is correct but slow,\nthe counter will stay the same.\nYour response will be marked yellow.",
                "Each correct answer will increase the progress bar:",
