@@ -730,45 +730,34 @@ class Experiment:
         self.leftArrow.draw()
     
     def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
-                  modes=["textual", "visual"]):
+                  min_duration=60):
         ''' Interactive display for learning cues for all maps, return viewing duration '''
         
         # Init
         self.win.flip()
         finished = False
-        cat_center_pos = [0, cue_center_pos[1] - vert_dist]
         page = 0
+        self.leftArrow.pos = [0, cue_center_pos[1] - vert_dist]
         category_pos = self.rectangularGridPositions(
-            center_pos=cat_center_pos, h_dist=15, dim=(1, 2))
+            center_pos=self.leftArrow.pos, h_dist=15, dim=(1, 2))
         stimuli = self.stim_dict.copy()
         learn_clock = core.Clock()
+        timer = core.CountdownTimer(start=min_duration)
 
         while not finished:
             # Draw map cue
-            map_name = self.map_names[page]
-            categories = map_name.split("-")
-
-            for j, mode in enumerate(modes):
-                cue, _ = self.setCue(map_name, mode=mode)
-                cue.pos = [sum(x) for x in
-                           zip(cue_center_pos, [0, (1-j)*vert_dist])]
-                cue.draw()
+            categories = self.drawPracticeCue(page, cue_center_pos, vert_dist)
 
             # Draw corresponding explicit map
-            for i, category in enumerate(categories):
-                self.rect.pos = category_pos[i]
-                self.rect.draw()
-                cat = stimuli[category]
-                cat.pos = category_pos[i]
-                cat.draw()
-            self.leftArrow.pos = cat_center_pos
-            self.leftArrow.draw()
+            self.drawMapInstruction(categories, category_pos, stimuli)
             self.win.flip()
             core.wait(0.2)
 
+            # Navigate
             page, finished = self.iNavigate(
                 page=page, max_page=self.n_primitives,
-                continue_after_last_page=False)
+                continue_after_last_page=False,
+                timer=timer)
 
         return learn_clock.getTime()
 
