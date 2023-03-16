@@ -1282,7 +1282,7 @@ class Experiment:
         
         while not self.streakGoalReached(streak_goal=streak_goal):
             if trials.nRemaining == 0:
-                raise ValueError("No trials remaining, but streak goal not reached. Aborting.")
+                self.terminate(out)
              
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
