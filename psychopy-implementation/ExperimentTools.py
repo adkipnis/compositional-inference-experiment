@@ -273,6 +273,14 @@ class Experiment:
             font="mono",
             color=self.color_dict["mid_grey"])
 
+        self.stopPrompt = visual.TextStim(
+            self.win,
+            text="Unfortunately you did not manage to learn\nthe spells in the given time.\n\nPlease contact the experimenter.",
+            height=1.5,
+            wrapWidth=40,
+            font="mono",
+            color=self.color_dict["mid_grey"])
+
         self.leftArrow = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}leftArrow.png")[0])
@@ -899,7 +907,7 @@ class Experiment:
         
         while not self.streakGoalReached(streak_goal=streak_goal):
             if trials.nRemaining == 0:
-                raise ValueError("No trials remaining, but streak goal not reached. Aborting.")
+                self.terminate(out)
             
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
@@ -915,6 +923,14 @@ class Experiment:
         core.wait(1)        
         return out
     
+    def terminate(self, out):
+        ''' Terminate experiment gracefully'''
+        self.stopPrompt.draw()
+        self.win.flip()
+        self.save_object(out, self.writeFileName("rescuedData"), ending='csv')
+        core.wait(10)
+        self.win.close()
+        core.quit()
     
     ###########################################################################
     # Normal Trials (methods prefaced with "t" may require response)
