@@ -1514,21 +1514,20 @@ class Experiment:
         demoBin = data.TrialHandler(self.trials_bin[:1], 1, method="sequential").trialList[0]
 
         ''' --- 1. Initial instructions and function decoder ------------------------'''
-        # # Navigation
-        # self.Instructions(part_key="Navigation3",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
-        #                   font="mono",
-        #                   fontcolor=self.color_dict["mid_grey"])
+        # Navigation
+        self.Instructions(part_key="Navigation3",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
+                          font="mono",
+                          fontcolor=self.color_dict["mid_grey"])
 
-        # # Introduction & Function Decoder
-        # self.Instructions(part_key="IntroMEG",
-        #                 special_displays=[self.iSingleImage],
-        #                 args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-        # self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec[:self.n_primitives] if self.test_mode else self.trials_prim_dec)
-        # fname = self.writeFileName("functionDecoder")
-        # self.save_object(self.df_out_5, fname, ending='csv')
-        self.move_prog_bar(end_width=milestones[0], n_steps=50, wait_s=0)
+        # Introduction & Function Decoder
+        self.Instructions(part_key="IntroMEG",
+                        special_displays=[self.iSingleImage],
+                        args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec[:self.n_primitives] if self.test_mode else self.trials_prim_dec)
+        fname = self.writeFileName("functionDecoder")
+        self.save_object(self.df_out_5, fname, ending='csv')
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",
