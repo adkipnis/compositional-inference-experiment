@@ -1529,8 +1529,10 @@ class Experiment:
         ''' --- 2. Primitive trials ------------------------------------------------'''
         self.Instructions(part_key="PrimitivesMEGR",
                           special_displays=[self.iSingleImage,
+                                            self.iSingleImage,
                                             self.iSingleImage],
                           args=[self.magicWand,
+                                self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue,
@@ -1542,23 +1544,27 @@ class Experiment:
                                   {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
         
         self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
-                                           streak_goal=goal_streak_p)
+                                           streak_goal=goal_streak_p,
+                                           decrease=False)    
         fname = self.writeFileName("primitiveTrials")
         self.save_object(self.df_out_6, fname, ending='csv')
         
         ''' --- 3. Binary trials ------------------------------------------------'''
         self.Instructions(part_key="BinariesMEGR",
                           special_displays=[self.iSingleImage,
+                                            self.iSingleImage,
                                             self.iSingleImage],
                           args=[self.magicWand,
+                                self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue],
                           kwargs=[{"trial": demoBin, "duration": 0.0},
                                   {"trial": demoBin, "duration": 0.0}])
         self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
-                                           cue_duration=0.9, decrease=False,
-                                           streak_goal=goal_streak_b)                          
+                                           streak_goal=goal_streak_b,
+                                           cue_duration=0.9,
+                                           decrease=False)                          
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
