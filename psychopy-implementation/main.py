@@ -13,8 +13,9 @@ exp.load_trials()
 exp.render_visuals()
 
 # Start experiment
-if exp.expInfo['session'] in [1, 2]:
-    eval(f"exp.Session{exp.expInfo['session']}()")
+s = exp.expInfo['session']
+if s in [1, 2]:
+    eval(f"exp.Session{s}()")
 else:
-    raise ValueError('A session with this number does not exist')
+    print('A session with this number does not exist.')
     exp.win.close()
