@@ -925,6 +925,7 @@ class Experiment:
     
     def terminate(self, out):
         ''' Terminate experiment gracefully'''
+        print("Aborting experiment due to lack of trials.")
         self.stopPrompt.draw()
         self.win.flip()
         self.save_object(out, self.writeFileName("rescuedData"), ending='csv')
@@ -1425,6 +1426,7 @@ class Experiment:
                                 [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
+        print("\nLearning first cue type.")
         # Learn first cue type
         self.learnDuration_1 = self.learnCues(min_duration=60)
         self.add2meta("learnDuration_1", self.learnDuration_1)
@@ -1442,6 +1444,7 @@ class Experiment:
         self.save_object(self.df_out_1, fname, ending='csv')
 
         # Learn second cue type
+        print("\nLearning second cue type.")
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]])
@@ -1458,6 +1461,7 @@ class Experiment:
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
+        print("\nLearning first test type.")
         self.Instructions(part_key="TestTypes",
                           special_displays=[self.iSingleImage],
                           args=[self.magicWand],
@@ -1485,6 +1489,7 @@ class Experiment:
         self.save_object(self.df_out_3, fname, ending='csv')
         
         # Second Test-Type
+        print("\nLearning second test type.")
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoard4"]],
@@ -1527,6 +1532,7 @@ class Experiment:
         demoBin = data.TrialHandler(self.trials_bin[:1], 1, method="sequential").trialList[0]
 
         ''' --- 1. Initial instructions and function decoder ------------------------'''
+        print("Starting Session 2 with adaptive decoder block.")
         # Navigation
         self.Instructions(part_key="Navigation3",
                           special_displays=[self.iSingleImage],
@@ -1543,6 +1549,7 @@ class Experiment:
         self.save_object(self.df_out_5, fname, ending='csv')
 
         ''' --- 2. Primitive trials ------------------------------------------------'''
+        print("\nStarting adaptive primitive block.")
         self.Instructions(part_key="PrimitivesMEGR",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage,
@@ -1566,6 +1573,7 @@ class Experiment:
         self.save_object(self.df_out_6, fname, ending='csv')
         
         ''' --- 3. Binary trials ------------------------------------------------'''
+        print("\nStarting adaptive compositional block.")
         self.Instructions(part_key="BinariesMEGR",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage,
