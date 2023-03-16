@@ -1497,7 +1497,7 @@ class Experiment:
         self.win.mouseVisible = False
         goal_streak_d = 1 if self.test_mode else 16 # decoder
         goal_streak_p = 1 if self.test_mode else 20 # primitives
-        goal_streak_b = 1 if self.test_mode else 10 # binaries
+        goal_streak_b = 1 if self.test_mode else 15 # binaries
         n_trials = [self.n_primitives * goal_streak_d,
                     self.n_primitives * goal_streak_p,
                     self.n_binaries * goal_streak_b]
