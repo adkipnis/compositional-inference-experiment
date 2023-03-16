@@ -882,7 +882,10 @@ class Experiment:
         '''
         map_name = "+".join(trial["map"])
         correct = trial["correct_resp"] == trial["emp_resp"]
-        fast = sum(trial["resp_RT"]) <= goal_rt
+        if isinstance(trial["resp_RT"], float):
+            fast = trial["resp_RT"] <= goal_rt
+        else:
+            fast = sum(trial["resp_RT"]) <= goal_rt
         
         if correct and fast and applicable and self.counter_dict[map_name] < streak_goal: 
             self.counter_dict[map_name] += 1
