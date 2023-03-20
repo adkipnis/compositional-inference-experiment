@@ -216,8 +216,6 @@ class Experiment:
                                        axis=0)
         self.n_primitives = len(self.map_names)
         self.n_binaries = len(self.map_names_bin)
-        self.n_exposure = 30  # this value should match in GenerateTrialLists
-        self.maxn_blocks = 4  # this value should match in GenerateTrialLists
 
         # Determine_positions
         self.rect_pos = self.circularGridPositions(
@@ -304,7 +302,7 @@ class Experiment:
 
         self.pauseText = visual.TextStim(
             self.win,
-            text="Short Break.\nContinue?",
+            text="Short Break.\nPress spacebar to continue.",
             height=1.8,
             pos=[0, -1],
             wrapWidth=30,
