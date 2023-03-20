@@ -924,6 +924,7 @@ class Experiment:
     def terminate(self, out):
         ''' Terminate experiment gracefully'''
         print("Aborting experiment due to lack of trials.")
+        self.add2meta("t_abort", data.getDateStr())
         self.stopPrompt.draw()
         self.win.flip()
         self.save_object(out, self.writeFileName("rescuedData"), ending='csv')
