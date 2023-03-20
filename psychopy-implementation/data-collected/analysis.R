@@ -33,13 +33,15 @@ for (fname in fnames) {
     names(tmp) = tmp[1,]
     tmp = tmp[-1,]
     tmp = cbind(id=id, tmp)
+    cols_to_remove = grep("duration_", names(tmp))
+    tmp = tmp[, -cols_to_remove]
     meta = bind_rows(meta, tmp)
     
   # case: performance data
   } else {
     n = nrow(tmp)
-    tmp$id = rep(id, nrow(tmp))
-    tmp$trialNum = seq(1, n)
+    tmp = cbind(trialNum=seq(1, n), tmp)
+    tmp = cbind(id=rep(id, nrow(tmp)), tmp)
     
     # case: cue memory data
     if (tmp["trial_type"][1,] == "cue_memory"){
