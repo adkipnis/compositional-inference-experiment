@@ -11,4 +11,6 @@ psychopy-testing/testing.py
 experiment-documents/consent-sheet.pdf
 experiment-documents/pay-sheet.pdf
 experiment-documents/consent-sheet.docx
+psychopy-implementation/data-collected/*.csv
+psychopy-implementation/data-collected/*.pdf
 psychopy-implementation/data-collected/.*
