@@ -27,8 +27,8 @@ for (fname in fnames){
     names(tmp) = tmp[1,]
     tmp = tmp[-1,]
     tmp = cbind(id=id, tmp)
-    cols_to_remove = grep("duration_", names(tmp))
-    tmp = tmp[, -cols_to_remove]
+    # cols_to_remove = grep("duration_", names(tmp))
+    # tmp = tmp[, -cols_to_remove]
     meta = bind_rows(meta, tmp)
     
     # case: performance data
@@ -52,29 +52,22 @@ for (fname in fnames){
     }
   }
 }
+tmp = NULL
 
 
-# ==== Preprocessing ===========================================================
-# discard participants without session 2
+# ==== Cue Learning ============================================================
+# Preprocessing
+cueTrials$idk = as.integer(is.na(cueTrials$emp_resp_0) | is.na(cueTrials$emp_resp_1))
+cueTrials = cueTrials %>% 
+  mutate(acc = ifelse(idk == 0, correct_resp_0 == emp_resp_0 & correct_resp_1 == emp_resp_1, 0),
+         rt = ifelse(is.na(resp_RT_1), resp_RT_0, resp_RT_0 + resp_RT_1)) %>%
+  filter(rt <= 15)
 
-# add/remove variables
-testTrials = testTrials[,-grep("applicable", names(testTrials))]
-cueTrials$rt = cueTrials$resp_RT_0 + cueTrials$resp_RT_1
-cueTrials$acc = factor(as.integer(cueTrials$correct_resp_0 == cueTrials$emp_resp_0 &
-                             cueTrials$correct_resp_1 == cueTrials$emp_resp_1))
-testTrials$acc = factor(as.integer(testTrials$correct_resp == testTrials$emp_resp))
-
-# discard outliers
-cueTrials = na.omit(cueTrials[cueTrials$rt <= 15,])
-
-
-# ==== Main analysis =======================================================
-# Cue Learning
-
+# Ridge plot
 ggplot(cueTrials, aes(y=id)) +
-  geom_density_ridges(aes(x = rt, fill = acc),
+  geom_density_ridges(aes(x = rt, fill = factor(acc)),
                       alpha = .6, color = "white",
-                      scale=1.3, rel_min_height=1e-05)+
+                      scale=1.2, rel_min_height=1e-05)+
   geom_vline(xintercept = 2, linetype="dashed", color = "darkred")+
   facet_wrap(~cue_type)+
   scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
@@ -84,11 +77,7 @@ ggplot(cueTrials, aes(y=id)) +
   theme_minimal(base_size = 14) +
   ylab("Subject ID") + xlab("Cue Memory RT [s]") +
   theme(
-    axis.line = element_line(
-      colour = "gray",
-      linewidth = 0.5,
-      linetype = "solid"
-    ),
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
     axis.text = element_text(size = 10),
     axis.text.x = element_text(hjust = 1, angle = 0),
     axis.text.y = element_text(vjust = 0, angle = 45), 
@@ -99,26 +88,35 @@ ggplot(cueTrials, aes(y=id)) +
     legend.position = "none"
   )
 
-dfCueLearning = cueTrials %>% group_by(id, acc, cue_type) %>%
-  summarize(mean_rt = mean(rt), sd = sd(rt))
+# Accuracy analysis
+dfCLAcc = cueTrials %>% group_by(id, cue_type) %>%
+  summarize(mean_acc = mean(acc),
+            mean_idk = mean(idk))
 
-ggplot(dfCueLearning, aes(x=cue_type, y=mean_rt, fill=acc)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd), alpha=0.3, linewidth=0.5, width=0.5, position=position_dodge(0.9))+
+# Bar plot
+dfCueLearning = cueTrials %>% group_by(id, acc, cue_type) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n())
+
+ggplot(dfCueLearning, aes(x=cue_type, y=mean_rt, fill=factor(acc))) +
+  geom_bar(stat="identity", position=position_dodge(), color = "white") +
+  geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd),
+                alpha=0.3, linewidth=0.5, width=0.5,
+                position=position_dodge(0.9))+
+  geom_text(aes(label = n, y = 0.5),
+            position=position_dodge(0.9),
+            color="white",
+            fontface = "bold") +
   facet_wrap(~id)+
-  scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
+  scale_fill_manual(values = c("darkred", "darkolivegreen4"))+
   scale_x_discrete(expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 10, 2)) +
+  scale_y_continuous(expand = c(0, 0),
+                     breaks = seq(0, 10, 2)) +
   theme_minimal()+
   guides(fill = guide_legend(title = "Accuracy"))+
   xlab("Cue Type") +
   ylab("Mean Cue Memory RT [s]") +
   theme(
-    axis.line = element_line(
-      colour = "gray",
-      linewidth = 0.5,
-      linetype = "solid"
-    ),
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
     axis.text = element_text(size = 10),
     axis.text.y = element_text(vjust = 0, angle = 0), 
     axis.title.x = element_text(margin = margin(t = 20)),
@@ -131,12 +129,19 @@ ggplot(dfCueLearning, aes(x=cue_type, y=mean_rt, fill=acc)) +
     legend.direction = "vertical",
   )
 
-# Test Learning
-testPracticeTrials = testTrials %>% filter(trial_type == "test_practice")
-testPracticeTrials = testPracticeTrials[testPracticeTrials$resp_RT <= 15,]
+
+
+# ==== Test Learning ===========================================================
+testTrials$applicable = NULL
+testTrials$idk = as.integer(is.na(testTrials$emp_resp))
+testTrials = testTrials %>%
+  mutate(acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
+         rt = resp_RT) 
+
+testPracticeTrials = testTrials %>% filter(trial_type == "test_practice", rt <= 15)
 
 ggplot(testPracticeTrials, aes(y=id)) +
-  geom_density_ridges(aes(x = resp_RT, fill = acc),
+  geom_density_ridges(aes(x = resp_RT, fill = factor(acc)),
                       alpha = .6, color = "white",
                       scale=1, rel_min_height=1e-05)+
   geom_vline(xintercept = 2, linetype="dashed", color = "darkred")+
@@ -148,11 +153,7 @@ ggplot(testPracticeTrials, aes(y=id)) +
   theme_minimal(base_size = 14) +
   ylab("Subject ID") + xlab("Cue Memory RT [s]") +
   theme(
-    axis.line = element_line(
-      colour = "gray",
-      linewidth = 0.5,
-      linetype = "solid"
-    ),
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
     axis.text = element_text(size = 10),
     axis.text.x = element_text(hjust = 1, angle = 0),
     axis.text.y = element_text(vjust = 0, angle = 45), 
@@ -163,12 +164,23 @@ ggplot(testPracticeTrials, aes(y=id)) +
     legend.position = "none"
   )
 
-dfTestPractice = testPracticeTrials %>% group_by(id, acc, test_type) %>%
-  summarize(mean_rt = mean(resp_RT), sd = sd(resp_RT))
 
-ggplot(dfTestPractice, aes(x=test_type, y=mean_rt, fill=acc)) +
+# Accuracy analysis
+dfTPAcc = testPracticeTrials %>% group_by(id, test_type) %>%
+  summarize(mean_acc = mean(acc),
+            mean_idk = mean(idk))
+
+# Bar plot
+dfTestPractice = testPracticeTrials %>% group_by(id, acc, test_type) %>%
+  summarize(mean_rt = mean(resp_RT), sd = sd(resp_RT), n=n())
+
+ggplot(dfTestPractice, aes(x=test_type, y=mean_rt, fill=factor(acc))) +
   geom_bar(stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd), alpha=0.3, linewidth=0.5, width=0.5, position=position_dodge(0.9))+
+  geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd), alpha=0.2, linewidth=0.5, width=0.5, position=position_dodge(0.9))+
+  geom_text(aes(label = n, y = 0.5),
+            position=position_dodge(0.9),
+            color="white",
+            fontface = "bold") +
   facet_wrap(~id)+
   scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
   scale_x_discrete(expand = c(0, 0)) +
@@ -178,11 +190,7 @@ ggplot(dfTestPractice, aes(x=test_type, y=mean_rt, fill=acc)) +
   xlab("Test Type") +
   ylab("Mean Test RT [s]") +
   theme(
-    axis.line = element_line(
-      colour = "gray",
-      linewidth = 0.5,
-      linetype = "solid"
-    ),
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
     axis.text = element_text(size = 10),
     axis.text.y = element_text(vjust = 0, angle = 0), 
     axis.title.x = element_text(margin = margin(t = 20)),
@@ -193,5 +201,56 @@ ggplot(dfTestPractice, aes(x=test_type, y=mean_rt, fill=acc)) +
     legend.position = "none"
   )
 
-# response time distributions (per cue/test type)
-# reduction of redundant spells 
+# Effect of Cues
+testPracticeTrials %>% filter(test_type == "count") %>%
+  ggplot(aes(y=id)) +
+  geom_density_ridges(aes(x = resp_RT, fill = factor(acc)),
+                      alpha = .6, color = "white",
+                      scale=1, rel_min_height=1e-05)+
+  geom_vline(xintercept = 2, linetype="dashed", color = "darkred")+
+  facet_wrap(~cue_type)+
+  scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 14, 2)) +
+  scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(cueTrials$id)))) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_size = 14) +
+  ylab("Subject ID") + xlab("Test RT for Count trials [s]") +
+  theme(
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
+    axis.text = element_text(size = 10),
+    axis.text.x = element_text(hjust = 1, angle = 0),
+    axis.text.y = element_text(vjust = 0, angle = 45), 
+    axis.title.x = element_text(margin = margin(t = 20)),
+    axis.title.y = element_text(margin = margin(r = 20)),
+    axis.title = element_text(size = 14, face = "bold"),
+    strip.text.x = element_text(size = 14, face = "bold.italic", vjust = 4),
+    legend.position = "none"
+  )
+
+testPracticeTrials %>% filter(test_type == "position") %>%
+  ggplot(aes(y=id)) +
+  geom_density_ridges(aes(x = resp_RT, fill = factor(acc)),
+                      alpha = .6, color = "white",
+                      scale=1, rel_min_height=1e-05)+
+  geom_vline(xintercept = 2, linetype="dashed", color = "darkred")+
+  facet_wrap(~cue_type)+
+  scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 14, 2)) +
+  scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(cueTrials$id)))) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_size = 14) +
+  ylab("Subject ID") + xlab("Test RT for Position trials [s]") +
+  theme(
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
+    axis.text = element_text(size = 10),
+    axis.text.x = element_text(hjust = 1, angle = 0),
+    axis.text.y = element_text(vjust = 0, angle = 45), 
+    axis.title.x = element_text(margin = margin(t = 20)),
+    axis.title.y = element_text(margin = margin(r = 20)),
+    axis.title = element_text(size = 14, face = "bold"),
+    strip.text.x = element_text(size = 14, face = "bold.italic", vjust = 4),
+    legend.position = "none"
+  )
+
+
+# ==== Session 2 ????===========================================================
