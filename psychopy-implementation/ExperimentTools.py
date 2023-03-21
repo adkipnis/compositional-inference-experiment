@@ -825,7 +825,7 @@ class Experiment:
         if unroll:
             self.drawAllAndFlip()
     
-    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.0):
+    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.5):
         ''' Subroutine for the cue practice trials'''
         # Init
         self.drawList = []
@@ -872,7 +872,7 @@ class Experiment:
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
         self.drawAllAndFlip()
-        core.wait(0.5)
+        core.wait(1.0)
     
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
@@ -896,7 +896,7 @@ class Experiment:
             self.counter_dict[map_name] -= 1
         print(self.counter_dict)
     
-    def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.0, mode="random"):
+    def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.5, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
         self.counter_dict = {map:0 for map in self.map_names}
         start_width_initial = self.start_width # progbar
