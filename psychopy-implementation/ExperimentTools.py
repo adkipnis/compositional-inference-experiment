@@ -1544,8 +1544,10 @@ class Experiment:
 
         # Introduction & Function Decoder
         self.Instructions(part_key="IntroMEG",
-                        special_displays=[self.iSingleImage],
-                        args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+                        special_displays=[self.iSingleImage,
+                                          self.iSingleImage],
+                        args=[self.magicChart,
+                              self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec[:self.n_primitives] if self.test_mode else self.trials_prim_dec)
         fname = self.writeFileName("functionDecoder")
         self.save_object(self.df_out_5, fname, ending='csv')
