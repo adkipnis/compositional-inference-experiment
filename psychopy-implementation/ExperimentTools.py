@@ -1317,7 +1317,7 @@ class Experiment:
 
     def adaptiveDecoderBlock(self, trial_df, 
                              fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
-                             pause_between_runs=True):
+                             pause_between_runs=True, test_goal=3):
         ''' block of decoder trials, enqueueing failed trials'''
         start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
@@ -1354,6 +1354,7 @@ class Experiment:
                     failed.append(trial)
                     print("# repeat:", len(failed))
                     # TODO do not fully discard non-applicable trials
+                    
             # Restart failed trials
             if trials.nRemaining == 0 and len(failed) > 0:
                 trials = data.TrialHandler(failed, 1, method="random")
@@ -1364,6 +1365,10 @@ class Experiment:
                 end_width = start_width_initial + len(out) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
             core.wait(1)
+            
+            # Terminate if goal is reached during test mode
+            if self.test_mode and len(out) >= test_goal:
+                break
         return out
         
     ###########################################################################
@@ -1518,9 +1523,9 @@ class Experiment:
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
-        goal_streak_d = 2 if self.test_mode else 16 # decoder
-        goal_streak_p = 2 if self.test_mode else 20 # primitives
-        goal_streak_b = 2 if self.test_mode else 15 # binaries
+        goal_streak_d = 1 if self.test_mode else 16 # decoder
+        goal_streak_p = 1 if self.test_mode else 20 # primitives
+        goal_streak_b = 1 if self.test_mode else 15 # binaries
         n_trials = [self.n_primitives * goal_streak_d,
                     self.n_primitives * goal_streak_p,
                     self.n_binaries * goal_streak_b]
@@ -1548,7 +1553,8 @@ class Experiment:
                                           self.iSingleImage],
                         args=[self.magicChart,
                               self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec[:self.n_primitives] if self.test_mode else self.trials_prim_dec)
+        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec,
+                                                  test_goal=n_trials[0])
         fname = self.writeFileName("functionDecoder")
         self.save_object(self.df_out_5, fname, ending='csv')
 
