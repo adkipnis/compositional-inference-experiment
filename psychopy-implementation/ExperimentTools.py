@@ -1518,9 +1518,9 @@ class Experiment:
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
-        goal_streak_d = 1 if self.test_mode else 16 # decoder
-        goal_streak_p = 1 if self.test_mode else 20 # primitives
-        goal_streak_b = 1 if self.test_mode else 15 # binaries
+        goal_streak_d = 2 if self.test_mode else 16 # decoder
+        goal_streak_p = 2 if self.test_mode else 20 # primitives
+        goal_streak_b = 2 if self.test_mode else 15 # binaries
         n_trials = [self.n_primitives * goal_streak_d,
                     self.n_primitives * goal_streak_p,
                     self.n_binaries * goal_streak_b]
@@ -1570,7 +1570,7 @@ class Experiment:
         
         self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
                                            streak_goal=goal_streak_p,
-                                           decrease=False)    
+                                           decrease=True)    
         fname = self.writeFileName("primitiveTrials")
         self.save_object(self.df_out_6, fname, ending='csv')
         
@@ -1590,7 +1590,7 @@ class Experiment:
         self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
                                            streak_goal=goal_streak_b,
                                            cue_duration=0.9,
-                                           decrease=False)                          
+                                           decrease=True)                          
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
