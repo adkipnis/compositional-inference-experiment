@@ -4,7 +4,8 @@
 
 rm(list = ls())
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-packages = c("stringr", "dplyr", "tidyr", "data.table", "glue", "ggplot2", "ggridges")
+packages = c("stringr", "dplyr", "tidyr", "forcats", "data.table", "glue",
+             "ggplot2", "ggridges", "viridis", "ggnewscale")
 lapply(packages, require, character.only=T)
 
 # ==== Load data ===============================================================
@@ -252,5 +253,43 @@ testPracticeTrials %>% filter(test_type == "position") %>%
     legend.position = "none"
   )
 
+# ==== Longitudinal plots ======================================================
 
-# ==== Session 2 ????===========================================================
+
+# Lasagna Plot
+cueTrialsLong = cueTrials %>% filter(id != "04") 
+  # mutate(id = fct_reorder(.f = id, .x = trialNum, .fun = max)) %>%
+  
+ggplot(cueTrialsLong, aes(x = trialNum, y = id)) +
+geom_raster(aes(fill = rt), data = subset(cueTrialsLong, acc == 1), alpha = 0.8) +
+# scale_fill_gradient("1-RT [s]", breaks = seq(0, 14, 2), 
+                       # low = "darkolivegreen4", high = "white") +
+scale_fill_gradientn("1-RT [s]",
+                     colors = c("goldenrod", "white", "darkolivegreen4"), 
+                     values = c(1.0, 2/18 + 0.01, 2/18 - 0.01, 0),
+                     breaks = seq(0, 14, 2)) +
+new_scale("fill") +
+geom_raster(aes(fill = rt), data = subset(cueTrialsLong, acc == 0)) +
+scale_fill_gradient("0-RT [s]", breaks = seq(0, 14, 2), 
+                       low = "thistle", high = "darkred")+
+facet_wrap(~cue_type, nrow = 3, scales = "free_y") +
+scale_x_continuous(expand = c(0, 0), breaks = seq(0, 140, 10)) +
+scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(cueTrialsLong$id)))) +
+coord_cartesian(clip = "off") +
+theme_minimal(base_size = 14) +
+ylab("Subject ID") + xlab("Trial Number") +
+labs(fill = "RT [s]") +
+theme(
+  panel.border = element_rect(colour = "gray", fill=NA, size=1),
+  axis.text = element_text(size = 10),
+  axis.text.x = element_text(hjust = 0.5, angle = 0),
+  axis.text.y = element_text(vjust = 0, angle = 45), 
+  axis.title.x = element_text(margin = margin(t = 20)),
+  axis.title.y = element_text(margin = margin(r = 20)),
+  axis.title = element_text(size = 14, face = "bold"),
+  legend.title = element_text(size = 14, face = "bold"),
+  strip.text.x = element_text(size = 14, face = "bold.italic",
+                              vjust = 4, margin = margin(t = 20)),
+)
+
+# ==== Session 2 ===============================================================
