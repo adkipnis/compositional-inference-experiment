@@ -1392,16 +1392,18 @@ class Experiment:
         id_is_odd = int(self.expInfo["participant"]) % 2 # 1 3 5 ...
         first_modality = "visual" if id_is_odd else "textual"
         second_modality = "textual" if id_is_odd else "visual"
+        self.add2meta("first_modality", first_modality)
 
         # Balance out which test type is learned first
         id_is_in_seq = int(self.expInfo["participant"]) % 4 in [1, 2] # 1 2 5 6 ...
         first_test = "count" if id_is_in_seq else "position"
         second_test = "position" if id_is_in_seq else "count"
+        self.add2meta("first_test", first_test)
         tFirst = self.tCount if id_is_in_seq else self.tPosition
         tSecond = self.tPosition if id_is_in_seq else self.tCount
         trials_test_1 = self.trials_prim_prac_c.copy() if id_is_in_seq else self.trials_prim_prac_p.copy()
         trials_test_2 = self.trials_prim_prac_p.copy() if id_is_in_seq else self.trials_prim_prac_c.copy()
-
+        
         # Get Demo trials
         demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
         demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
