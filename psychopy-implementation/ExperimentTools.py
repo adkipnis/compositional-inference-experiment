@@ -1389,17 +1389,18 @@ class Experiment:
         self.progbar_inc = 1/n_total
         
         # Balance out which cue modality is learned first
-        id_is_odd = int(self.expInfo["participant"]) % 2
+        id_is_odd = int(self.expInfo["participant"]) % 2 # 1 3 5 ...
         first_modality = "visual" if id_is_odd else "textual"
         second_modality = "textual" if id_is_odd else "visual"
 
         # Balance out which test type is learned first
-        first_test = "count" if id_is_odd else "position"
-        second_test = "position" if id_is_odd else "count"
-        tFirst = self.tCount if id_is_odd else self.tPosition
-        tSecond = self.tPosition if id_is_odd else self.tCount
-        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_odd else self.trials_prim_prac_p.copy()
-        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_odd else self.trials_prim_prac_c.copy()
+        id_is_in_seq = int(self.expInfo["participant"]) % 4 in [1, 2] # 1 2 5 6 ...
+        first_test = "count" if id_is_in_seq else "position"
+        second_test = "position" if id_is_in_seq else "count"
+        tFirst = self.tCount if id_is_in_seq else self.tPosition
+        tSecond = self.tPosition if id_is_in_seq else self.tCount
+        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_in_seq else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_in_seq else self.trials_prim_prac_c.copy()
 
         # Get Demo trials
         demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
