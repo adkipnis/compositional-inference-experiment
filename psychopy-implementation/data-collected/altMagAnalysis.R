@@ -56,6 +56,7 @@ if (loadRaw) {
     }
   }
   tmp = NULL
+  testTrials$applicable = NULL
   
   # Save each df
   save(meta, file="meta.RData")
@@ -206,7 +207,7 @@ makeWaves(cueTrials, "cue_type", "Cue Memory")
 
 # ==== Test Learning ===========================================================
 # Pre-processing
-testTrials$applicable = NULL
+
 testTrials = testTrials %>%
   mutate(idk = as.integer(is.na(emp_resp)),
          acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
@@ -258,11 +259,19 @@ testPracticeTrials %>% filter(!is.na(rt)) %>%
 # ==== Longitudinal plots ======================================================
 # --- Lasagne Plots for Session 1
 cueTrials %>% filter(id != "04") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
   cookLasagne("cue_type", threshold=2.5)
 cookLasagne(testPracticeTrials, "test_type")
 
 # --- Lasagne Plots for Session 2
-# testTrials %>% filter(trial_type == "prim_decoder") %>%
-# mutate(rt = ifelse(rt <= 14.0, rt, NA)) %>%
-# cookLasagne()
+testTrials %>% filter(trial_type == "prim_decoder") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne()
 
+testTrials %>% filter(trial_type == "generic" & map_type == "primitive") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne()
+
+testTrials %>% filter(trial_type == "generic" & map_type != "primitive") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne()
