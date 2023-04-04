@@ -7,53 +7,67 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 packages = c("stringr", "dplyr", "tidyr", "forcats", "data.table", "glue",
              "ggplot2", "ggridges", "viridis", "ggnewscale")
 lapply(packages, require, character.only=T)
+loadRaw = F
 
 # ==== Load data ===============================================================
-fnames = list.files(pattern="data", recursive=T, full.names=T)
-cueTrials = data.frame()
-testTrials = data.frame()
-meta = data.frame()
-for (fname in fnames){
-  # get ID
-  idx = as.integer(str_locate_all(pattern = "id=", fname)[[1]][,2])
-  id = substr(fname, start=idx+1, stop=idx+2)
-  
-  # read file
-  tmp = read.csv(fname, header=T)
-  
-  
-  # case: participant data
-  if (grepl("meta", fname, fixed=T)){
-    tmp = transpose(tmp)
-    names(tmp) = tmp[1,]
-    tmp = tmp[-1,]
-    tmp = cbind(id=id, tmp)
-    # cols_to_remove = grep("duration_", names(tmp))
-    # tmp = tmp[, -cols_to_remove]
-    meta = bind_rows(meta, tmp)
+if (loadRaw) {
+  fnames = list.files(pattern="data", recursive=T, full.names=T)
+  cueTrials = data.frame()
+  testTrials = data.frame()
+  meta = data.frame()
+  for (fname in fnames){
+    # get ID
+    idx = as.integer(str_locate_all(pattern = "id=", fname)[[1]][,2])
+    id = substr(fname, start=idx+1, stop=idx+2)
     
-    # case: performance data
-  } else {
-    n = nrow(tmp)
-    tmp = cbind(trialNum=seq(1, n), tmp)
-    tmp = cbind(id=rep(id, nrow(tmp)), tmp)
+    # read file
+    tmp = read.csv(fname, header=T)
     
-    # case: cue memory data
-    if (tmp["trial_type"][1,] == "cue_memory"){
-      cueTrials = bind_rows(cueTrials, tmp)
+    
+    # case: participant data
+    if (grepl("meta", fname, fixed=T)){
+      tmp = transpose(tmp)
+      names(tmp) = tmp[1,]
+      tmp = tmp[-1,]
+      tmp = cbind(id=id, tmp)
+      cols_to_remove = grep("duration_", names(tmp))
+      tmp = tmp[, -cols_to_remove]
+      meta = bind_rows(meta, tmp)
       
-      # case: test data
+      # case: performance data
     } else {
-      tmp$target = as.character(tmp$target)
-      tmp$resp_options_0 = as.character(tmp$resp_options_0)
-      tmp$resp_options_1 = as.character(tmp$resp_options_1)
-      tmp$resp_options_2 = as.character(tmp$resp_options_2)
-      tmp$resp_options_3 = as.character(tmp$resp_options_3)
-      testTrials = bind_rows(testTrials, tmp)
+      n = nrow(tmp)
+      tmp = cbind(trialNum=seq(1, n), tmp)
+      tmp = cbind(id=rep(id, nrow(tmp)), tmp)
+      
+      # case: cue memory data
+      if (tmp["trial_type"][1,] == "cue_memory"){
+        cueTrials = bind_rows(cueTrials, tmp)
+        
+        # case: test data
+      } else {
+        tmp$target = as.character(tmp$target)
+        tmp$resp_options_0 = as.character(tmp$resp_options_0)
+        tmp$resp_options_1 = as.character(tmp$resp_options_1)
+        tmp$resp_options_2 = as.character(tmp$resp_options_2)
+        tmp$resp_options_3 = as.character(tmp$resp_options_3)
+        testTrials = bind_rows(testTrials, tmp)
+      }
     }
   }
+  tmp = NULL
+  
+  # Save each df
+  save(meta, file="meta.RData")
+  save(cueTrials, file="cueTrials.RData")
+  save(testTrials, file="testTrials.RData")
+
+} else {
+  # Load each df
+  load(file="meta.RData")
+  load(file="cueTrials.RData")
+  load(file="testTrials.RData")
 }
-tmp = NULL
 
 # ==== Plotting functions ======================================================
 raiseBars = function(df, xvar="", xlabel="", ylabel="", dropLegend=F){
@@ -177,14 +191,14 @@ cueTrials = cueTrials %>% mutate(
 # firstModalities = cueTrials %>% filter(trialNum == 1) %>% group_by(id) %>% slice_min(start_time)
 
 # Accuracy analysis
-(dfCLAcc = cueTrials %>% group_by(id, cue_type) %>%
+cueTrials %>% group_by(id, cue_type) %>%
   summarize(mean_acc = mean(acc),
-            mean_idk = mean(idk)))
+            mean_idk = mean(idk))
 
 #  Bar plot
-dfCueLearning = cueTrials %>% group_by(id, acc, cue_type) %>%
-  summarize(mean_rt = mean(rt), sd = sd(rt), n=n())
-raiseBars(dfCueLearning, "cue_type", "Cue Type", "Mean Cue Memory")
+cueTrials %>% group_by(id, acc, cue_type) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("cue_type", "Cue Type", "Mean Cue Memory")
 
 # Ridge plot
 makeWaves(cueTrials, "cue_type", "Cue Memory")
@@ -206,18 +220,16 @@ testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
 
 
 # Accuracy analysis
-dfTPAcc = testPracticeTrials %>% group_by(id, test_type) %>%
+testPracticeTrials %>% group_by(id, test_type) %>%
   summarize(mean_acc = mean(acc),
             mean_idk = mean(idk))
 
 
 # Bar plot
-dfTestPractice = testPracticeTrials %>% filter(!is.na(rt)) %>%
+testPracticeTrials %>% filter(!is.na(rt)) %>%
   group_by(id, acc, test_type) %>%
-  summarize(mean_rt = mean(rt), sd = sd(rt), n=n())
-
-raiseBars(dfTestPractice, "test_type", "Test Type", "Mean Test", dropLegend=T)
-
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("test_type", "Test Type", "Mean Test", dropLegend=T)
 
 # Ridge plot
 makeWaves(testPracticeTrials, "test_type", "Test")
@@ -246,7 +258,7 @@ testPracticeTrials %>% filter(!is.na(rt)) %>%
 # ==== Longitudinal plots ======================================================
 # --- Lasagne Plots for Session 1
 cueTrials %>% filter(id != "04") %>%
-  cookLasagne("cue_type")
+  cookLasagne("cue_type", threshold=2.5)
 cookLasagne(testPracticeTrials, "test_type")
 
 # --- Lasagne Plots for Session 2
