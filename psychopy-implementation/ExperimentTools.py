@@ -1321,6 +1321,7 @@ class Experiment:
         ''' block of decoder trials, enqueueing failed trials'''
         start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
+        succeeded = []
         failed = []
         out = []
         
@@ -1346,14 +1347,14 @@ class Experiment:
                     run_number += 1
                 
             # Enqueue trials with applicable map according to performance
+            out.append(trial)
             if trial["applicable"]:
                 if trial["correct_resp"] == trial["emp_resp"] and trial["resp_RT"] <= goal_rt:
-                    out.append(trial)
-                    print("# correct:", len(out))
+                    succeeded.append(trial)
+                    print("# correct:", len(succeeded))
                 else:
                     failed.append(trial)
                     print("# repeat:", len(failed))
-                    # TODO do not fully discard non-applicable trials
                     
             # Restart failed trials
             if trials.nRemaining == 0 and len(failed) > 0:
@@ -1362,7 +1363,7 @@ class Experiment:
             
             # Update progress bar
             if self.show_progress:
-                end_width = start_width_initial + len(out) * self.progbar_inc
+                end_width = start_width_initial + len(succeeded) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
             core.wait(1)
             
