@@ -71,13 +71,13 @@ if (loadRaw) {
 }
 
 # ==== Plotting functions ======================================================
-raiseBars = function(df, xvar="", xlabel="", ylabel="", dropLegend=F){
+raiseBars = function(df, xvar="", xlabel="", ylabel="", text_y=0.5, dropLegend=F){
   p = ggplot(df, aes(x=get(xvar), y=mean_rt, fill=factor(acc))) +
     geom_bar(stat="identity", position=position_dodge(), color = "white") +
     geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd),
                   alpha=0.3, linewidth=0.5, width=0.5,
                   position=position_dodge(0.9))+
-    geom_text(aes(label = n, y = 0.5),
+    geom_text(aes(label = n, y = text_y),
               position=position_dodge(0.9),
               color="white",
               fontface = "bold") +
@@ -142,12 +142,13 @@ makeWaves = function(dfLong, facetvar="", xlabel="", threshold=2.0){
   return(p)
 }
 
-cookLasagne = function(dfLong, facetvar="", threshold=2.0){
+cookLasagne = function(dfLong, facetvar="", title="", threshold=2.0){
   p = ggplot(dfLong, aes(x = trialNum, y = id)) +
     geom_raster(aes(fill = rt), data = subset(dfLong, acc == 1), alpha = 0.8) +
     scale_fill_gradientn("1-RT [s]",
                          colors = c("goldenrod", "white", "darkolivegreen4"), 
-                         values = c(1.0, threshold/14 + 0.01, threshold/14 - 0.01, 0),
+                         values = c(1.0, threshold/14 + 0.01,
+                                    threshold/14 - 0.01, 0),
                          breaks = seq(0, 14, 2),
                          limits = c(0,14)) +
     new_scale("fill") +
@@ -167,6 +168,7 @@ cookLasagne = function(dfLong, facetvar="", threshold=2.0){
     theme_minimal(base_size = 14) +
     xlab("Trial Number") +
     ylab("Subject ID") +
+    ggtitle(title) +
     theme(
       panel.border = element_rect(colour = "gray", fill=NA, size=1),
       axis.text = element_text(size = 10),
@@ -178,19 +180,36 @@ cookLasagne = function(dfLong, facetvar="", threshold=2.0){
       legend.title = element_text(size = 14, face = "bold", vjust = 2),
       strip.text.x = element_text(size = 14, face = "bold.italic", vjust = 4,
                                   margin = margin(t = 20)),
+      plot.title = element_text(face = "bold", size=16, hjust=0.5),
     )
   return(p)
 }
 
-# ==== Cue Learning ============================================================
-# Pre-processing
+
+# ==== Pre-Processing ==========================================================
 cueTrials = cueTrials %>% mutate(
   idk = as.integer(is.na(cueTrials$emp_resp_0) | is.na(cueTrials$emp_resp_1)),
-  acc = ifelse(idk == 0, correct_resp_0 == emp_resp_0 & correct_resp_1 == emp_resp_1, 0),
+  acc = ifelse(idk == 0, correct_resp_0 == emp_resp_0 &
+                 correct_resp_1 == emp_resp_1, 0),
   rt = ifelse(is.na(resp_RT_1), resp_RT_0, resp_RT_0 + resp_RT_1)) %>%
   filter(rt <= 15)
-# firstModalities = cueTrials %>% filter(trialNum == 1) %>% group_by(id) %>% slice_min(start_time)
 
+testTrials = testTrials %>%
+  mutate(idk = as.integer(is.na(emp_resp)),
+         acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
+         rt = resp_RT) 
+
+testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
+  mutate(rt = ifelse(rt <= 14.0, rt, NA))
+
+dualTrials = testTrials %>% filter(trial_type == "generic" & !is.na(rt))
+
+# firstModalities = cueTrials %>% filter(trialNum == 1) %>% group_by(id) %>%
+# slice_min(start_time)
+# firstTest = testTrials %>% filter(trialNum == 1) %>%
+# group_by(id) %>% slice_min(start_time)
+
+# ==== Cue Learning ============================================================
 # Accuracy analysis
 cueTrials %>% group_by(id, cue_type) %>%
   summarize(mean_acc = mean(acc),
@@ -206,20 +225,6 @@ makeWaves(cueTrials, "cue_type", "Cue Memory")
 
 
 # ==== Test Learning ===========================================================
-# Pre-processing
-
-testTrials = testTrials %>%
-  mutate(idk = as.integer(is.na(emp_resp)),
-         acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
-         rt = resp_RT) 
-
-testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
-  mutate(rt = ifelse(rt <= 14.0, rt, NA))
-
-# firstTest = testTrials %>% filter(trialNum == 1) %>%
-# group_by(id) %>% slice_min(start_time)
-
-
 # Accuracy analysis
 testPracticeTrials %>% group_by(id, test_type) %>%
   summarize(mean_acc = mean(acc),
@@ -261,17 +266,42 @@ testPracticeTrials %>% filter(!is.na(rt)) %>%
 cueTrials %>% filter(id != "04") %>%
   mutate(rt = ifelse(idk == 1, NA, rt)) %>%
   cookLasagne("cue_type", threshold=2.5)
-cookLasagne(testPracticeTrials, "test_type")
+testPracticeTrials %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne("test_type")
 
 # --- Lasagne Plots for Session 2
 testTrials %>% filter(trial_type == "prim_decoder") %>%
   mutate(rt = ifelse(idk == 1, NA, rt)) %>%
-  cookLasagne()
+  cookLasagne(title="Decoder Block")
 
 testTrials %>% filter(trial_type == "generic" & map_type == "primitive") %>%
   mutate(rt = ifelse(idk == 1, NA, rt)) %>%
-  cookLasagne()
+  cookLasagne(title="Primitive Block")
 
 testTrials %>% filter(trial_type == "generic" & map_type != "primitive") %>%
   mutate(rt = ifelse(idk == 1, NA, rt)) %>%
-  cookLasagne()
+  cookLasagne(title="Composed Block")
+
+# ==== Primitive vs Composed ===================================================
+# Correlation of accurarcy
+dualTrials %>% group_by(id, map_type) %>%
+  mutate(map_type = ifelse(map_type == "primitive", map_type, "composed")) %>%
+  summarize(mean_acc = mean(acc)) %>%
+  pivot_wider(id_cols = id, names_from = "map_type", values_from = "mean_acc") %>% 
+  ungroup() %>% summarise(correlation = cor(primitive, composed))
+
+# test RT per map_type
+dualTrials %>% group_by(id, map_type, acc) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("map_type", "Spell Type", "Mean Test", dropLegend=T) +
+  scale_x_discrete(limits = c("primitive", "second-only", "generic"))
+
+# inter RT per map_type
+dualTrials %>% group_by(id, map_type, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("map_type", "Spell Type", "Mean Intermediate",
+            text_y=1.1, dropLegend=T) +
+  scale_x_discrete(limits = c("primitive", "second-only", "generic")) +
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 2)) 
+  
