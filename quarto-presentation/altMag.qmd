@@ -292,9 +292,31 @@ linpredVsResiduals = function(model){
 }
 
 responseVsFitted = function(model){
-  resp = getResponse(model, level = 0)
-  
-  
+  resp = getResponse(model)
+  preds = predict(model, type="response", level=0)
+  resp_df = data.frame(id = names(resp), resp = resp, preds = preds)
+
+  p = ggplot(resp_df, aes(resp, preds)) +
+    geom_point(alpha = .5) +
+    geom_smooth(aes(col = id), alpha = .3, method = "loess", se = FALSE) +
+    geom_smooth(method = "loess", se = FALSE, size = 2, col = "black") +
+    geom_abline(slope = 1, intercept = 0, lty = "dashed")+
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    xlab("response") +
+    ylab("fitted") +
+    labs(col = "Subject") +
+    theme_minimal() +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      panel.spacing = unit(2.5, "lines"),
+      plot.margin = margin(1, 1, 0, 0, "cm")
+    )
+  return(p)
 }
 ```
 
@@ -598,23 +620,35 @@ dualTrials %>%
 
 ## Inferential statistics
 
-The following analyses are based on the trials from the `single`and `double spell block`.
+The following analyses are based on the trials from the `single`and `double spell block` after a participant-based outlier-analysis.
 
 ```{r}
 #| include: false
 # remove "pooled" subject and add trial number (across the whole session) 
+dualTrialsBak = dualTrials
 dualTrials = dualTrials %>% filter(id != "pooled") %>%
   group_by(id) %>% arrange(start_time) %>%
   mutate(trialNumTotal = row_number(), trans_delta = trans_ub - trans_lb) %>% arrange(id)
 
 # set some reference variables
-dualTrials$map_type = factor(dualTrials$map_type, ordered=F)
-dualTrials$map_type = relevel(dualTrials$map_type, ref = "primitive")
-dualTrials$test_type = factor(dualTrials$test_type, ordered=F)
-dualTrials$test_type = relevel(dualTrials$test_type, ref = "count")
+dualTrials = dualTrials %>%
+  mutate(double_spell = factor(map_type %in% c("generic", "second-only")),
+         reducible = factor(map_type == "second-only"),
+         test_type = relevel(factor(test_type, ordered=F), ref = "count"))
 dualTrials$map_0 = NULL
 dualTrials$map_1 = NULL
-dualTrials = na.omit(dualTrials)
+
+```
+
+```{r}
+#| label: Outlier analysis
+limits = dualTrials %>% group_by(id) %>%
+  summarize(lower = max(0.2, mean(rt) - 2*sd(rt)),
+            upper = mean(rt) + 2*sd(rt),
+            n_within = sum(rt >= lower & rt <= upper),
+            pct_within = n_within / n() * 100)
+dualTrialsClean = merge(dualTrials, limits, by = "id") %>%
+  filter(rt >= lower, rt <= upper) %>% na.omit()
 
 ```
 
@@ -625,17 +659,18 @@ Let us first fit separate linear models and assess the parameter interval estima
 ```{r}
 #| warning: false
 gd = groupedData(
-  log(rt) ~ cue_type + map_type + test_type + acc + trialNumTotal|id,
-                 data = dualTrials)
-lm_separate = nlme::lmList(log(rt) ~  cue_type + map_type + test_type + acc + trialNumTotal,
-                     data = gd)
+  log(rt) ~ cue_type + double_spell + test_type + acc + trialNumTotal|id,
+                 data = dualTrialsClean)
+lm_separate = nlme::lmList(
+  log(rt) ~  cue_type + double_spell + test_type + acc + trialNumTotal,
+  data = gd)
 plot(intervals(lm_separate))
 
 ```
 
 -   Least overlap in CI's for the intercept: adding a random intercept seems adequate.
 
--   A random slope may be useful for the factor `acc`.
+-   <s> A random slope may be useful for the factor `acc`.</s>
 
 ::: callout-note
 ## Assumptions
@@ -654,8 +689,8 @@ where random effects $\mathbf b_i$ are independent from errors $\boldsymbol \eps
 :::
 
 ```{r}
-ri_model = lme(log(rt) ~ trialNumTotal + acc + cue_type + map_type + test_type,
-               random = ~ 1 | id, data = dualTrials)
+ri_model = lme(log(rt) ~ trialNumTotal + acc + inter_RT + cue_type + double_spell + test_type,
+               random = ~ 1 | id, data = dualTrialsClean)
 rirs_model = update(ri_model, random = ~ 1 + acc | id)
 anova(ri_model, rirs_model)
 
@@ -672,16 +707,17 @@ In order to evaluate the model fit, we plot the population-specific residuals $\
 
 ```{r}
 #| warning: false
-
 linpredVsResiduals(ri_model) +
-  scale_x_continuous(breaks = seq(-0.2, 0.5, 0.1), limits = c(-0.25, 0.55)) +
+  scale_x_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32)) +
   scale_y_continuous(breaks = seq(-1.5, 1.5, 0.5), limits = c(-1.7, 1.7))
 
 # add response vs fitted
-
+responseVsFitted(ri_model) +
+  scale_x_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32)) +
+  scale_y_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32))
 ```
 
-Overall more *under-* than *overestimation* but the mean structure seems to be correctly specified. We can now inspect the RI model summary.
+Overall same amount of *under-* and *overestimation* but the mean structure seems to be correctly specified. We can now inspect the RI model summary.
 
 ```{r}
 # tidy(ri_model)
@@ -691,11 +727,11 @@ summary(ri_model)
 
 **Take-aways:**
 
--   The expected log RTs can be approximated adequately by a linear function of `map type`, `test type`, `accuracy` and `trial number`. A random intercept is warranted, random slopes do not appear necessary.
+-   The expected log RTs can be approximated adequately by a linear function of `double spell`, `test type`, `inter RT` and `trial number`. A random intercept is warranted, random slopes do not appear necessary.
 
--   Reactions for `double spells` are significantly slower (regardless of reducibility). Reactions for `position tests` are also significantly slower (which may be an artifact: the response options are fixed for `count` trials, not for `position` trials).
+-   Reactions for `double spells` are significantly slower. Reactions for `position tests` are also significantly slower (which may be an artifact: the response options are fixed for `count` trials, not for `position` trials).
 
--   Accurate responses are significantly faster. All responses become significantly *faster over time*, which may indicate *further learning* in session 2.
+-   All responses become significantly *faster over time*, which may indicate *further learning* in session 2.
 
 ### Models for interim RTs
 
@@ -704,19 +740,19 @@ Repeat procedure for the duration until participants indicate that they are done
 ```{r}
 #| warning: false
 gd = groupedData(
-  log(inter_RT) ~ cue_type + map_type + test_type + trans_ub + acc + trialNumTotal|id, data = dualTrials)
+  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = dualTrialsClean)
 lm_separate = nlme::lmList(
-  log(inter_RT) ~ cue_type + map_type + test_type + trans_ub + acc + trialNumTotal|id, data = gd)
+  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = gd)
 plot(intervals(lm_separate))
 
 ```
 
-A random intercept and slopes for `trial number` seems adequate. The *ICC* is higher with `r round(icc, digits = 2)`.
+A random intercept and slopes for `trial number` or `reducible` seems adequate.
 
 ```{r}
-ri_model = lme(log(inter_RT) ~ cue_type + map_type + test_type + trans_ub + acc + trialNumTotal,
-               random = ~ 1 | id, data = dualTrials)
-rirs_model = update(ri_model, random = ~ 1 + trialNumTotal | id)
+ri_model = lme(log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + acc + trialNumTotal,
+               random = ~ 1 | id, data = dualTrialsClean)
+rirs_model = update(ri_model, random = ~ 1 + reducible | id)
 anova(ri_model, rirs_model)
 
 d_squared = getVarCov(rirs_model)[1]
@@ -724,21 +760,44 @@ sigma_squared = rirs_model$sigma^2
 icc = d_squared / (d_squared + sigma_squared)
 ```
 
-This time an additional random slope is warranted by the marginal information criteria.
+This time an additional random slope is warranted by the marginal information criteria. The *ICC* is `r round(icc, digits = 2)`. Next, we test if knowledge about the amount of possibly skip-able transformations (`trans_delta`) improves the model fit.
 
 ```{r}
-rirs_model_ie = update(rirs_model, fixed = log(inter_RT) ~ cue_type + map_type + test_type + trans_ub + trans_delta + acc + trialNumTotal)
+#| warning: False
+rirs_model_ie = update(rirs_model, fixed = log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + trans_delta + acc + trialNumTotal)
 anova(rirs_model, rirs_model_ie)
 ```
 
-However, the amount of possibly skip-able transformations (`trans_delta`) does not seem to improve the model fit sufficiently.
+`trans_delta` does not seem to improve the model fit sufficiently. Finally, view error diagnostics:
 
 ```{r}
 #| warning: false
 linpredVsResiduals(rirs_model) +
-  scale_x_continuous(breaks = seq(0.2, 0.8, 0.1), limits = c(0.15, 0.85)) +
-  scale_y_continuous(breaks = seq(-1.5, 2.0, 0.5), limits = c(-1.7, 2.2))
+  scale_x_continuous(breaks = seq(0.2, 0.8, 0.1), limits = c(0.19, 0.81)) +
+  scale_y_continuous(breaks = seq(-1.5, 2.0, 0.5), limits = c(-1.6, 2.1))
+
+responseVsFitted(rirs_model) + 
+  scale_x_continuous(breaks = seq(-1, 3, 0.5), limits = c(-1.1, 3.1)) +
+  scale_y_continuous(breaks = seq(0.5, 2.0, 0.5), limits = c(0.4, 2.1))
 ```
+
+```{r}
+summary(rirs_model)
+```
+
+**Take-aways:**
+
+-   The expected log interim RTs can be approximated moderately well by a linear function of `cue type + double spell + reducible + trans_ub + acc + trialNumTotal`.
+
+-   A random intercept and a random slope for reducibility are warranted. The amount of possibly skip-able transformations bares no additional information about the expected interim RT.
+
+-   Processing time for `double spells` is substantially bigger than for single spells.
+
+-   Counterintuitively, `reducibility` incurs additional processing costs.
+
+-   The bigger the number of to be transformed objects (`trans_ub`) the *smaller* the processing time. This may be due to displays with multiple duplicate items (such that they can be transformed simultaneously) -\> GAMM?
+
+-   Again, participants become significantly *faster over time*, which may indicate *further learning* in session 2.
 
 ### Models for response accuracy
 
@@ -758,23 +817,50 @@ $$
 
 ```{r}
 ri_gmodel = glmer(
-  acc ~ trialNumTotal + cue_type + map_type + test_type + (1|id),
-  data=dualTrials, family=binomial, nAGQ=20)
+  acc ~ trialNumTotal + inter_RT + cue_type +  reducible + (1|id),
+  data=dualTrialsClean, family=binomial, nAGQ=20)
 summary(ri_gmodel)
 ```
 
--   The odds of an accurate response *for a given subject* is `r round(exp(ri_gmodel@beta[1]), digits=2)` [^2].
+```{r}
+#| label: sensitivity/specificity
+#| warning: false
+classificationPerformance = function(model){
+  pred = predict(model, type = "response")
+  pred_class = ifelse(pred > 0.5, 1, 0)
+  true_class = model@resp[["y"]]
+  
+  # Calculate sensitivity and specificity
+  TP = sum(true_class == 1 & pred_class == 1)
+  TN = sum(true_class == 0 & pred_class == 0)
+  FP = sum(true_class == 0 & pred_class == 1)
+  FN = sum(true_class == 1 & pred_class == 0)
+  sensitivity = TP / (TP + FN)
+  specificity = TN / (TN + FP)
+  
+  # Print the results
+  cat("Sensitivity:", sensitivity, "\n")
+  cat("Specificity:", specificity, "\n")
+}
 
--   They only seem to be sensitive above chance to `second-only` spells which decrease the odds (c.p.) by a factor of `r round(exp(ri_gmodel@beta[5]), digits=2)`.
+classificationPerformance(ri_gmodel)
 
--   While `generic` double spells decrease the odds (c.p.) by a factor of `r round(exp(ri_gmodel@beta[4]), digits=2)`, the effect does not reach statistical significance.
+```
+
+-   The model cannot explain incorrect responses.
+
+-   The odds of an accurate response *for a given subject* is `r round(exp(ri_gmodel@beta[1]), digits=2)` [^2]. They also increased slightly but above chance across the experiment.
+
+-   The time participants took to apply the function (`inter_RT`) was the best predictor of accuracy: Every additional required second decreased the odds (c.p.) by a factor of `r round(exp(ri_gmodel@beta[3]), digits=2)`.
+
+-   They do not seem to be sensitive above chance to `reducible` spells. Adding the factor `double_spell` is redundant to `inter_rt` and results in a singular fit.
 
 [^2]: At the start of the experiment for primitive trials with a text cue and count test.
 
 ```{=html}
-<!-- 
-(1) compositionality: RT for double spells based on average from used primitives vs other, maybe incorporate trial number as IE
+<!--
+(1) check hypotheses from your exposé 
 (2) AHA moments (jump in RT for second-only)
-(3) check hypotheses from your exposé 
+(3) compositionality: RT for double spells based on average from used primitives vs other, maybe incorporate trial number as IE
 -->
 ```
