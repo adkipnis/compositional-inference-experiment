@@ -63,7 +63,10 @@ cueTrials = cueTrials %>% mutate(
 testTrials = testTrials %>% 
   mutate(idk = as.integer(is.na(emp_resp)),
          acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
-         rt = resp_RT) 
+         rt = resp_RT, 
+         spell = ifelse(map_type == "primitive", map_0, paste0(map_0,";",map_1)))
+testTrials$map_0 = NULL
+testTrials$map_1 = NULL
 
 testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
   mutate(rt = ifelse(rt <= 14.0, rt, NA))
@@ -422,6 +425,21 @@ testTrials %>%
   
 ```
 
+```{r}
+#| warning: false
+#| label: fig-reducible-long
+#| fig-cap: "Same as before but only reducible spells are shown. Trial number was recalculated after filtering out other spell types."
+testTrials %>%
+  filter(trial_type == "generic" & map_type == "second-only") %>%
+  group_by(id) %>%
+  arrange(start_time) %>%
+  mutate(trialNum = row_number(),
+         rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne(title="Reducible Double Spells only") +
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 24, 4)) +
+   theme(plot.margin = margin(0.5, 0.25, 0.25, 0.5, "cm"))
+```
+
 **Take-aways:**
 
 -   Similar pattern here (and surprisingly few errors in double spells)
@@ -555,6 +573,40 @@ testPracticeTrials %>%
 
 -   **unclear effect on accuracy**: clearly worse in participants *01/08*, better for *06* fairly even for the rest
 
+### Spells profiles
+
+```{r}
+#| warning: false
+#| label: fig-spell-profiles
+#| fig-cap: "Average participant-wise reaction times and trial counts per *spell*. <br> Error bars indicate standard deviation."
+#| fig-subcap:
+#|   - "Intermediate reaction time (time until spell was applied)."
+#|   - "Test reaction time (time until subsequent test was solved)."
+
+dualTrials %>%
+  group_by(id, spell, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("spell", "Spell Type", "Mean Intermediate",
+            text_y=1.5, textsize=3, dropLegend=T) +
+  scale_x_discrete(limits = c("A-B", "B-A", "C-D", "B-A;A-B", "A-B;C-D", "C-D;B-A"))+
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
+  scale_fill_manual(values = c("thistle4", "slategray3")) +
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5, hjust=1, angle = 90))
+
+dualTrials %>% group_by(id, spell, acc) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("spell", "Spell", "Mean Test", dropLegend=T,
+            text_y = 0.4, textsize=3) +
+  scale_x_discrete(limits = c("A-B", "B-A", "C-D", "B-A;A-B", "A-B;C-D", "C-D;B-A"))+
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5,  hjust=1, angle = 90))
+```
+
+**Take-aways:**
+
+-   For some participants, spells with the schema `A-B` and `B-A` seem to take longer than `C-D`, perhaps because they are more confusable.
+-   For the same participants, the reducible double spell `A-B;B-A` actually takes longer on average. For the rest there seems to be no substantial difference.
+-   The mean test RTs are almost uniform with regard to different spells.
+
 ### Single vs. Double Spells
 
 ```{r}
@@ -635,8 +687,6 @@ dualTrials = dualTrials %>%
   mutate(double_spell = factor(map_type %in% c("generic", "second-only")),
          reducible = factor(map_type == "second-only"),
          test_type = relevel(factor(test_type, ordered=F), ref = "count"))
-dualTrials$map_0 = NULL
-dualTrials$map_1 = NULL
 
 ```
 
@@ -860,7 +910,6 @@ classificationPerformance(ri_gmodel)
 ```{=html}
 <!--
 (1) check hypotheses from your exposé 
-(2) AHA moments (jump in RT for second-only)
-(3) compositionality: RT for double spells based on average from used primitives vs other, maybe incorporate trial number as IE
+(2) compositionality: RT for double spells based on average from used primitives vs other, maybe incorporate trial number as IE
 -->
 ```
