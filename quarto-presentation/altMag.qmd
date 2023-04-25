@@ -65,8 +65,6 @@ testTrials = testTrials %>%
          acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
          rt = resp_RT, 
          spell = ifelse(map_type == "primitive", map_0, paste0(map_0,";",map_1)))
-testTrials$map_0 = NULL
-testTrials$map_1 = NULL
 
 testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
   mutate(rt = ifelse(rt <= 14.0, rt, NA))
@@ -698,7 +696,7 @@ limits = dualTrials %>% group_by(id) %>%
             n_within = sum(rt >= lower & rt <= upper),
             pct_within = n_within / n() * 100)
 dualTrialsClean = merge(dualTrials, limits, by = "id") %>%
-  filter(rt >= lower, rt <= upper) %>% na.omit()
+  filter(rt >= lower, rt <= upper) %>% select(-map_1) %>% na.omit()
 
 ```
 
@@ -710,7 +708,7 @@ Let us first fit separate linear models and assess the parameter interval estima
 #| warning: false
 gd = groupedData(
   log(rt) ~ cue_type + double_spell + test_type + acc + trialNumTotal|id,
-                 data = dualTrialsClean)
+  data = dualTrialsClean)
 lm_separate = nlme::lmList(
   log(rt) ~  cue_type + double_spell + test_type + acc + trialNumTotal,
   data = gd)
@@ -849,6 +847,68 @@ summary(rirs_model)
 
 -   Again, participants become significantly *faster over time*, which may indicate *further learning* in session 2.
 
+### Compositional models
+
+Can individual time-trends for single spells predict those of corresponding double spells?
+
+```{r}
+# | warning: false
+# weigh later observations higher than earlier ones
+profiles = dualTrialsClean %>% filter(map_type == "primitive") %>%
+  group_by(id, spell, trans_ub) %>%
+    summarize(mean_spell_dur = weighted.mean(inter_RT, 1:length(inter_RT)))
+
+```
+
+```{r}
+# | include: true
+# subroutine
+split_spell = function(spell_char, idx){
+  return(strsplit(spell_char, "-")[[1]][idx])
+}
+
+spell_input = function(spell_char){
+  return(split_spell(spell_char, 1))
+}
+
+spell_output = function(spell_char){
+  return(split_spell(spell_char, 2))
+}
+spell_input("A-B")
+spell_output("A-B")
+
+
+matches_input = function(spell_char, input_char){
+  input_spell = spell_input(spell_char)
+  return(input_spell == input_char)
+}
+matches_input("C-A", "B")
+matches_input("B-A", "B")
+ifelse(matches_input("A-B", "A"), spell_output("A-B"), "A")
+
+# data exampple
+t = filter(map_type != "primitive")
+# 
+# t$map_0
+# t$input_disp_0
+# 
+# ifelse(matches_input(t$map_0, t$input_disp_0), spell_output(t$map_0), t$input_disp_0)
+
+```
+
+```{# {r}
+# 
+# 
+# doubleSpells = dualTrialsClean %>% filter(map_type != "primitive") %>%
+#   mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0),
+#          mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1),
+#          mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2),
+#          mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3))
+# 
+# doubleSpells$trans_0 = rowSums(
+#   ifelse(doubleSpells[paste0("input_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+```
+
 ### Models for response accuracy
 
 ::: callout-note
@@ -910,6 +970,9 @@ classificationPerformance(ri_gmodel)
 ```{=html}
 <!--
 (1) check hypotheses from your exposé 
-(2) compositionality: RT for double spells based on average from used primitives vs other, maybe incorporate trial number as IE
+(2) compositionality: RT for double spells based on average from each used primitive (vs other), maybe incorporate trial number as IE (ask Akshay)
+(3) error type analysis (e.g. confuse B-A)
+(4) change model: Helmert contrasts; model with trans_ub only
+
 -->
 ```
