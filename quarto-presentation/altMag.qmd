@@ -386,6 +386,7 @@ Participants who finished the first session had a second session on the subseque
 
 ```{r}
 #| include: false
+#| label: correlation-betw-blocks
 #| echo: false
 
 corr = dualTrials %>% group_by(id, map_type) %>%
@@ -447,6 +448,7 @@ testTrials %>%
 ## Summary statistics
 
 ```{r}
+#| label: add-pooled
 #| include: false
 #| warning: false
 
@@ -646,11 +648,16 @@ dualTrials %>%
 
 ```{r}
 #| warning: false
+#| label: fig-trans-lb-vs-ub
+#| fig-cap: "Average participant-wise intermediate reaction times and trial counts across assumed number of transformed objects. <br> Error bars indicate standard deviation."
+#| fig-subcap:
+#|   - "upper bounds (sum of both counts)"
+#|   - "lower bounds (only second count for reducible spells, otherwise the same)"
 
 dualTrials %>%
-  group_by(id, trans_lb, acc) %>%
+  group_by(id, trans_ub, acc) %>%
   summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
-  raiseBars("trans_lb", "#Transformations (lower bound)", "Mean Intermediate",
+  raiseBars("trans_ub", "#Transformations (upper bound)", "Mean Intermediate",
             text_y=1.5, textsize=3, dropLegend=T) +
   scale_x_continuous() +
   scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
@@ -658,9 +665,9 @@ dualTrials %>%
   theme(axis.text.x = element_text(size = 8))
 
 dualTrials %>%
-  group_by(id, trans_ub, acc) %>%
+  group_by(id, trans_lb, acc) %>%
   summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
-  raiseBars("trans_ub", "#Transformations (upper bound)", "Mean Intermediate",
+  raiseBars("trans_lb", "#Transformations (lower bound)", "Mean Intermediate",
             text_y=1.5, textsize=3, dropLegend=T) +
   scale_x_continuous() +
   scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
@@ -674,6 +681,7 @@ The following analyses are based on the trials from the `single`and `double spel
 
 ```{r}
 #| include: false
+#| label: inf-preproc
 # remove "pooled" subject and add trial number (across the whole session) 
 dualTrialsBak = dualTrials
 dualTrials = dualTrials %>% filter(id != "pooled") %>%
@@ -689,14 +697,16 @@ dualTrials = dualTrials %>%
 ```
 
 ```{r}
-#| label: Outlier analysis
+#| label: outlier-analysis
+#| code-fold: show
 limits = dualTrials %>% group_by(id) %>%
   summarize(lower = max(0.2, mean(rt) - 2*sd(rt)),
             upper = mean(rt) + 2*sd(rt),
             n_within = sum(rt >= lower & rt <= upper),
             pct_within = n_within / n() * 100)
 dualTrialsClean = merge(dualTrials, limits, by = "id") %>%
-  filter(rt >= lower, rt <= upper) %>% select(-map_1) %>% na.omit()
+  filter(rt >= lower, rt <= upper) %>% filter(!is.na(emp_resp))
+
 
 ```
 
@@ -706,9 +716,10 @@ Let us first fit separate linear models and assess the parameter interval estima
 
 ```{r}
 #| warning: false
+#| label: test-rt-multiple-lms
 gd = groupedData(
   log(rt) ~ cue_type + double_spell + test_type + acc + trialNumTotal|id,
-  data = dualTrialsClean)
+  data = dualTrialsClean %>% select(-map_1))
 lm_separate = nlme::lmList(
   log(rt) ~  cue_type + double_spell + test_type + acc + trialNumTotal,
   data = gd)
@@ -717,8 +728,6 @@ plot(intervals(lm_separate))
 ```
 
 -   Least overlap in CI's for the intercept: adding a random intercept seems adequate.
-
--   <s> A random slope may be useful for the factor `acc`.</s>
 
 ::: callout-note
 ## Assumptions
@@ -737,10 +746,11 @@ where random effects $\mathbf b_i$ are independent from errors $\boldsymbol \eps
 :::
 
 ```{r}
-ri_model = lme(log(rt) ~ trialNumTotal + acc + inter_RT + cue_type + double_spell + test_type,
-               random = ~ 1 | id, data = dualTrialsClean)
-rirs_model = update(ri_model, random = ~ 1 + acc | id)
-anova(ri_model, rirs_model)
+#| label: test-rt-ri-vs-rs
+#| code-fold: show
+ri_model = lme(
+  log(rt) ~ trialNumTotal + acc + inter_RT + cue_type + double_spell + test_type,
+  random = ~ 1 | id, data = dualTrialsClean)
 
 d_squared = getVarCov(ri_model)[1]
 sigma_squared = ri_model$sigma^2
@@ -755,6 +765,8 @@ In order to evaluate the model fit, we plot the population-specific residuals $\
 
 ```{r}
 #| warning: false
+#| label: test-rt-error-analysis
+
 linpredVsResiduals(ri_model) +
   scale_x_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32)) +
   scale_y_continuous(breaks = seq(-1.5, 1.5, 0.5), limits = c(-1.7, 1.7))
@@ -768,7 +780,8 @@ responseVsFitted(ri_model) +
 Overall same amount of *under-* and *overestimation* but the mean structure seems to be correctly specified. We can now inspect the RI model summary.
 
 ```{r}
-# tidy(ri_model)
+#| label: test-rt-summary
+#| code-fold: show
 summary(ri_model)
 
 ```
@@ -787,8 +800,9 @@ Repeat procedure for the duration until participants indicate that they are done
 
 ```{r}
 #| warning: false
+#| label: inter-rt-multiple-lms
 gd = groupedData(
-  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = dualTrialsClean)
+  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = dualTrialsClean %>% select(-map_1))
 lm_separate = nlme::lmList(
   log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = gd)
 plot(intervals(lm_separate))
@@ -798,8 +812,11 @@ plot(intervals(lm_separate))
 A random intercept and slopes for `trial number` or `reducible` seems adequate.
 
 ```{r}
-ri_model = lme(log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + acc + trialNumTotal,
-               random = ~ 1 | id, data = dualTrialsClean)
+#| label: inter-rt-ri-vs-rs
+#| code-fold: show
+ri_model = lme(
+  log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + acc + trialNumTotal,
+  random = ~ 1 | id, data = dualTrialsClean)
 rirs_model = update(ri_model, random = ~ 1 + reducible | id)
 anova(ri_model, rirs_model)
 
@@ -812,6 +829,8 @@ This time an additional random slope is warranted by the marginal information cr
 
 ```{r}
 #| warning: False
+#| label: inter-rt-ie
+#| code-fold: show
 rirs_model_ie = update(rirs_model, fixed = log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + trans_delta + acc + trialNumTotal)
 anova(rirs_model, rirs_model_ie)
 ```
@@ -820,6 +839,8 @@ anova(rirs_model, rirs_model_ie)
 
 ```{r}
 #| warning: false
+#| label: inter-rt-error-analysis
+
 linpredVsResiduals(rirs_model) +
   scale_x_continuous(breaks = seq(0.2, 0.8, 0.1), limits = c(0.19, 0.81)) +
   scale_y_continuous(breaks = seq(-1.5, 2.0, 0.5), limits = c(-1.6, 2.1))
@@ -830,6 +851,8 @@ responseVsFitted(rirs_model) +
 ```
 
 ```{r}
+#| label: inter-rt-summary
+#| code-fold: show
 summary(rirs_model)
 ```
 
@@ -849,22 +872,26 @@ summary(rirs_model)
 
 ### Compositional models
 
-Can individual time-trends for single spells predict those of corresponding double spells?
+Can individual time-trends for single spells predict those of corresponding double spells? This is the plan:
+
+-   for each **single spell**: compute the subject-wise profile of `inter_RT` per number of transformed objects. We use a *weighted mean* which favors later trials over earlier ones.
+
+-   for each **double spell**: infer how many objects are transformed by each constituting single spell. Then include the corresponding RT profiles from the step above.
+
+-   model the `inter_RT` of *double spells* as a combination of the `inter_RTs` of the coresponding *single spells.*
 
 ```{r}
-# | warning: false
-# weigh later observations higher than earlier ones
-profiles = dualTrialsClean %>% filter(map_type == "primitive") %>%
-  group_by(id, spell, trans_ub) %>%
-    summarize(mean_spell_dur = weighted.mean(inter_RT, 1:length(inter_RT)))
+#| include: false
+#| label: comp-rt-subroutines
 
-```
-
-```{r}
-# | include: true
-# subroutine
 split_spell = function(spell_char, idx){
-  return(strsplit(spell_char, "-")[[1]][idx])
+   if (is.vector(spell_char) && is.character(spell_char[[1]])) {
+     return(sapply(spell_char, function(y) strsplit(y, "-")[[1]][idx]))
+   } else if (is.character(spell_char)) {
+     return(strsplit(spell_char, "-")[[1]][idx])
+   } else {
+   stop("Invalid input")
+   }  
 }
 
 spell_input = function(spell_char){
@@ -876,37 +903,88 @@ spell_output = function(spell_char){
 }
 spell_input("A-B")
 spell_output("A-B")
-
+spell_input(dualTrialsClean$map_0[1:7])
 
 matches_input = function(spell_char, input_char){
   input_spell = spell_input(spell_char)
   return(input_spell == input_char)
 }
+
 matches_input("C-A", "B")
 matches_input("B-A", "B")
 ifelse(matches_input("A-B", "A"), spell_output("A-B"), "A")
 
-# data exampple
-t = filter(map_type != "primitive")
-# 
-# t$map_0
-# t$input_disp_0
-# 
-# ifelse(matches_input(t$map_0, t$input_disp_0), spell_output(t$map_0), t$input_disp_0)
+# data example
+t1 = dualTrialsClean %>% filter(map_type != "primitive") %>% slice(6) %>%
+  mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0), 
+         mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1), 
+         mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2), 
+         mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3)) 
 
 ```
 
-```{# {r}
-# 
-# 
-# doubleSpells = dualTrialsClean %>% filter(map_type != "primitive") %>%
-#   mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0),
-#          mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1),
-#          mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2),
-#          mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3))
-# 
-# doubleSpells$trans_0 = rowSums(
-#   ifelse(doubleSpells[paste0("input_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+```{r}
+#| include: false
+#| label: comp-rt-preproc-1
+
+# Reproduce intermediate display and the number of transformations for each single spell contained in the double spells
+doubleSpells = dualTrialsClean %>% filter(map_type != "primitive") %>%
+  mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0), 
+         mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1), 
+         mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2), 
+         mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3)) 
+doubleSpells$trans_0 = rowSums( 
+   ifelse(doubleSpells[paste0("input_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+doubleSpells$trans_1 = rowSums( 
+   ifelse(doubleSpells[paste0("output_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+
+# test
+doubleSpells %>% mutate(ntrans_sums_up = trans_0 + trans_1 == trans_ub) %>% filter(ntrans_sums_up == F) %>% summarize(n_unmatched = n())
+
+
+```
+
+```{r}
+#| label: comp-rt-preproc-2
+#| warning: false
+
+# merge inter_RT profile of single spells to corresponding double spells 
+# weigh later observations higher than earlier ones
+profiles = dualTrialsClean %>%
+  filter(map_type == "primitive") %>%
+  group_by(id, spell, trans_ub) %>%
+  summarize(inter_RT_0 = weighted.mean(inter_RT, 1:length(inter_RT))) %>%
+  rename(map_0 = spell, trans_0 = trans_ub)
+doubleSpells = merge(doubleSpells, profiles, by=c("id", "trans_0", "map_0"))
+profiles = profiles %>%
+  rename(trans_1 = trans_0, map_1 = map_0, inter_RT_1 = inter_RT_0)
+doubleSpells = merge(doubleSpells, profiles, by=c("id", "trans_1", "map_1"))
+```
+
+```{r}
+#| label: comp-rt-full
+#| warning: false
+#| code-fold: show
+
+ri_model = lme(
+  log(inter_RT) ~ - 1 + trialNumTotal + log(inter_RT_0 + inter_RT_1) +
+      log(inter_RT_0) + log(inter_RT_1),
+  random = ~ 1 | id,
+  data = doubleSpells)
+
+rirs_model = update(ri_model, random = ~ 1 + trialNumTotal | id)
+anova(ri_model, rirs_model)
+
+responseVsFitted(rirs_model) +
+  scale_x_continuous(breaks = seq(0.2, 3, 0.5), limits = c(0.1, 3.1)) +
+  scale_y_continuous(breaks = seq(1, 2.5, 0.5), limits = c(0.9, 2.6))
+
+```
+
+```{r}
+#| label: comp-rt-summary
+#| code-fold: show
+summary(rirs_model)
 ```
 
 ### Models for response accuracy
@@ -926,6 +1004,8 @@ $$
 :::
 
 ```{r}
+#| label: acc-model
+#| code-fold: show
 ri_gmodel = glmer(
   acc ~ trialNumTotal + inter_RT + cue_type +  reducible + (1|id),
   data=dualTrialsClean, family=binomial, nAGQ=20)
@@ -933,7 +1013,7 @@ summary(ri_gmodel)
 ```
 
 ```{r}
-#| label: sensitivity/specificity
+#| label: acc-perf
 #| warning: false
 classificationPerformance = function(model){
   pred = predict(model, type = "response")
@@ -969,7 +1049,6 @@ classificationPerformance(ri_gmodel)
 
 ```{=html}
 <!--
-(1) check hypotheses from your exposé 
 (2) compositionality: RT for double spells based on average from each used primitive (vs other), maybe incorporate trial number as IE (ask Akshay)
 (3) error type analysis (e.g. confuse B-A)
 (4) change model: Helmert contrasts; model with trans_ub only
