@@ -909,9 +909,6 @@ spell_input = function(spell_char){
 spell_output = function(spell_char){
   return(split_spell(spell_char, 2))
 }
-spell_input("A-B")
-spell_output("A-B")
-spell_input(dualTrialsClean$map_0[1:7])
 
 matches_input = function(spell_char, input_char){
   input_spell = spell_input(spell_char)
@@ -923,17 +920,27 @@ matches_output = function(spell_char, output_char){
   return(output_spell == output_char)
 }
 
+applySpell = function(spell_char, input_char){
+  out = ifelse(matches_input(spell_char, input_char),
+               spell_output(spell_char),
+               input_char)
+  return(out)
+}
 
-matches_input("C-A", "B")
-matches_input("B-A", "B")
-ifelse(matches_input("A-B", "A"), spell_output("A-B"), "A")
+# tests
+spell_input("A-B") == "A"
+spell_output("A-B") == "B"
+spell_input(dualTrialsClean$map_0[1:2])
+matches_input("C-A", "B") == F
+matches_input("B-A", "B") == T
+applySpell("A-B", "A") == "B" 
 
 # data example
 t1 = dualTrialsClean %>% filter(map_type != "primitive") %>% slice(6) %>%
-  mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0), 
-         mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1), 
-         mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2), 
-         mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3)) 
+  mutate(mid_disp_0 = applySpell(map_0, input_disp_0),
+         mid_disp_1 = applySpell(map_0, input_disp_1),
+         mid_disp_2 = applySpell(map_0, input_disp_2),
+         mid_disp_3 = applySpell(map_0, input_disp_3)) 
 
 ```
 
@@ -943,10 +950,10 @@ t1 = dualTrialsClean %>% filter(map_type != "primitive") %>% slice(6) %>%
 
 # Reproduce intermediate display and the number of transformations for each single spell contained in the double spells
 doubleSpells = dualTrialsClean %>% filter(map_type != "primitive") %>%
-  mutate(mid_disp_0 = ifelse(matches_input(map_0, input_disp_0), spell_output(map_0), input_disp_0), 
-         mid_disp_1 = ifelse(matches_input(map_0, input_disp_1), spell_output(map_0), input_disp_1), 
-         mid_disp_2 = ifelse(matches_input(map_0, input_disp_2), spell_output(map_0), input_disp_2), 
-         mid_disp_3 = ifelse(matches_input(map_0, input_disp_3), spell_output(map_0), input_disp_3)) 
+  mutate(mid_disp_0 = applySpell(map_0, input_disp_0),
+         mid_disp_1 = applySpell(map_0, input_disp_1),
+         mid_disp_2 = applySpell(map_0, input_disp_2),
+         mid_disp_3 = applySpell(map_0, input_disp_3)) 
 doubleSpells$trans_0 = rowSums( 
    ifelse(doubleSpells[paste0("input_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
 doubleSpells$trans_1 = rowSums( 
@@ -1030,6 +1037,7 @@ singleSpellErrors = testTrials %>%
 
 ```{r}
 #| label: spell-not-applied-subroutine
+#| include: false
 
 spellNotApplied = function(trial){
   if (trial["test_type"] == "position"){
@@ -1037,8 +1045,8 @@ spellNotApplied = function(trial){
     queried_idx = trial["target"]
     input_item = eval(parse(text=paste0(
       "trial['input_disp_", queried_idx, "']")))
-    chosen_output = trial["resp_item"]
-    return(matches_input(spell, input_item) && input_item == chosen_output)
+    chosen_item = trial["resp_item"]
+    return(matches_input(spell, input_item) && input_item == chosen_item)
     
   } else if (trial["test_type"] == "count"){
     queried_item = trial["target"]
@@ -1072,6 +1080,75 @@ test = data.frame(
   resp_item = c(1, 0)
   )
 apply(test, 1, spellNotApplied)
+```
+
+```{r}
+#| label: wrong-spell-applied-subroutine
+#| include: false
+
+spells = c("A-B", "B-A", "C-D")
+
+wrongSpellApplied = function(trial){
+  spell = trial["map_0"]
+  other_spells = spells[-grep(spell, spells)]
+  
+  if (trial["test_type"] == "position"){
+    chosen_item = trial["resp_item"]
+    chosen_is_output = sapply(
+      other_spells, function(s) matches_output(s, chosen_item))
+    if (!any(chosen_is_output)) return(F)
+    
+    spell_candidate = names(chosen_is_output)[which(chosen_is_output)]
+    queried_idx = trial["target"]
+    input_item = eval(parse(text=paste0(
+      "trial['input_disp_", queried_idx, "']")))
+    return(matches_input(spell_candidate, input_item))
+    
+  } else if (trial["test_type"] == "count"){
+    queried_item = trial["target"]
+    chosen_count = trial["resp_item"]
+    for (s in other_spells){
+      alt_count = sum(sapply(trial[paste0("input_disp_", 0:3)],
+                             function(x) applySpell(s, x) == queried_item))
+      if (alt_count == chosen_count) return(T)
+    }
+    return(F)
+  }
+}
+
+# one positive, one negative example for position
+test = data.frame(
+  test_type = rep("position", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c(1, 1),
+  input_disp_0 = c("A", "B"),
+  input_disp_1 = c("B", "C"),
+  resp_item = c("A", "D")
+  )
+apply(test, 1, wrongSpellApplied)
+
+# one positive, one negative example for count
+# (this is the most difficult one to trace back)
+test = data.frame(
+  test_type = rep("count", 2),
+  map_0 = c("A-B", "A-B"),
+  applied_spell = c("B-A", "A-B"),
+  target = c("A", "B"),
+  input_disp_0 = c("A", "A"),
+  input_disp_1 = c("B", "B"),
+  input_disp_2 = c("C", "C"),
+  input_disp_3 = c("D", "D"),
+  resp_item = c(2, 3)
+  )
+apply(test, 1, wrongSpellApplied)
+```
+
+```{r}
+singleSpellErrors$noSpellMaybe = apply(singleSpellErrors, 1, spellNotApplied)
+singleSpellErrors$wrongSpellMaybe = apply(singleSpellErrors, 1, wrongSpellApplied)
+singleSpellErrors = singleSpellErrors %>%
+  mutate(eitherError = noSpellMaybe & wrongSpellMaybe,
+         unkownError = !noSpellMaybe & !wrongSpellMaybe)
 ```
 
 ### Models for response accuracy
