@@ -795,7 +795,7 @@ summary(ri_model)
 
 -   All responses become significantly *faster over time*, which may indicate *further learning* in session 2.
 
-### Models for interim RTs
+### Models for transformation duration (interRT)
 
 Repeat procedure for the duration until participants indicate that they are done with applying the spell.
 
@@ -918,6 +918,12 @@ matches_input = function(spell_char, input_char){
   return(input_spell == input_char)
 }
 
+matches_output = function(spell_char, output_char){
+  output_spell = spell_output(spell_char)
+  return(output_spell == output_char)
+}
+
+
 matches_input("C-A", "B")
 matches_input("B-A", "B")
 ifelse(matches_input("A-B", "A"), spell_output("A-B"), "A")
@@ -995,6 +1001,79 @@ responseVsFitted(rirs_model) +
 summary(rirs_model)
 ```
 
+### Using the wrong spell
+
+Now we try to infer the type of erroneous response for **position trials**:
+
+1.  *Spell not applied* (input display at queried position contains input of cued spell AND given response is the same item)
+2.  *Wrong spell applied* (the chosen item is the output of a spell which was not cued AND the input display had the spell input at the same position)
+3.  *Unknown error* (else)
+
+Similarly, for **count trials**:
+
+1.  *Spell not applied* (count response matches the count of the queried item in the input display)
+2.  *Wrong spell applied* (count response matches the count of the queried item in the output display after applying one of the other two spells)
+3.  *Unknown error* (else)
+
+```{r}
+# infer potential spell that would lead to the given response:
+
+singleSpellErrors = testTrials %>%
+  filter(map_type == "primitive", acc == 0, !is.na(emp_resp)) %>%
+  mutate(resp_item = case_when(
+    emp_resp == 0 ~ resp_options_0,
+    emp_resp == 1 ~ resp_options_1,
+    emp_resp == 2 ~ resp_options_2,
+    emp_resp == 3 ~ resp_options_3))
+
+```
+
+```{r}
+#| label: spell-not-applied-subroutine
+
+spellNotApplied = function(trial){
+  if (trial["test_type"] == "position"){
+    spell = trial["map_0"]
+    queried_idx = trial["target"]
+    input_item = eval(parse(text=paste0(
+      "trial['input_disp_", queried_idx, "']")))
+    chosen_output = trial["resp_item"]
+    return(matches_input(spell, input_item) && input_item == chosen_output)
+    
+  } else if (trial["test_type"] == "count"){
+    queried_item = trial["target"]
+    chosen_count = trial["resp_item"]
+    input_count = sum(sapply(trial[paste0("input_disp_", 0:3)],
+                             function(x) x == queried_item))
+    return(chosen_count == input_count)
+  }
+}
+
+# one positive, one negative example for position
+test = data.frame(
+  test_type = rep("position", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c(0, 1),
+  input_disp_0 = c("A", "B"),
+  input_disp_1 = c("B", "C"),
+  resp_item = c("A", "D")
+  )
+apply(test, 1, spellNotApplied)
+
+# one positive, one negative example for count
+test = data.frame(
+  test_type = rep("count", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c("A", "D"),
+  input_disp_0 = c("A", "A"),
+  input_disp_1 = c("B", "B"),
+  input_disp_2 = c("C", "C"),
+  input_disp_3 = c("D", "D"),
+  resp_item = c(1, 0)
+  )
+apply(test, 1, spellNotApplied)
+```
+
 ### Models for response accuracy
 
 ::: callout-note
@@ -1057,8 +1136,6 @@ classificationPerformance(ri_gmodel)
 
 ```{=html}
 <!--
-- model with trans_ub only
 - error type analysis (e.g. confuse B-A)
-
 -->
 ```
