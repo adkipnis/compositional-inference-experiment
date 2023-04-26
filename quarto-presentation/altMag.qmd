@@ -21,6 +21,7 @@ toc: true
 packages = c("stringr", "dplyr", "tidyr", "forcats", "data.table", "glue",
              "ggplot2", "ggridges", "viridis", "ggnewscale", "nlme", "lme4")
 lapply(packages, require, character.only=T)
+options(scipen = 999)
 
 # data
 load(file="meta.RData")
@@ -856,6 +857,11 @@ responseVsFitted(rirs_model) +
 summary(rirs_model)
 ```
 
+```{r}
+lme(log(inter_RT) ~ trans_ub + trans_delta,
+    random = ~ 1 | id, data = dualTrialsClean) %>% summary()
+```
+
 **Take-aways:**
 
 -   The expected log interim RTs can be approximated moderately well by a linear function of `cue type + double spell + reducible + trans_ub + acc + trialNumTotal`.
@@ -866,7 +872,9 @@ summary(rirs_model)
 
 -   Counterintuitively, `reducibility` incurs additional processing costs.
 
--   The bigger the number of to be transformed objects (`trans_ub`) the *smaller* the processing time. This may be due to displays with multiple duplicate items (such that they can be transformed simultaneously) -\> GAMM?
+-   The bigger the number of to be transformed objects (`trans_ub`) the *smaller* the processing time. This may be due to displays with multiple duplicate items (such that they can be transformed simultaneously)
+
+-   If `trans_ub` and `trans_delta` are used as predictors in isolation, both increase the expected time to apply the functions. The latter is only non-zero for reducible double spells, which are more difficult for participants as we have previously seen.
 
 -   Again, participants become significantly *faster over time*, which may indicate *further learning* in session 2.
 
@@ -1049,9 +1057,8 @@ classificationPerformance(ri_gmodel)
 
 ```{=html}
 <!--
-(2) compositionality: RT for double spells based on average from each used primitive (vs other), maybe incorporate trial number as IE (ask Akshay)
-(3) error type analysis (e.g. confuse B-A)
-(4) change model: Helmert contrasts; model with trans_ub only
+- model with trans_ub only
+- error type analysis (e.g. confuse B-A)
 
 -->
 ```
