@@ -1,0 +1,1257 @@
+---
+title: "Alteration Magic (Pilot Analysis)"
+author: "Alex Kipnis"
+date-modified: April 10, 2023
+format:
+  html:
+    code-link: true
+    code-fold: true
+    df-print: paged
+editor: source
+toc: true
+---
+
+## Preliminaries
+
+```{r}
+#| label: packages and preprocessing
+#| include: false
+#| warning: false
+
+# packages
+packages = c("stringr", "dplyr", "tidyr", "forcats", "data.table", "glue",
+             "ggplot2", "ggridges", "viridis", "ggnewscale", "nlme", "lme4")
+lapply(packages, require, character.only=T)
+options(scipen = 999)
+
+# data
+load(file="meta.RData")
+load(file="cueTrials.RData")
+load(file="testTrials.RData")
+
+# duration
+meta = meta %>% mutate(
+  gender = `gender (f/m/d)`,
+  age = as.numeric(age),
+  duration = as.numeric(
+    difftime(strptime(t_end, "%Y-%m-%d_%Hh%M.%OS"),
+             strptime(dateStr, "%Y-%m-%d-%Hh%Mm")),
+    units = "mins")
+  )
+
+# completers
+completers = meta %>% filter(session == 2) %>% reframe(id = unique(id))
+meta$completer = ifelse(meta$id %in% completers$id, 1, 0)
+cueTrials = cueTrials %>% filter(id %in% completers$id)
+testTrials = testTrials %>% filter(id %in% completers$id)
+
+# first modality / first test (obsolete after ID=08)
+firstModalities = cueTrials %>% filter(trialNum == 1) %>%
+  group_by(id) %>% slice_min(start_time) %>% mutate(first = 1)
+firstTest = testTrials %>% filter(trialNum == 1, trial_type == "test_practice") %>%
+  group_by(id) %>% slice_min(start_time) %>% mutate(first = 1)
+meta$first_modality = ifelse(meta$id %in% firstModalities$id, firstModalities$cue_type, NA)
+meta$first_test = ifelse(meta$id %in% firstTest$id, firstTest$test_type, NA)
+
+
+# datasets
+cueTrials = cueTrials %>% mutate(
+  idk = as.integer(is.na(cueTrials$emp_resp_0) | is.na(cueTrials$emp_resp_1)),
+  acc = ifelse(idk == 0, correct_resp_0 == emp_resp_0 &
+                 correct_resp_1 == emp_resp_1, 0),
+  rt = ifelse(is.na(resp_RT_1), resp_RT_0, resp_RT_0 + resp_RT_1)) %>%
+  filter(rt <= 15)
+
+testTrials = testTrials %>% 
+  mutate(idk = as.integer(is.na(emp_resp)),
+         acc = ifelse(idk == 0, correct_resp == emp_resp, 0),
+         rt = resp_RT, 
+         spell = ifelse(map_type == "primitive", map_0, paste0(map_0,";",map_1)))
+
+testPracticeTrials = testTrials %>% filter(trial_type == "test_practice") %>%
+  mutate(rt = ifelse(rt <= 14.0, rt, NA))
+
+dualTrials = testTrials %>% filter(trial_type == "generic" & !is.na(rt))
+
+```
+
+In this [quarto markdown file](https://quarto.org) I analyze the results of the pilot for the [Alteration Magic study](https://github.com/adkipnis/compositional-inference-experiment). The sample consisted of `r length(unique(meta$id))` subjects, `r nrow(completers)` of which completed both sessions[^1].
+
+[^1]: Unless indicated explicitly, results are based only on this sub-sample.
+
+```{r}
+#| warning: false
+#| label: fig-meta
+#| fig-subcap:
+#|   - "Sample *duration* distribution (box and whiskers) per session."
+#|   - "Sample *age* distribution."
+#|   - "Sample *gender* distribution."
+#| layout-ncol: 2
+
+# Duration
+meta %>% filter(completer == 1) %>%
+  ggplot(aes(x=session, y=duration)) + 
+  geom_boxplot() +
+  coord_flip() + 
+  scale_y_continuous(breaks = seq(40, 80, 5)) +
+  ylab("Duration [min]") + xlab("Session") +
+  theme_minimal() +
+  theme(
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
+    panel.spacing = unit(2.5, "lines"),
+    axis.text = element_text(size = 16),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text.x = element_text(vjust = -1),
+    axis.title.x = element_text(margin = margin(t = 20)),
+    axis.title.y = element_text(margin = margin(r = 20)),
+    plot.margin = margin(1, 1, 0, 0, "cm")
+  )
+
+# Age
+meta %>% filter(session==2) %>% ggplot(aes(x = age)) +
+  geom_histogram(color = "darkgray", fill = "gray") +
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 1)) +
+  scale_x_continuous(breaks = seq(18, 99, 1)) +
+  xlab("Age") + ylab("Count") +
+  theme_minimal() +
+  theme(
+    panel.border = element_rect(colour = "gray", fill=NA, size=1),
+    panel.spacing = unit(2.5, "lines"),
+    axis.text = element_text(size = 16),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text.x = element_text(vjust = -1),
+    axis.title.x = element_text(margin = margin(t = 20)),
+    axis.title.y = element_text(margin = margin(r = 20)),
+    legend.position = "none",
+    plot.margin = margin(1, 1, 0, 0, "cm")
+  )
+
+# Gender
+meta %>% filter(session==2) %>% group_by(gender) %>% tally() %>%
+  ggplot(aes(x = "", y = n, fill = gender)) +
+  geom_bar(stat = "identity",
+           width = 1,
+           color = "white") +
+  coord_polar("y", start = 0) +
+  geom_text(
+    aes(label = n),
+    position = position_stack(vjust = 0.5),
+    col = "white",
+    size = 8
+  ) +
+  scale_fill_brewer(name = "Gender", palette = "Set1") +
+  theme_void() +
+  theme(
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 18),
+    plot.margin = margin(1, 1, 0, 0, "cm")
+  )
+
+```
+
+## Plotting functions
+
+This section just serves as an optional look-up of the plotting code.
+
+```{r}
+#| label: plotting-functions
+raiseBars = function(df, xvar="", xlabel="", ylabel="", text_y=0.5, textsize=5, dropLegend=T){
+  p = ggplot(df, aes(x=get(xvar), y=mean_rt, fill=factor(acc))) +
+    geom_bar(stat="identity", position=position_dodge(), color = "white") +
+    geom_errorbar(aes(ymin=mean_rt-sd, ymax=mean_rt+sd),
+                  alpha=0.3, linewidth=0.5, width=0.5,
+                  position=position_dodge(0.9))+
+    geom_text(aes(label = n, y = text_y),
+              position=position_dodge(0.9),
+              color="white",
+              size = textsize,
+              fontface = "bold") +
+    facet_wrap(~id)+
+    scale_fill_manual(values = c("darkred", "darkolivegreen4"))+
+    scale_x_discrete(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0),
+                       breaks = seq(0, 10, 2)) +
+    theme_minimal()+
+    guides(fill = guide_legend(title = "Accuracy"))+
+    xlab(xlabel) +
+    ylab(paste(ylabel, "RT [s]")) +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      strip.text.x = element_text(size = 14, face = "bold.italic"),
+      panel.spacing = unit(2.5, "lines"),
+      legend.position = c(0.85, 0.2),
+      plot.margin = margin(1, 1, 0, 0, "cm")
+    )
+
+  if (dropLegend) {
+    p = p + theme(legend.position = "none")
+  }
+
+  return(p)
+}
+
+makeWaves = function(dfLong, facetvar="", xlabel="", threshold=2){
+  p = ggplot(dfLong, aes(y=id)) +
+    geom_density_ridges(aes(x = rt, fill = factor(acc)), scale = 1.0,
+                        alpha = .6, color = "white", rel_min_height=1e-05)+
+    geom_vline(xintercept = threshold, linetype="dashed", color = "darkred")
+  if (facetvar != "") {
+    p = p + facet_wrap(~ get(facetvar))
+  }
+  p = p + scale_fill_manual(values=c("darkred", "darkolivegreen4"))+
+    scale_x_continuous(expand = c(0, 0), breaks = seq(0, 14, 2)) +
+    scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(dfLong$id)))) +
+    coord_cartesian(clip = "off") +
+    theme_minimal(base_size = 14) +
+    ylab("Subject ID") +
+    xlab(paste(xlabel, "RT [s]")) +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.text.y = element_text(vjust = 0, angle = 45),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 12)),
+      axis.title = element_text(size = 14, face = "bold"),
+      strip.text.x = element_text(size = 14, face = "bold.italic", vjust = 4,
+                                  margin = margin(t = 20)),
+      plot.margin = margin(1, 1, 0, 0, "cm"),
+      legend.position = "none"
+    )
+  return(p)
+}
+
+cookLasagne = function(dfLong, facetvar="", title="", threshold=2.0){
+  p = ggplot(dfLong, aes(x = trialNum, y = id)) +
+    geom_raster(aes(fill = rt), data = subset(dfLong, acc == 1), alpha = 0.8) +
+    scale_fill_gradientn("1-RT [s]",
+                         colors = c("goldenrod", "white", "darkolivegreen4"),
+                         values = c(1.0, threshold/14 + 0.01,
+                                    threshold/14 - 0.01, 0),
+                         breaks = seq(0, 14, 2),
+                         limits = c(0,14)) +
+    new_scale("fill") +
+    geom_raster(aes(fill = rt), data = subset(dfLong, acc == 0)) +
+    scale_fill_gradient("0-RT [s]",
+                        low = "thistle2", high = "darkred",
+                        breaks = seq(0, 14, 2),
+                        limits = c(0,14))
+  if (facetvar != "") {
+    p = p + facet_wrap(~ get(facetvar), nrow = 3, scales = "free_y")
+  }
+  p = p + scale_x_continuous(expand = c(0, 0), breaks = seq(0, 140, 10)) +
+    scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(dfLong$id)))) +
+    coord_cartesian(clip = "off") +
+    theme_minimal(base_size = 14) +
+    xlab("Trial Number") +
+    ylab("Subject ID") +
+    ggtitle(title) +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.text.x = element_text(hjust = 0.5, angle = 0),
+      axis.text.y = element_text(vjust = 0, angle = 45),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      legend.title = element_text(size = 14, face = "bold", vjust = 2),
+      strip.text.x = element_text(size = 14, face = "bold.italic", vjust = 4,
+                                  margin = margin(t = 20)),
+      plot.title = element_text(face = "bold", size=16, hjust=0.5),
+      plot.margin = margin(0, 0, 0, 0, "cm")
+    )
+  return(p)
+}
+
+linpredVsResiduals = function(model){
+  res = resid(model, level = 0)
+  lin_preds = predict(model, level = 0)
+  res_df = data.frame(id = names(res), res = res, preds = lin_preds)
+
+  p = ggplot(res_df, aes(preds, res)) +
+    geom_point(alpha = .5) +
+    geom_smooth(aes(col = id), alpha = .3, method = "loess", se = FALSE) +
+    geom_smooth(method = "loess", se = FALSE, size = 2, col = "black") +
+    geom_hline(yintercept = 0, lty = "dashed")+
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    xlab("predicted means") +
+    ylab("residuals") +
+    labs(col = "Subject") +
+    theme_minimal() +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      panel.spacing = unit(2.5, "lines"),
+      plot.margin = margin(1, 1, 0, 0, "cm")
+    )
+  return(p)
+}
+
+responseVsFitted = function(model){
+  resp = getResponse(model)
+  preds = predict(model, type="response", level=0)
+  resp_df = data.frame(id = names(resp), resp = resp, preds = preds)
+
+  p = ggplot(resp_df, aes(resp, preds)) +
+    geom_point(alpha = .5) +
+    geom_smooth(aes(col = id), alpha = .3, method = "loess", se = FALSE) +
+    geom_smooth(method = "loess", se = FALSE, size = 2, col = "black") +
+    geom_abline(slope = 1, intercept = 0, lty = "dashed")+
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    xlab("response") +
+    ylab("fitted") +
+    labs(col = "Subject") +
+    theme_minimal() +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      panel.spacing = unit(2.5, "lines"),
+      plot.margin = margin(1, 1, 0, 0, "cm")
+    )
+  return(p)
+}
+```
+
+## Progress across trials
+
+### Cue Learning
+
+::: callout-note
+In the first session participants had to learn 3 alteration spells (`textual cue`, `visual cue`, `input object`, `output object`). In the **Cue Learning** phase (one block per cue type) they were prompted a cue and had to indicate the input and output objects in that order. There was a **counter** and for each spell (+1 if correct and fast, -1 if wrong, unchanged else). Participants had to achieve a score of 10 for each spell. Pressing the space bar (`idk` response) showed the correct answer and skipped to the next trial.
+:::
+
+```{r}
+#| warning: false
+#| label: fig-cue-leearning-long
+#| fig-cap: "Participant-wise reaction times over **cue learning** trials with performance-dependend color code (green: correct, yellow: too slow, red: error, grey: *idk*)."
+#| fig-subcap:
+#|   - "Threshold: 2.0"
+#|   - "Threshold: 2.5"
+#| layout-ncol: 2
+#| column: body-outset
+
+cueTrials %>% 
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne("cue_type", threshold=2.0) +
+  theme(legend.position = "none")
+
+cueTrials %>% 
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne("cue_type", threshold=2.5) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+  
+```
+
+**Take-aways:**
+
+-   **more correct** and **faster correct** responses with progressing trial number in cue trials
+
+-   setting the threshold to **2.5s** would lead to substantially faster progression in the experiment
+
+### Test Learning
+
+::: callout-note
+After passing the *Cue Learning* phase, participants had to learn to apply the spells to input displays of set size 4. They were tested on the output display during the **Test Learning** (one block per test type), namely by being queried (a) an object `count` or (b) the object identity at a `position`. For details about the trial design refer to the respective slides. The same type of **counter** (goal: 10 per spell) as described above was used.
+:::
+
+```{r}
+#| warning: false
+#| label: fig-test-learning-long
+#| fig-cap: "Participant-wise reaction times over **test learning** trials with performance-dependend color code (green: correct, yellow: too slow, red: error, grey: *idk*)."
+
+testPracticeTrials %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne("test_type")
+```
+
+**Take-aways:**
+
+-   **more correct** and **faster correct** responses with progressing trial number in test trials
+
+### Single & Double Spells
+
+::: callout-note
+Participants who finished the first session had a second session on the subsequent day. It consisted of three blocks: (1) The `decoding block`, (2) the `single spell block`, and (3) the `double spell block`. The first block is only meant for training a *spell-classifier* and is not discussed here. The second one featured trials like the ones in the `test learning` phase, but the test type was picked quasi-randomly per trial. The third one was completely analogous, but *two* spell cues were shown: The first cued spell had to be applied to the set of objects in the input display, the second one had to be applied to the resulting output. This affords three spell types: single (`primitive)`spells , double spells which are effectively single spells (`second-only`) and (`generic`) double spells.
+:::
+
+```{r}
+#| include: false
+#| label: correlation-betw-blocks
+#| echo: false
+
+corr = dualTrials %>% group_by(id, map_type) %>%
+  mutate(map_type = ifelse(map_type == "primitive", map_type, "composed")) %>%
+  summarize(mean_acc = mean(acc)) %>%
+  pivot_wider(id_cols = id, names_from = "map_type", values_from = "mean_acc") %>% 
+  ungroup() %>% summarise(correlation = cor(primitive, composed))
+
+```
+
+```{r}
+#| warning: false
+#| label: fig-session-2-long
+#| fig-cap: "Participant-wise reaction times over **session 2** trials with performance-dependend color code (green: correct, yellow: too slow, red: error, grey: *idk*)."
+#| fig-subcap:
+#|   - "Single spells"
+#|   - "Double spells"
+#| layout-ncol: 2
+#| column: body-outset
+
+testTrials %>%
+  filter(trial_type == "generic" & map_type == "primitive") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne() +
+  theme(legend.position = "none",
+        plot.margin = margin(0, 0, 0, 0, "cm"))
+
+testTrials %>%
+  filter(trial_type == "generic" & map_type != "primitive") %>%
+  mutate(rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne() +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.margin = margin(0, 0, 0, 0, "cm"))
+  
+```
+
+```{r}
+#| warning: false
+#| label: fig-reducible-long
+#| fig-cap: "Same as before but only reducible spells are shown. Trial number was recalculated after filtering out other spell types."
+testTrials %>%
+  filter(trial_type == "generic" & map_type == "second-only") %>%
+  group_by(id) %>%
+  arrange(start_time) %>%
+  mutate(trialNum = row_number(),
+         rt = ifelse(idk == 1, NA, rt)) %>%
+  cookLasagne(title="Reducible Double Spells only") +
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 24, 4)) +
+   theme(plot.margin = margin(0.5, 0.25, 0.25, 0.5, "cm"))
+```
+
+**Take-aways:**
+
+-   Similar pattern here (and surprisingly few errors in double spells)
+
+-   Mean accuracy correlated positively between blocks (*r* = `r round(corr, digits = 2)`)
+
+## Summary statistics
+
+```{r}
+#| label: add-pooled
+#| include: false
+#| warning: false
+
+addPool = function(df){
+  out = df %>% mutate(id = "pooled") %>% bind_rows(df)
+  return(out)
+}
+
+cueTrials = addPool(cueTrials)
+testPracticeTrials = addPool(testPracticeTrials)
+dualTrials = addPool(dualTrials)
+
+
+```
+
+### Cue Learning
+
+```{r}
+#| warning: false
+#| label: fig-cue-learning
+#| fig-cap: "Participant-wise performance in **Cue-Learning** trials."
+#| fig-subcap:
+#|   - "Average reaction time and trial counts per *cue type* and *participant*. <br> Error bars indicate standard deviation, diamonds indicate first learnt modality."
+#|   - "Kernel density estimators for reaction time per *cue type* and *participant*.<br>Red vertical bar indicates new *fast response* threshold."
+
+cueTrials %>%
+  group_by(id, acc, cue_type) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("cue_type", "Cue Type", "Mean Cue Memory", dropLegend=T) +
+  geom_text(data = firstModalities, aes(x = cue_type, y = 5, label = "♦"), color = "darkgrey", alpha = 0.8, inherit.aes = F)
+
+makeWaves(cueTrials, "cue_type", "Cue Memory", threshold = 2.5)
+```
+
+**Take-aways:**
+
+-   some differences in speed and accuracy *within* participants
+-   no apparent systematic difference *across* them
+-   very few `idk` responses (`r sum(cueTrials$idk)` in total)
+
+### Test Learning
+
+```{r}
+#| warning: false
+#| label: fig-test-learning
+#| fig-cap: "Participant-wise performance in **Test-Learning** trials."
+#| fig-subcap:
+#|   - "Average reaction time and trial counts per *cue type* and *participant*. <br> Error bars indicate standard deviation, spades indicate first learnt test type."
+#|   - "Kernel density estimators for reaction time per *cue type* and *participant*.Red vertical bar indicates new *fast response* threshold."
+
+testPracticeTrials %>%
+  filter(!is.na(rt)) %>%
+  group_by(id, acc, test_type) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("test_type", "Test Type", "Mean Test") +
+  geom_text(data = firstTest, aes(x = test_type, y = 5, label = "♠"), color = "darkgrey", alpha = 0.8, inherit.aes = F)
+
+makeWaves(testPracticeTrials, "test_type", "Test")
+
+```
+
+**Take-aways:**
+
+-   difficulty seems to depend more on test *order* than on test *type*
+-   otherwise no systematic difference
+-   very few `idk` responses (`r sum(testPracticeTrials$idk)` in total)
+
+### Cue x Test interaction
+
+For this analysis, data from both sessions was pooled.
+
+```{r}
+#| warning: false
+#| label: fig-cuextest
+#| fig-cap: "Kernel density estimators for test RT per *cue type* (horiz.), *test type* (vert.) and *participant*. Red vertical bar indicates new *fast response* threshold."
+testPracticeTrials %>%
+  bind_rows(dualTrials) %>%
+  ggplot(aes(y=id)) +
+    geom_density_ridges(aes(x = rt, fill = factor(acc)), scale = 1.0,
+                        alpha = .6, color = "white", rel_min_height=1e-05) +
+    geom_vline(xintercept = 2.0, linetype="dashed", color = "darkred") +
+    facet_grid(test_type ~ cue_type) +
+    scale_fill_manual(values=c("darkred", "darkolivegreen4")) +
+      scale_x_continuous(expand = c(0, 0), breaks = seq(0, 14, 2)) +
+      scale_y_discrete(expand = c(0, 0), limits = rev(unique(sort(testPracticeTrials$id)))) +
+      coord_cartesian(clip = "off") +
+      theme_minimal(base_size = 14) +
+      ylab("Subject ID") +
+      xlab("Test RT [s]") +
+      theme(
+        panel.border = element_rect(colour = "gray", fill=NA, size=1),
+        axis.text = element_text(size = 10),
+        axis.text.y = element_text(vjust = 0, angle = 45),
+        axis.title.x = element_text(margin = margin(t = 20)),
+        axis.title.y = element_text(margin = margin(r = 12)),
+        axis.title = element_text(size = 14, face = "bold"),
+        strip.text = element_text(size = 14, face = "bold.italic"),
+        legend.position = "none"
+      )
+```
+
+```{r}
+#| warning: false
+#| label: fig-cuextest-bar
+#| fig-cap: Average test reaction time and trial counts per *cue type* and *participant*. <br> Error bars indicate standard deviation, diamonds indicate first learnt test type."
+
+testPracticeTrials %>%
+  bind_rows(dualTrials) %>%
+  filter(!is.na(rt)) %>%
+  group_by(id, acc, cue_type) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("cue_type", "Cue Type", "Mean Test", dropLegend=T) +
+  geom_text(data = firstModalities, aes(x = cue_type, y = 4, label = "♦"), color = "darkgrey", alpha = 0.8, inherit.aes = F)
+
+```
+
+**Take-aways:**
+
+-   the test RT distribution for trials with *visual cues* has bigger tails
+
+-   this is not explainable by by the *order of learned cue*
+
+-   **unclear effect on accuracy**: clearly worse in participants *01/08*, better for *06* fairly even for the rest
+
+### Spells profiles
+
+```{r}
+#| warning: false
+#| label: fig-spell-profiles
+#| fig-cap: "Average participant-wise reaction times and trial counts per *spell*. <br> Error bars indicate standard deviation."
+#| fig-subcap:
+#|   - "Intermediate reaction time (time until spell was applied)."
+#|   - "Test reaction time (time until subsequent test was solved)."
+
+dualTrials %>%
+  group_by(id, spell, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("spell", "Spell Type", "Mean Intermediate",
+            text_y=1.5, textsize=3, dropLegend=T) +
+  scale_x_discrete(limits = c("A-B", "B-A", "C-D", "B-A;A-B", "A-B;C-D", "C-D;B-A"))+
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
+  scale_fill_manual(values = c("thistle4", "slategray3")) +
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5, hjust=1, angle = 90))
+
+dualTrials %>% group_by(id, spell, acc) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("spell", "Spell", "Mean Test", dropLegend=T,
+            text_y = 0.4, textsize=3) +
+  scale_x_discrete(limits = c("A-B", "B-A", "C-D", "B-A;A-B", "A-B;C-D", "C-D;B-A"))+
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5,  hjust=1, angle = 90))
+```
+
+**Take-aways:**
+
+-   For some participants, spells with the schema `A-B` and `B-A` seem to take longer than `C-D`, perhaps because they are more confusable.
+-   For the same participants, the reducible double spell `A-B;B-A` actually takes longer on average. For the rest there seems to be no substantial difference.
+-   The mean test RTs are almost uniform with regard to different spells.
+
+### Single vs. Double Spells
+
+```{r}
+#| warning: false
+#| label: fig-single-vs-double
+#| fig-cap: "Average participant-wise reaction times and trial counts per *spell type*. <br> Error bars indicate standard deviation."
+#| fig-subcap:
+#|   - "Intermediate reaction time (time until spell was applied)."
+#|   - "Test reaction time (time until subsequent test was solved)."
+
+dualTrials %>%
+  group_by(id, map_type, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("map_type", "Spell Type", "Mean Intermediate",
+            text_y=1.5, textsize=3, dropLegend=T) +
+  scale_x_discrete(limits = c("primitive", "second-only", "generic")) +
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
+  scale_fill_manual(values = c("thistle4", "slategray3")) +
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5, hjust=1, angle = 90))
+
+dualTrials %>%
+  group_by(id, map_type, acc) %>%
+  summarize(mean_rt = mean(rt), sd = sd(rt), n=n()) %>%
+  raiseBars("map_type", "Spell Type", "Mean Test", dropLegend=T,
+            text_y = 0.4, textsize=3) +
+  scale_x_discrete(limits = c("primitive", "second-only", "generic")) +
+  theme(axis.text.x = element_text(size = 8, vjust = 0.5,  hjust=1, angle = 90))
+```
+
+**Take-aways:**
+
+-   pattern of **increasing difficulty**: apparent in intermediate RT
+
+-   effect on accuracy might be counteracted by learning
+
+-   accurate *test* responses are (on average) **equally fast** *across spell types* → participants transform the objects before the test prompt
+
+### Number of transformed objects
+
+```{r}
+#| warning: false
+#| label: fig-trans-lb-vs-ub
+#| fig-cap: "Average participant-wise intermediate reaction times and trial counts across assumed number of transformed objects. <br> Error bars indicate standard deviation."
+#| fig-subcap:
+#|   - "upper bounds (sum of both counts)"
+#|   - "lower bounds (only second count for reducible spells, otherwise the same)"
+
+dualTrials %>%
+  group_by(id, trans_ub, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("trans_ub", "#Transformations (upper bound)", "Mean Intermediate",
+            text_y=1.5, textsize=3, dropLegend=T) +
+  scale_x_continuous() +
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
+  scale_fill_manual(values = c("thistle4", "slategray3")) +
+  theme(axis.text.x = element_text(size = 8))
+
+dualTrials %>%
+  group_by(id, trans_lb, acc) %>%
+  summarize(mean_rt = mean(inter_RT), sd = sd(inter_RT), n=n()) %>%
+  raiseBars("trans_lb", "#Transformations (lower bound)", "Mean Intermediate",
+            text_y=1.5, textsize=3, dropLegend=T) +
+  scale_x_continuous() +
+  scale_y_continuous(expand = c(0, 0), breaks = seq(0, 20, 4)) +
+  scale_fill_manual(values = c("thistle4", "slategray3")) +
+  theme(axis.text.x = element_text(size = 8))
+```
+
+## Inferential statistics
+
+The following analyses are based on the trials from the `single`and `double spell block` after a participant-based outlier-analysis.
+
+```{r}
+#| include: false
+#| label: inf-preproc
+# remove "pooled" subject and add trial number (across the whole session) 
+dualTrialsBak = dualTrials
+dualTrials = dualTrials %>% filter(id != "pooled") %>%
+  group_by(id) %>% arrange(start_time) %>%
+  mutate(trialNumTotal = row_number(), trans_delta = trans_ub - trans_lb) %>% arrange(id)
+
+# set some reference variables
+dualTrials = dualTrials %>%
+  mutate(double_spell = factor(map_type %in% c("generic", "second-only")),
+         reducible = factor(map_type == "second-only"),
+         test_type = relevel(factor(test_type, ordered=F), ref = "count"))
+
+```
+
+```{r}
+#| label: outlier-analysis
+#| code-fold: show
+limits = dualTrials %>% group_by(id) %>%
+  summarize(lower = max(0.2, mean(rt) - 2*sd(rt)),
+            upper = mean(rt) + 2*sd(rt),
+            n_within = sum(rt >= lower & rt <= upper),
+            pct_within = n_within / n() * 100)
+dualTrialsClean = merge(dualTrials, limits, by = "id") %>%
+  filter(rt >= lower, rt <= upper) %>% filter(!is.na(emp_resp))
+
+
+```
+
+### Models for test RTs
+
+Let us first fit separate linear models and assess the parameter interval estimates to motivate mixed-effects modeling.
+
+```{r}
+#| warning: false
+#| label: test-rt-multiple-lms
+gd = groupedData(
+  log(rt) ~ cue_type + double_spell + test_type + acc + trialNumTotal|id,
+  data = dualTrialsClean %>% select(-map_1))
+lm_separate = nlme::lmList(
+  log(rt) ~  cue_type + double_spell + test_type + acc + trialNumTotal,
+  data = gd)
+plot(intervals(lm_separate))
+
+```
+
+-   Least overlap in CI's for the intercept: adding a random intercept seems adequate.
+
+::: callout-note
+## Assumptions
+
+Let $i$ be the subject index and let $n_i$ the number of subject $i$'s observations, then we model the log RT vector $\mathbf{y}_i$ as follows:
+
+$$
+\displaylines{
+\mathbf{y}_i = \mathbf{X}_i \boldsymbol \beta + \mathbf{Z}_i \mathbf b_i + \boldsymbol \epsilon_i, \\
+\mathbf b_i \stackrel{iid}{\sim} \mathcal N_q \left(\mathbf 0_q, \mathbf D \right),\\
+\boldsymbol \epsilon_i \stackrel{id}{\sim} \mathcal N_{n_i} \left(\mathbf 0_{n_i}, \boldsymbol \Sigma_i \right),
+}
+$$
+
+where random effects $\mathbf b_i$ are independent from errors $\boldsymbol \epsilon_i$.
+:::
+
+```{r}
+#| label: test-rt-ri-vs-rs
+#| code-fold: show
+ri_model = lme(
+  log(rt) ~ trialNumTotal + acc + inter_RT + cue_type + double_spell + test_type,
+  random = ~ 1 | id, data = dualTrialsClean)
+
+d_squared = getVarCov(ri_model)[1]
+sigma_squared = ri_model$sigma^2
+icc = d_squared / (d_squared + sigma_squared)
+```
+
+-   The marginal information criteria favor the model without random slopes.
+
+-   The marginal correlation between two measurements of the same subject is *ICC* = `r round(icc, digits = 2)`, favoring the use of a random intercept.
+
+In order to evaluate the model fit, we plot the population-specific residuals $\hat\epsilon_{ij} = y_{ij} − \hat y_{ij}$ against the estimated means $\hat y_{ij} = \mathbf x_{ij}^\top \hat{\boldsymbol{\beta}}$.
+
+```{r}
+#| warning: false
+#| label: test-rt-error-analysis
+
+linpredVsResiduals(ri_model) +
+  scale_x_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32)) +
+  scale_y_continuous(breaks = seq(-1.5, 1.5, 0.5), limits = c(-1.7, 1.7))
+
+# add response vs fitted
+responseVsFitted(ri_model) +
+  scale_x_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32)) +
+  scale_y_continuous(breaks = seq(-0.1, 0.3, 0.1), limits = c(-0.15, 0.32))
+```
+
+Overall same amount of *under-* and *overestimation* but the mean structure seems to be correctly specified. We can now inspect the RI model summary.
+
+```{r}
+#| label: test-rt-summary
+#| code-fold: show
+summary(ri_model)
+
+```
+
+**Take-aways:**
+
+-   The expected log RTs can be approximated adequately by a linear function of `double spell`, `test type`, `inter RT` and `trial number`. A random intercept is warranted, random slopes do not appear necessary.
+
+-   Reactions for `double spells` are significantly slower. Reactions for `position tests` are also significantly slower (which may be an artifact: the response options are fixed for `count` trials, not for `position` trials).
+
+-   All responses become significantly *faster over time*, which may indicate *further learning* in session 2.
+
+### Models for transformation duration (interRT)
+
+Repeat procedure for the duration until participants indicate that they are done with applying the spell.
+
+```{r}
+#| warning: false
+#| label: inter-rt-multiple-lms
+gd = groupedData(
+  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = dualTrialsClean %>% select(-map_1))
+lm_separate = nlme::lmList(
+  log(inter_RT) ~ cue_type + double_spell + reducible + test_type + trans_ub + acc + trialNumTotal|id, data = gd)
+plot(intervals(lm_separate))
+
+```
+
+A random intercept and slopes for `trial number` or `reducible` seems adequate.
+
+```{r}
+#| label: inter-rt-ri-vs-rs
+#| code-fold: show
+ri_model = lme(
+  log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + acc + trialNumTotal,
+  random = ~ 1 | id, data = dualTrialsClean)
+rirs_model = update(ri_model, random = ~ 1 + reducible | id)
+anova(ri_model, rirs_model)
+
+d_squared = getVarCov(rirs_model)[1]
+sigma_squared = rirs_model$sigma^2
+icc = d_squared / (d_squared + sigma_squared)
+```
+
+This time an additional random slope is warranted by the marginal information criteria. The *ICC* is `r round(icc, digits = 2)`. Next, we test if knowledge about the amount of possibly skip-able transformations (`trans_delta`) improves the model fit.
+
+```{r}
+#| warning: False
+#| label: inter-rt-ie
+#| code-fold: show
+rirs_model_ie = update(rirs_model, fixed = log(inter_RT) ~ cue_type + double_spell + reducible + trans_ub + trans_delta + acc + trialNumTotal)
+anova(rirs_model, rirs_model_ie)
+```
+
+`trans_delta` does not seem to improve the model fit sufficiently. Finally, view error diagnostics:
+
+```{r}
+#| warning: false
+#| label: inter-rt-error-analysis
+
+linpredVsResiduals(rirs_model) +
+  scale_x_continuous(breaks = seq(0.2, 0.8, 0.1), limits = c(0.19, 0.81)) +
+  scale_y_continuous(breaks = seq(-1.5, 2.0, 0.5), limits = c(-1.6, 2.1))
+
+responseVsFitted(rirs_model) + 
+  scale_x_continuous(breaks = seq(-1, 3, 0.5), limits = c(-1.1, 3.1)) +
+  scale_y_continuous(breaks = seq(0.5, 2.0, 0.5), limits = c(0.4, 2.1))
+```
+
+Finally, let's have a peek at the effects of the `trans_ub` and `trans_delta`regardless of other predictors:
+
+```{r}
+#| warning: False
+#| label: inter-rt-pure-summary
+#| code-fold: show
+lme(log(inter_RT) ~ trans_ub + trans_delta,
+    random = ~ 1 | id, data = dualTrialsClean) %>% summary()
+```
+
+**Take-aways:**
+
+-   The expected log interim RTs can be approximated moderately well by a linear function of `cue type + double spell + reducible + trans_ub + acc + trialNumTotal`.
+
+-   A random intercept and a random slope for reducibility are warranted. The amount of possibly skip-able transformations bares no additional information about the expected interim RT.
+
+-   Processing time for `double spells` is substantially bigger than for single spells.
+
+-   Counterintuitively, `reducibility` incurs additional processing costs.
+
+-   The bigger the number of to be transformed objects (`trans_ub`) the *smaller* the processing time. This may be due to displays with multiple duplicate items (such that they can be transformed simultaneously)
+
+-   If `trans_ub` and `trans_delta` are used as predictors in isolation, both increase the expected time to apply the functions. The latter is only non-zero for reducible double spells, which are more difficult for participants as we have previously seen.
+
+-   Again, participants become significantly *faster over time*, which may indicate *further learning* in session 2.
+
+### Compositional models
+
+Can individual time-trends for single spells predict those of corresponding double spells? This is the plan:
+
+-   for each **single spell**: compute the subject-wise profile of `inter_RT` per number of transformed objects. We use a *weighted mean* which favors later trials over earlier ones.
+
+-   for each **double spell**: infer how many objects are transformed by each constituting single spell. Then include the corresponding RT profiles from the step above.
+
+-   model the `inter_RT` of *double spells* as a combination of the `inter_RTs` of the coresponding *single spells.*
+
+```{r}
+#| include: false
+#| label: comp-rt-subroutines
+
+split_spell = function(spell_char, idx){
+   if (is.vector(spell_char) && is.character(spell_char[[1]])) {
+     return(sapply(spell_char, function(y) strsplit(y, "-")[[1]][idx]))
+   } else if (is.character(spell_char)) {
+     return(strsplit(spell_char, "-")[[1]][idx])
+   } else {
+   stop("Invalid input")
+   }  
+}
+
+spell_input = function(spell_char){
+  return(split_spell(spell_char, 1))
+}
+
+spell_output = function(spell_char){
+  return(split_spell(spell_char, 2))
+}
+
+matches_input = function(spell_char, input_char){
+  input_spell = spell_input(spell_char)
+  return(input_spell == input_char)
+}
+
+matches_output = function(spell_char, output_char){
+  output_spell = spell_output(spell_char)
+  return(output_spell == output_char)
+}
+
+applySpell = function(spell_char, input_char){
+  out = ifelse(matches_input(spell_char, input_char),
+               spell_output(spell_char),
+               input_char)
+  return(out)
+}
+
+# tests
+spell_input("A-B") == "A"
+spell_output("A-B") == "B"
+spell_input(dualTrialsClean$map_0[1:2])
+matches_input("C-A", "B") == F
+matches_input("B-A", "B") == T
+applySpell("A-B", "A") == "B" 
+
+# data example
+t1 = dualTrialsClean %>% filter(map_type != "primitive") %>% slice(6) %>%
+  mutate(mid_disp_0 = applySpell(map_0, input_disp_0),
+         mid_disp_1 = applySpell(map_0, input_disp_1),
+         mid_disp_2 = applySpell(map_0, input_disp_2),
+         mid_disp_3 = applySpell(map_0, input_disp_3)) 
+
+```
+
+```{r}
+#| include: false
+#| label: comp-rt-preproc-1
+
+# Reproduce intermediate display and the number of transformations for each single spell contained in the double spells
+doubleSpells = dualTrialsClean %>% filter(map_type != "primitive") %>%
+  mutate(mid_disp_0 = applySpell(map_0, input_disp_0),
+         mid_disp_1 = applySpell(map_0, input_disp_1),
+         mid_disp_2 = applySpell(map_0, input_disp_2),
+         mid_disp_3 = applySpell(map_0, input_disp_3)) 
+doubleSpells$trans_0 = rowSums( 
+   ifelse(doubleSpells[paste0("input_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+doubleSpells$trans_1 = rowSums( 
+   ifelse(doubleSpells[paste0("output_disp_", 0:3)] != doubleSpells[paste0("mid_disp_", 0:3)], 1, 0))
+
+# test
+doubleSpells %>% mutate(ntrans_sums_up = trans_0 + trans_1 == trans_ub) %>% filter(ntrans_sums_up == F) %>% summarize(n_unmatched = n())
+
+
+```
+
+```{r}
+#| label: comp-rt-preproc-2
+#| warning: false
+
+# merge inter_RT profile of single spells to corresponding double spells 
+# weigh later observations higher than earlier ones
+profiles = dualTrialsClean %>%
+  filter(map_type == "primitive") %>%
+  group_by(id, spell, trans_ub) %>%
+  summarize(inter_RT_0 = weighted.mean(inter_RT, 1:length(inter_RT))) %>%
+  rename(map_0 = spell, trans_0 = trans_ub)
+doubleSpells = merge(doubleSpells, profiles, by=c("id", "trans_0", "map_0"))
+profiles = profiles %>%
+  rename(trans_1 = trans_0, map_1 = map_0, inter_RT_1 = inter_RT_0)
+doubleSpells = merge(doubleSpells, profiles, by=c("id", "trans_1", "map_1"))
+```
+
+```{r}
+#| label: comp-rt-full
+#| warning: false
+#| code-fold: show
+
+ri_model = lme(
+  log(inter_RT) ~ - 1 + trialNumTotal + log(inter_RT_0) + log(inter_RT_1),
+  random = ~ 1 | id,
+  data = doubleSpells)
+
+rirs_model = update(ri_model, random = ~ 1 + trialNumTotal | id)
+anova(ri_model, rirs_model)
+
+responseVsFitted(rirs_model) +
+  scale_x_continuous(breaks = seq(0.2, 3, 0.5), limits = c(0.1, 3.1)) +
+  scale_y_continuous(breaks = seq(1, 2.5, 0.5), limits = c(0.9, 2.6))
+
+```
+
+```{r}
+#| label: comp-rt-summary
+#| code-fold: show
+summary(rirs_model)
+```
+
+### Using the wrong spell
+
+Now we try to infer the type of erroneous response for **position trials**:
+
+1.  *Spell not applied* (input display at queried position contains input of cued spell AND given response is the same item)
+2.  *Wrong spell applied* (the chosen item is the output of a spell which was not cued AND the input display had the spell input at the same position)
+3.  *Unknown error* (else)
+
+Similarly, for **count trials**:
+
+1.  *Spell not applied* (count response matches the count of the queried item in the input display)
+2.  *Wrong spell applied* (count response matches the count of the queried item in the output display after applying one of the other two spells)
+3.  *Unknown error* (else)
+
+```{r}
+#| include: false
+# infer potential spell that would lead to the given response:
+singleSpellErrors = testTrials %>%
+  filter(map_type == "primitive", acc == 0, !is.na(emp_resp)) %>%
+  mutate(resp_item = case_when(
+    emp_resp == 0 ~ resp_options_0,
+    emp_resp == 1 ~ resp_options_1,
+    emp_resp == 2 ~ resp_options_2,
+    emp_resp == 3 ~ resp_options_3))
+
+```
+
+*Subroutine + unit tests to check if the cued spell was not applied:*
+
+```{r}
+#| label: spell-not-applied-subroutine
+
+spellNotApplied = function(trial){
+  if (trial["test_type"] == "position"){
+    spell = trial["map_0"]
+    queried_idx = trial["target"]
+    input_item = eval(parse(text=paste0(
+      "trial['input_disp_", queried_idx, "']")))
+    chosen_item = trial["resp_item"]
+    return(matches_input(spell, input_item) && input_item == chosen_item)
+    
+  } else if (trial["test_type"] == "count"){
+    queried_item = trial["target"]
+    chosen_count = trial["resp_item"]
+    input_count = sum(sapply(trial[paste0("input_disp_", 0:3)],
+                             function(x) x == queried_item))
+    return(chosen_count == input_count)
+  }
+}
+
+# one positive, one negative example for position
+test = data.frame(
+  test_type = rep("position", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c(0, 1),
+  input_disp_0 = c("A", "B"),
+  input_disp_1 = c("B", "C"),
+  resp_item = c("A", "D")
+  )
+apply(test, 1, spellNotApplied)
+
+# one positive, one negative example for count
+test = data.frame(
+  test_type = rep("count", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c("A", "D"),
+  input_disp_0 = c("A", "A"),
+  input_disp_1 = c("B", "B"),
+  input_disp_2 = c("C", "C"),
+  input_disp_3 = c("D", "D"),
+  resp_item = c(1, 0)
+  )
+apply(test, 1, spellNotApplied)
+```
+
+*Subroutine + unit tests to check if another spell may have been applied instead:*
+
+```{r .output}
+#| label: wrong-spell-applied-subroutine
+
+spells = c("A-B", "B-A", "C-D")
+
+wrongSpellApplied = function(trial){
+  spell = trial["map_0"]
+  other_spells = spells[-grep(spell, spells)]
+  
+  if (trial["test_type"] == "position"){
+    chosen_item = trial["resp_item"]
+    chosen_is_output = sapply(
+      other_spells, function(s) matches_output(s, chosen_item))
+    if (!any(chosen_is_output)) return(F)
+    
+    spell_candidate = names(chosen_is_output)[which(chosen_is_output)]
+    queried_idx = trial["target"]
+    input_item = eval(parse(text=paste0(
+      "trial['input_disp_", queried_idx, "']")))
+    return(matches_input(spell_candidate, input_item))
+    
+  } else if (trial["test_type"] == "count"){
+    queried_item = trial["target"]
+    chosen_count = trial["resp_item"]
+    for (s in other_spells){
+      alt_count = sum(sapply(trial[paste0("input_disp_", 0:3)],
+                             function(x) applySpell(s, x) == queried_item))
+      if (alt_count == chosen_count) return(T)
+    }
+    return(F)
+  }
+}
+
+# one positive, one negative example for position
+test = data.frame(
+  test_type = rep("position", 2),
+  map_0 = c("A-B", "C-D"),
+  target = c(1, 1),
+  input_disp_0 = c("A", "B"),
+  input_disp_1 = c("B", "C"),
+  resp_item = c("A", "D")
+  )
+apply(test, 1, wrongSpellApplied)
+
+# one positive, one negative example for count
+# (this is the most difficult one to trace back)
+test = data.frame(
+  test_type = rep("count", 2),
+  map_0 = c("A-B", "A-B"),
+  applied_spell = c("B-A", "A-B"),
+  target = c("A", "B"),
+  input_disp_0 = c("A", "A"),
+  input_disp_1 = c("B", "B"),
+  input_disp_2 = c("C", "C"),
+  input_disp_3 = c("D", "D"),
+  resp_item = c(2, 3)
+  )
+apply(test, 1, wrongSpellApplied)
+```
+
+*Single spell subset with classified errors:*
+
+```{r}
+singleSpellErrors$noSpellMaybe = apply(singleSpellErrors, 1, spellNotApplied)
+singleSpellErrors$wrongSpellMaybe = apply(singleSpellErrors, 1, wrongSpellApplied)
+singleSpellErrors = singleSpellErrors %>%
+  mutate(eitherError = noSpellMaybe & wrongSpellMaybe,
+         unkownError = !noSpellMaybe & !wrongSpellMaybe) %>%
+  mutate(error_type = ifelse(unkownError, "unkown",
+                                                 ifelse(eitherError, "either",
+                                                        ifelse(noSpellMaybe, "no spell", "wrong spell")
+                                                        )
+                                                 )
+         )
+singleSpellErrors %>% select(input_disp_0, input_disp_1, input_disp_2, input_disp_3,
+                             spell, test_type, target, correct_resp, resp_item,
+                             target, correct_resp, error_type)
+```
+
+Summary:
+
+```{r}
+singleSpellErrors %>% group_by(id, error_type) %>% summarize(n = n()) %>%
+  ggplot(aes(x=error_type, y=n)) +
+    geom_bar(stat="identity", position=position_dodge(), color = "white") +
+    facet_wrap(~id)+
+    scale_x_discrete(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, 16),
+                       breaks = seq(0, 16, 4)) +
+    theme_minimal()+
+    guides(fill = guide_legend(title = "Error Profiles in Single Spells"))+
+    xlab("Error Type") +
+    ylab("# occurrence") +
+    theme(
+      panel.border = element_rect(colour = "gray", fill=NA, size=1),
+      axis.text = element_text(size = 10, angle = 90),
+      axis.title.x = element_text(margin = margin(t = 20)),
+      axis.title.y = element_text(margin = margin(r = 20)),
+      axis.title = element_text(size = 14, face = "bold"),
+      strip.text.x = element_text(size = 14, face = "bold.italic"),
+      panel.spacing = unit(2.5, "lines"),
+      legend.position = c(0.85, 0.2),
+      plot.margin = margin(1, 1, 0, 0, "cm")
+    )
+```
+
+### Models for response accuracy
+
+::: callout-note
+## Assumptions
+
+We model the (binary) accuracy of subject $i$ in trial $j$ as follows:
+
+$$
+\displaylines{
+y_{ij}|\mathbf{b}_i \sim \mathrm{Bernoulli}(\mu_{ij}),\\
+\mu_{ij} = \left(1 + \exp(-\mathbf x_{ij}^\top \boldsymbol{\beta} - \mathbf z_{ij}^\top \mathbf{b}_i)\right)^{-1},\\
+\mathbf b_i \stackrel{iid}{\sim} \mathcal N_q \left(\mathbf 0_q, \mathbf D \right)\\
+}
+$$
+:::
+
+```{r}
+#| label: acc-model
+#| code-fold: show
+ri_gmodel = glmer(
+  acc ~ trialNumTotal + inter_RT + cue_type +  reducible + (1|id),
+  data=dualTrialsClean, family=binomial, nAGQ=20)
+summary(ri_gmodel)
+```
+
+```{r}
+#| label: acc-perf
+#| warning: false
+classificationPerformance = function(model){
+  pred = predict(model, type = "response")
+  pred_class = ifelse(pred > 0.5, 1, 0)
+  true_class = model@resp[["y"]]
+  
+  # Calculate sensitivity and specificity
+  TP = sum(true_class == 1 & pred_class == 1)
+  TN = sum(true_class == 0 & pred_class == 0)
+  FP = sum(true_class == 0 & pred_class == 1)
+  FN = sum(true_class == 1 & pred_class == 0)
+  sensitivity = TP / (TP + FN)
+  specificity = TN / (TN + FP)
+  
+  # Print the results
+  cat("Sensitivity:", sensitivity, "\n")
+  cat("Specificity:", specificity, "\n")
+}
+
+classificationPerformance(ri_gmodel)
+
+```
+
+-   The model cannot explain incorrect responses.
+
+-   The odds of an accurate response *for a given subject* is `r round(exp(ri_gmodel@beta[1]), digits=2)` [^2]. They also increased slightly but above chance across the experiment.
+
+-   The time participants took to apply the function (`inter_RT`) was the best predictor of accuracy: Every additional required second decreased the odds (c.p.) by a factor of `r round(exp(ri_gmodel@beta[3]), digits=2)`.
+
+-   They do not seem to be sensitive above chance to `reducible` spells. Adding the factor `double_spell` is redundant to `inter_rt` and results in a singular fit.
+
+[^2]: At the start of the experiment for primitive trials with a text cue and count test.
+
+```{=html}
+<!--
+- error type analysis (e.g. confuse B-A)
+-->
+```
