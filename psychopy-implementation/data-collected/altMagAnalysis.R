@@ -7,7 +7,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 packages = c("stringr", "dplyr", "tidyr", "forcats", "data.table", "glue",
              "ggplot2", "ggridges", "viridis", "ggnewscale")
 lapply(packages, require, character.only=T)
-loadRaw = F
+loadRaw = T
 
 # ==== Load data ===============================================================
 if (loadRaw) {
