@@ -43,10 +43,10 @@ class Experiment:
             os.makedirs(self.data_dir)
 
         # inputs and dimensions
-        self.resp_keys_kb = ["d", "f", "j", "k"]
+        self.resp_keys_kb = ["d", "f", "j", "k", "a", "ö"]
         self.resp_keys_vpixx = ["2", "1", "up", "left", "4", "right"]
         # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
-        # Mapping: 0, 1, 2, 3, False, True
+        # Mapping: 0, 1, 2, 3, False/left, True/right
 
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
@@ -107,14 +107,15 @@ class Experiment:
         self.expInfo = expInfo
         self.exp_clock = core.Clock()
 
-        # Optionally init parallel port
+        # set response keys according to device
         self.resp_keys = self.resp_keys_kb
         self.use_pp = False
 
         if expInfo["MEG"]:
-            self.init_interface()
-            self.use_pp = True
+            # self.init_interface()
+            # self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
+            
 
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
@@ -600,9 +601,10 @@ class Experiment:
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
                   proceed_key="/k", wait_s=3, timer=None):
 
-        assert proceed_key in ["/k", "/m", "/t", "/e"], "Unkown proceed key"
-        left = "a"
-        right = "ö"
+        assert proceed_key in ["/k", "/t", "/e"], "Unkown proceed key"
+        
+        left = self.resp_keys[-2]
+        right = self.resp_keys[-1]
         skip = "return"
         finished = False
         testResp = None
@@ -612,10 +614,6 @@ class Experiment:
         if proceed_key == "/k":  # keypress
             _, testResp = self.tTestResponse(
                 TestClock, [left, right],
-                return_numeric=False)
-        if proceed_key == "/m":  # meg keypress
-            _, testResp = self.tTestResponse(
-                TestClock, self.resp_keys_vpixx[-2:],
                 return_numeric=False)
         elif proceed_key == "/t":  # time
             core.wait(wait_s)
@@ -629,7 +627,7 @@ class Experiment:
                 testResp = right
 
         # Proceed accordingly
-        if testResp in [right, self.resp_keys_vpixx[-1]]:
+        if testResp == right:
             if page < max_page-1:
                 page += 1
             elif continue_after_last_page:
@@ -648,7 +646,7 @@ class Experiment:
                                                  return_numeric=False)
                 if contResp == right:
                     finished = True
-        elif testResp in [left, self.resp_keys_vpixx[-2]] and page > 0:
+        elif testResp == left and page > 0:
             page -= 1
 
         return page, finished
