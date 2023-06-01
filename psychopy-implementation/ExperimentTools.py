@@ -572,34 +572,29 @@ class Experiment:
 
     def iSpellExample(self, displays):
         assert len(displays) == 2, "displays must be a list of two lists"
+        self.drawList = []
         stimuli = self.stim_dict.copy()
         rect_pos = self.circularGridPositions(
             center_pos=[0,0], set_size=self.set_size, radius=7)
         
-        # Input Display
-        for i, key in enumerate(displays[0]):
-            self.rect.pos = rect_pos[i]
-            self.rect.draw()
-            stim = stimuli[key]
-            stim.pos = rect_pos[i]
-            stim.draw()
-        self.win.flip(clearBuffer=False)
+        def drawInput(dispNum):        
+            for i, key in enumerate(displays[dispNum]):
+                self.rect.pos = rect_pos[i]
+                self.rect.draw()
+                stim = stimuli[key]
+                stim.pos = rect_pos[i]
+                stim.draw()
+        
+        # Input display
+        self.enqueueDraw(func=drawInput, args=(0,))
         core.wait(1)
 
         # Let the magic happen
-        cue = self.magicWand
-        cue.draw()
-        self.win.flip()
+        self.enqueueDraw(func=self.magicWand.draw)
         core.wait(1)
-
-        # Output Display
-        for i, key in enumerate(displays[1]):
-            self.rect.pos = rect_pos[i]
-            self.rect.draw()
-            stim = stimuli[key]
-            stim.pos = rect_pos[i]
-            stim.draw()
-        self.win.flip()
+        
+         # Output display
+        self.enqueueDraw(func=drawInput, args=(1,))
         core.wait(1)
     
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
