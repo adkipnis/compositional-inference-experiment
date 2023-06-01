@@ -1310,10 +1310,12 @@ class Experiment:
             core.wait(1)
         return out
 
+
     def adaptiveDecoderBlock(self, trial_df, 
                              fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
-                             pause_between_runs=True, test_goal=3):
+                             pause_between_runs=True, test_goal=3, decoderType="spell"):
         ''' block of decoder trials, enqueueing failed trials'''
+        assert decoderType in ["spell", "object"]
         start_width_initial = self.start_width # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         succeeded = []
@@ -1328,10 +1330,14 @@ class Experiment:
         
         while trials.nRemaining > 0:
             trial = trials.next()
-            self.genericTrial(trial, self_paced=True, feedback=True,
-                              fixation_duration=fixation_duration + trial["jitter"][0],
-                              cue_duration=cue_duration + trial["jitter"][1],
-                              goal_rt=goal_rt)
+            
+            if decoderType == "spell":
+                self.genericTrial(trial, self_paced=True, feedback=True,
+                                fixation_duration=fixation_duration + trial["jitter"][0],
+                                cue_duration=cue_duration + trial["jitter"][1],
+                                goal_rt=goal_rt)
+            else:
+                self.objectDecoderTrial(trial, fixation_duration=fixation_duration + trial["jitter"])
             
             # Pause display between runs
             if pause_between_runs:
@@ -1343,7 +1349,7 @@ class Experiment:
                 
             # Enqueue trials with applicable map according to performance
             out.append(trial)
-            if trial["applicable"]:
+            if (decoderType == "spell" and trial["applicable"]) or (decoderType == "object" and trial["is_catch_trial"]):
                 if trial["correct_resp"] == trial["emp_resp"] and trial["resp_RT"] <= goal_rt:
                     succeeded.append(trial)
                     print("# correct:", len(succeeded))
