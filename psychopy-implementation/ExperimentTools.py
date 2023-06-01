@@ -143,17 +143,17 @@ class Experiment:
         # Trigger codes
         self.trigger_dict = {"trial": 1,
                              "fixate": 2,
-                             "disp": 3,
-                             "vcue": 40,
-                             "tcue": 41,
+                             "display": 3,
+                             "visual": 40,
+                             "textual": 41,
                              "position": 50,
                              "count": 51,
                              "identity": 52,
                              "run": 6}
 
     def send_trigger(self, trigger_type):
-        self.port_out.setData(self.trigger_dict[trigger_type])
         self.port_out.setData(0)
+        self.port_out.setData(self.trigger_dict[trigger_type])
 
     def load_trials(self):
         print("Loading trials...")
@@ -945,7 +945,7 @@ class Experiment:
         self.fixation.draw()
         self.win.flip()
         if self.use_pp:
-            self.send_trigger("fix")
+            self.send_trigger("fixate")
         core.wait(duration)
 
     def setCue(self, key, mode="random"):
@@ -977,7 +977,7 @@ class Experiment:
         
         # send triggers            
         if self.use_pp:
-            self.send_trigger("vcue") if mode == "visual" else self.send_trigger("tcue")
+            self.send_trigger(mode)
         
         # flip
         self.win.flip()
@@ -1055,7 +1055,7 @@ class Experiment:
         
         # send trigger
         if self.use_pp:
-            self.send_trigger("disp")
+            self.send_trigger("display")
 
         # flip
         self.win.flip()
@@ -1224,7 +1224,7 @@ class Experiment:
         
         # Send trigger
         if self.use_pp:
-            self.send_trigger("trial_start")
+            self.send_trigger("trial")
         
         # Fixation
         self.drawFixation(duration=fixation_duration)
