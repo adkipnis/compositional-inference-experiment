@@ -1100,6 +1100,20 @@ class Experiment:
             resp = self.count_dict[str(i)]
             resp.pos = self.resp_pos_num[i]
             resp.draw()
+            
+    def drawCatchResponses(self):
+        ''' draw response options for one-back test'''
+        self.rect.lineColor = self.color_dict["dark_grey"]
+        j = 0
+        for i, pos in enumerate(self.resp_pos):
+            if i in [1,2]:
+                continue
+            self.rect.pos = pos
+            self.rect.draw()
+            resp = self.count_dict[str(j)]
+            resp.pos = self.resp_pos_num[i]
+            resp.draw()
+            j += 1
     
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
