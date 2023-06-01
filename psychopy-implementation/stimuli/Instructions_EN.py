@@ -246,19 +246,13 @@ IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
     
 Navigation1 = [0,
               "Don't worry, there is no shame in going back pages.",
-              "In this first session, you will prepare the basics of the task"\
-                  " which you will later perform in the MEG.",
-              "If for some reason\nyou need to abort the experiment,\nyou can"\
-                  " do so by pressing Esc:",
-              1,
-              "Please be careful not to press this key by accident!",
-              "Finally, if you have any questions, please ask the examiner.",
+              "In this first session, you will prepare the basics of the task."
+              "If you have any questions\nor need to abort the experiment,\nplease ask the examiner.",
               "Now, the experiment begins..."
               ]
 
 Navigation2 = [0,
-              "In this second session, you will train the actual task"\
-                  " which you will perform in the MEG.",
+              "In this second session, you will train the actual task.",
               "If for some reason you need to abort the experiment, you can"\
                   " do so by pressing Esc:",
               1,

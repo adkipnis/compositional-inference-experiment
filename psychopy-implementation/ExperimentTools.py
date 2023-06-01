@@ -1407,12 +1407,11 @@ class Experiment:
         print("Starting Session 1.")
 
         ''' --- 1. Initial instructions ---------------------------------------------'''
+        
         # Navigation
         self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardArrows"],
-                                self.keyboard_dict["keyBoardEsc"]],
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
                           font="mono",
                           fontcolor=self.color_dict["mid_grey"])
 
@@ -1441,7 +1440,7 @@ class Experiment:
         self.Instructions(part_key="Intermezzo1",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"],
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"],
                                 self.magicChart])
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
                                                  streak_goal=streak_goal//2,
@@ -1453,7 +1452,7 @@ class Experiment:
         print("\nLearning second cue type.")
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"]])
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         self.learnDuration_2 = self.learnCues(min_duration=30)
         self.add2meta("learnDuration_2", self.learnDuration_2)
         
@@ -1480,7 +1479,7 @@ class Experiment:
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage],
                           args=[self.magicChart,
-                                self.keyboard_dict["keyBoard4"]],
+                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue,
                                             tFirst,
@@ -1498,7 +1497,7 @@ class Experiment:
         print("\nLearning second test type.")
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoard4"]],
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.genericTrial,
                                             tSecond,
                                             tSecond],
