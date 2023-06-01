@@ -1256,6 +1256,26 @@ class Experiment:
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
         core.wait(0.5)
+    
+    
+    def oneBackTest(self, trial):
+        """ display the target object and ask the participant if it is the same as the previous trial """
+        self.drawList = []
+        no, yes = self.resp_keys[-2], self.resp_keys[-1]
+        stimuli = self.stim_dict.copy()
+        
+        # Draw stimuli
+        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCatchResponses)
+        
+        # Send trigger    
+        if self.use_pp:
+            self.send_trigger("catch")
+        
+        testRT, testResp = self.tTestResponse(core.Clock(), [no, yes])
+        return testRT, testResp == yes
+    
+    
     def objectDecoderTrial(self, trial, fixation_duration=0.3):
         """ Subroutine in which the participant sees an object and may encounter a 1-back task"""
         test_rt, test_resp = None, None
