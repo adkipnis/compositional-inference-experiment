@@ -1256,11 +1256,46 @@ class Experiment:
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
         core.wait(0.5)
+    def objectDecoderTrial(self, trial, fixation_duration=0.3):
+        """ Subroutine in which the participant sees an object and may encounter a 1-back task"""
+        test_rt, test_resp = None, None
+        self.drawList = []
+        
+        # Init
+        self.win.flip()
+        trial["start_time"] = self.exp_clock.getTime()
+        
+        # Send trigger
+        if self.use_pp:
+            self.send_trigger("trial")
+        
+        # Fixation
+        self.drawFixation(duration=fixation_duration)
+        
+        # Display input
+        display_rt = self.tInput(trial)
+        
+        # Empty display
+        self.win.flip()
+        core.wait(1)
+        
+        # Catch trial
+        if trial["is_catch_trial"]:
+            test_rt, test_resp = self.oneBackTest(trial)
+        self.drawAllAndFlip()
+        
+        # Save data
+        trial["display_RT"] = display_rt
+        trial["resp_RT"] = test_rt
+        trial["emp_resp"] = test_resp
+        core.wait(0.5)
+        
         
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
         map_names = self.map_names if map_type == "primitive" else self.map_names_bin
         self.counter_dict = {map:0 for map in map_names}
+    
     
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
@@ -1372,7 +1407,8 @@ class Experiment:
             if self.test_mode and len(out) >= test_goal:
                 break
         return out
-        
+    
+    
     ###########################################################################
     # Introduction Session
     ###########################################################################
