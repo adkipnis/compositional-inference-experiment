@@ -1004,6 +1004,7 @@ class Experiment:
             # case: abort
             elif thisKey == "escape":
                 self.add2meta("t_abort", data.getDateStr())
+                self.win.close()
                 core.quit()  # abort experiment
         
         return intermediateRT
@@ -1030,6 +1031,7 @@ class Experiment:
                 # case: abort
                 elif thisKey == "escape":
                     self.add2meta("t_abort", data.getDateStr())
+                    self.win.close()
                     core.quit()  # abort experiment
                     
         return testRT, testResp
