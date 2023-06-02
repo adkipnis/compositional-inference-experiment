@@ -1690,11 +1690,10 @@ class Experiment:
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
-        goal_streak_d = 1 if self.test_mode else 16 # decoder
+        
         goal_streak_p = 1 if self.test_mode else 20 # primitives
         goal_streak_b = 1 if self.test_mode else 15 # binaries
-        n_trials = [self.n_primitives * goal_streak_d,
-                    self.n_primitives * goal_streak_p,
+        n_trials = [self.n_primitives * goal_streak_p,
                     self.n_binaries * goal_streak_b]
         n_total = sum(n_trials)
         milestones = np.cumsum(n_trials)/n_total
@@ -1705,26 +1704,16 @@ class Experiment:
         demoPosition = data.TrialHandler(self.trials_prim_prac_p[:1], 1, method="sequential").trialList[0]
         demoBin = data.TrialHandler(self.trials_bin[:1], 1, method="sequential").trialList[0]
 
-        ''' --- 1. Initial instructions and function decoder ------------------------'''
-        print("Starting Session 2 with adaptive decoder block.")
-        # Navigation
-        self.Instructions(part_key="Navigation3",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"])
+        # ''' --- 1. Initial instructions and function decoder ------------------------'''
+        # print("Starting Session 2 with adaptive decoder block.")
+        # # Navigation
+        # self.Instructions(part_key="Navigation3",
+        #                   special_displays=[self.iSingleImage],
+        #                   args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
+        #                   font="mono",
+        #                   fontcolor=self.color_dict["mid_grey"])
 
-        # Introduction & Function Decoder
-        self.Instructions(part_key="IntroMEG",
-                        special_displays=[self.iSingleImage,
-                                          self.iSingleImage],
-                        args=[self.magicChart,
-                              self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec,
-                                                  test_goal=n_trials[0])
-        fname = self.writeFileName("functionDecoder")
-        self.save_object(self.df_out_5, fname, ending='csv')
-
+       
         ''' --- 2. Primitive trials ------------------------------------------------'''
         print("\nStarting adaptive primitive block.")
         self.Instructions(part_key="PrimitivesMEGR",
