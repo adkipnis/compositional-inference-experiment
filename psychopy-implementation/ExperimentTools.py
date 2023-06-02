@@ -164,9 +164,9 @@ class Experiment:
         self.instructions = pickle.load(
             open(f"{self.stim_dir}{os.sep}instructions_en.pkl", "rb"))
 
-        #  Localizer trials
-        # self.trials_localizer = pickle.load(
-        #     open(f"{self.trial_list_dir}{os.sep}{pid}_trials_localizer.pkl", "rb"))
+        # Object decoder trials
+        self.trials_obj_dec = pickle.load(
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_obj_dec.pkl", "rb"))
 
         self.trials_prim_dec = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_dec.pkl", "rb"))
