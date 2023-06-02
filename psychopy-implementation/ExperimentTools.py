@@ -325,6 +325,20 @@ class Experiment:
             for i in range(self.n_resp)
         }
 
+        # Yes/No responses
+        self.yn_dict = {
+            True: visual.TextStim(
+                self.win,
+                text="Y",
+                height=4,
+                color=self.color_dict["black"]),
+            False: visual.TextStim(
+                self.win,       
+                text="N",
+                height=4,
+                color=self.color_dict["black"])
+        }
+        
         # Keyboard prompts
         keyboard_list = glob.glob(f"{self.stim_dir}{os.sep}keyBoard*.png")
         self.keyboard_dict = {
