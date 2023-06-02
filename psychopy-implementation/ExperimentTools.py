@@ -1123,16 +1123,14 @@ class Experiment:
     def drawCatchResponses(self):
         ''' draw response options for one-back test'''
         self.rect.lineColor = self.color_dict["dark_grey"]
-        j = 0
-        for i, pos in enumerate(self.resp_pos):
-            if i in [1,2]:
-                continue
-            self.rect.pos = pos
+        yn_positions_box = self.resp_pos[1:3]
+        yn_positions = self.resp_pos_num[1:3]
+        for i in range(len(yn_positions)):
+            self.rect.pos = yn_positions_box[i]
             self.rect.draw()
-            resp = self.count_dict[str(j)]
-            resp.pos = self.resp_pos_num[i]
+            resp = self.yn_dict[bool(i)]
+            resp.pos = yn_positions[i]
             resp.draw()
-            j += 1
     
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
