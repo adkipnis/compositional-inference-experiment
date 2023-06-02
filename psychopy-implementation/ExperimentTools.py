@@ -1314,7 +1314,7 @@ class Experiment:
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
         self.drawList = []
-        no, yes = self.resp_keys[1:3]
+        no, yes = self.resp_keys[-2:]
         stimuli = self.stim_dict.copy()
         
         # Draw stimuli
