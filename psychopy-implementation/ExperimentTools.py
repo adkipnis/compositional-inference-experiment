@@ -1460,9 +1460,10 @@ class Experiment:
             if self.show_progress:
                 end_width = start_width_initial + len(succeeded) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-            core.wait(1)
+            if decoderType == "spell":
+                core.wait(1)
             
-            # Terminate if goal is reached during test mode
+            # During test mode: Terminate if goal is reached
             if self.test_mode and len(out) >= test_goal:
                 break
         return out
