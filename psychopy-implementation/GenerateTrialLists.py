@@ -26,11 +26,12 @@ display_size = 4
 n_primitives = 3
 # minimal number of instances per composition type
 min_type = np.floor(n_primitives/3)
-n_exposure = 30  # present each map n times for the main task
+n_exposure_prim = 30  # present each map n times for the main task
+n_exposure_binary = 20  
 n_exposure_practice = 10
 maxn_repeats = 8  # maximum number of times a block of n_exposure * factor can be repeated
 n_exposure_prim_dec = 30
-n_exposure_loc = 30  # present each entity n times for the localizer task
+n_exposure_loc = 20  # present each entity n times for the localizer task
 percentage_catch = 0.1  # p * 100% of the trials will contain catch trials
 n_exposure_loc_quick = round(n_exposure_loc * (1-percentage_catch))
 n_exposure_loc_catch = round(n_exposure_loc * percentage_catch)
