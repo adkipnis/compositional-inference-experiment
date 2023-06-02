@@ -177,6 +177,38 @@ Feedback1 = ["In this training run, your score was:",
              0, 
              "This is good, you are confident to continue..."]
 
+Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
+                   " want to make sure\nyou remember them correctly.",
+               "In her wise anticipation, Philbertine provides you\nwith a"\
+                   " magical practice board.",
+               "You will first see the spell cue.\nThen you need to select the"\
+                   " two corresponding objects:",
+               "(1) The object which is susceptible to the spell",
+               "...and (2) the object into which it is transformed.",
+               "You choose the two objects using the marked keys\non your keyboard:",
+               0,
+               "The blue keys will correspond to your options\nfrom left to right.",
+               "If you don't know the answer,\npress the (red) 'next' key.",
+               "Importantly, there is an invisible counter for each spell cue:",
+               1,
+               "If you answer incorrectly,\nthe counter will decrease.\nYour response will be marked red.",
+               "If you answer correctly within 2 seconds,\nthe counter will increase.\nYour response will be marked green.",
+               "If your answer is correct but slow,\nthe counter will stay the same.\nYour response will be marked yellow.",
+               "Each correct answer will increase the progress bar:",
+               "Your goal is to reach a counter of 5\nfor each spell cue.",
+               "The counter cannot go beyond 5,\nso the progress bar won't increase for spells\nwhich you have mastered.",
+               "Place your fingers\non only the marked keys now.",
+               "Ready?"]
+    
+Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
+               "Next, you will see if you have correctly learned\nthe second type of spell cue.",
+                "The following practice board is\ncompletely analogous to the previous"\
+                    " one.",
+                "Again, you choose the objects using\nthe marked keys on your keyboard:",
+                0,
+                "If you don't know the answer, press the (red) 'next' key.",
+                "Just as a refresher you get a second look\nat Philbertines cheat sheet before you continue."]
+
 Intro = [0, 
          "You are a magic novice preparing for\nyour course in Alteration magic.",
          "As you may know, Alteration spells\nchange the world around you.",
@@ -484,40 +516,43 @@ TestTypesReminder = [0,
 instructions ={  
   "lang": "Eng",  
   "exp": "CompInf",
-  "Navigation1": AddProceedKey2All(Navigation1, '/k'),
-  "Navigation2": AddProceedKey2All(Navigation2, '/k'),
-  # "Navigation3": AddProceedKey2All(Navigation3, '/m'),
-  "Navigation3": AddProceedKey2All(Navigation3, '/k'),
-  "Intro": AddProceedKey2All(Intro, '/k'),
-  "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
-  # "IntroMEG": AddProceedKey2All(IntroMEG, '/m'),  
-  "IntroMEG": AddProceedKey2All(IntroMEG, '/k'),  
-  # "BadLocalizer": AddProceedKey2All(BadLocalizer, '/m'),
-  "BadLocalizer": AddProceedKey2All(BadLocalizer, '/k'),
-  # "DropOut": AddProceedKey2All(DropOut, '/m'),
+  
+  "Binaries": AddProceedKey2All(Binaries, '/k'),
+  "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
+  
+  "Bye": AddProceedKey2All(Bye, '/k'),
+  "ByeBye": AddProceedKey2All(ByeBye, '/k'),
   "DropOut": AddProceedKey2All(DropOut, '/k'),
-  "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
-  "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
+  
   "Feedback0": AddProceedKey2All(Feedback0, '/e', wait_s = 3),
   "Feedback0Test": AddProceedKey2All(Feedback0Test, '/e', wait_s = 3),
   "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
+  
+  "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
+  "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
+  
+  "Intro": AddProceedKey2All(Intro, '/k'),
+  "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
+  "IntroMEG": AddProceedKey2All(IntroMEG, '/k'),  
+  
+  "Navigation1": AddProceedKey2All(Navigation1, '/k'),
+  "Navigation2": AddProceedKey2All(Navigation2, '/k'),
+  "Navigation3": AddProceedKey2All(Navigation3, '/k'),
+  
+  "objectDecoder": AddProceedKey2All(objectDecoder, '/k'),
+  "objectDecoderPost": AddProceedKey2All(objectDecoderPost, '/k'),
+  "spellDecoder": AddProceedKey2All(spellDecoder, '/k'),
+  "PrimDecMEG1": AddProceedKey2All(PrimDecMEG1, '/k'),
+  "PrimDecMEG2": AddProceedKey2All(PrimDecMEG2, '/k'),
+  "Primitives": AddProceedKey2All(Primitives, '/k'),
+  "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
+  
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),
   "positionFirst": AddProceedKey2All(positionFirst, '/k'),
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
   "TestTypesReminder": AddProceedKey2All(TestTypesReminder, '/k'),
-  "PrimDecMEG1": AddProceedKey2All(PrimDecMEG1, '/k'),
-  "PrimDecMEG2": AddProceedKey2All(PrimDecMEG2, '/k'),
-  "Primitives": AddProceedKey2All(Primitives, '/k'),
-  # "PrimitivesMEG": AddProceedKey2All(PrimitivesMEG, '/m'),
-  "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
-  "Binaries": AddProceedKey2All(Binaries, '/k'),
-  # "BinariesMEG": AddProceedKey2All(BinariesMEG, '/m'),
-  "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
-  "Bye": AddProceedKey2All(Bye, '/k'),
-  # "ByeBye": AddProceedKey2All(ByeBye, '/m'),
-  "ByeBye": AddProceedKey2All(ByeBye, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
