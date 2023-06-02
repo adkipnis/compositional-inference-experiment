@@ -291,53 +291,32 @@ def draw_position_target(stimuli, resp, display_out,
     return target_position, response_options
 
 
-def gen_trial_dict_loc(content_list, index, content_type, catch=False):
-    '''
-    Parameters
-    ----------
-    content_list : list
-        list of strings symbolizing either items or primitive maps.
-    index : int
-        position in content_list, for which a trial dictionary
-        will be created
-    content_type : str
-        "item" (objects), "visual" or "textual" (cue)
-    catch : bool, optional
-        if True make this a catch trial with a query after
-        stimulus presentation. Default is False
-
-    Returns
-    -------
-    trial_dict : dict
-        self explanatory.
-
-    '''
-    cue_type_list = np.array(["visual", "textual"])
-    content = content_list[index]
-    pos = np.random.uniform(low=-1, high=1, size=2)
+def gen_trial_dict_object_dec(stimuli, stim_idx, pos_idx, jitter_interval=[-30, 30], catch=False):
+    """ subroutine to generate a trial dictionary for object decoding task"""
+    # input display
+    stim = stimuli[stim_idx]
+    input_disp = [None] * display_size
+    input_disp[pos_idx] = stim
+    jitter = np.random.choice(jitter_interval)/1000
+    
+    # catch trial specifics
+    target = None
+    correct_resp = None
     if catch:
         correct_resp = np.random.choice([True, False])
         if correct_resp:
-            query_stim = content
+            target = stim
         else:
-            query_stim = np.random.choice(
-                content_list[content_list != content])
-        if content_type != "item":
-            query_type = cue_type_list[cue_type_list != content_type][0]
-        else:
-            query_type = None
-    else:
-        correct_resp = None
-        query_stim = None
-        query_type = None
-
-    trial_dict = {"content": content,
-                  "type": content_type,
-                  "pos": pos,
-                  "catch": catch,
-                  "query_stim": query_stim,
-                  "query_type": query_type,
-                  "correct_resp": correct_resp}
+            choice_set = np.delete(stimuli, stim_idx)
+            target = np.random.choice(choice_set)
+    
+    # trial dictionary
+    trial_dict = {"trial_type": "object_decoder",
+                  "input_disp": input_disp,
+                  "is_catch_trial": catch,
+                  "target": target,
+                  "correct_resp": correct_resp,
+                  "jitter": jitter} 
     return trial_dict
 
 
