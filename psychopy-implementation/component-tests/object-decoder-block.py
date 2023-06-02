@@ -17,22 +17,17 @@ exp.dialogue_box(show=False, participant=1, session=1, test_mode=False)
 exp.init_window(screen=1, fullscr=True)
 exp.load_trials()
 exp.render_visuals()
-exp.init_progbar()
 
-# Run Object Decoder block 
-trial0 = {'trial_type': 'object_decoder',
-         'input_disp': np.array([None, 'B', None, None]),
-         'is_catch_trial': False,
-         'correct_resp': None,
-         'jitter': -0.027}
+n_trials = 6
+exp.init_progbar(milestones=[1.])
+exp.progbar_inc = 1/n_trials
 
-trial1 = {'trial_type': 'object_decoder',
-         'input_disp': np.array(['A', None, None, None]),
-         'is_catch_trial': True,
-         'target': 'A',
-         'correct_resp': True,
-         'jitter': 0.027}
-exp.objectDecoderTrial(trial0, fixation_duration=0.3 + trial0["jitter"],)
-exp.objectDecoderTrial(trial1, fixation_duration=0.3 + trial1["jitter"],)
+# Start decoder block
+exp.adaptiveDecoderBlock(
+    exp.trials_obj_dec[:n_trials],
+    fixation_duration=0.3,
+    pause_between_runs=True,
+    decoderType="object",
+    )
 
 exp.win.close()
