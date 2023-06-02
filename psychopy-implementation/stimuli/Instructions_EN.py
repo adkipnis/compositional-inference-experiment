@@ -35,16 +35,7 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 
 
 # ============================================================================
-BadLocalizer = ["Hm.",
-                "You've answered less than 80%\nof the questions correctly.",
-                "The magical helmet is not satisfied.",
-                "That's okay, you probably just\ndid not pay enough attention.",
-                "To qualify for the exam,\nplease retry with a better score.",
-                "Again, use the following keys:",
-                0,
-                "Try to move as little as possible:\nThe helmet will be "\
-                    "attuned quicker\nthis way.",
-                "Ready?"]
+
 
 Binaries = [0,
             "Well done!",
