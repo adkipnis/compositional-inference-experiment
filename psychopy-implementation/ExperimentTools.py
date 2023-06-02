@@ -1501,14 +1501,16 @@ class Experiment:
         
         # set up probar        
         streak_goal = 2 if self.test_mode else 10 # per map
+        streak_goal_sd = 1 if self.test_mode else 16 # spell decoder
         trial_numbers = [
             len(self.trials_obj_dec) if not self.test_mode else 6, # object decoder
             self.n_primitives * streak_goal//2, # cue practice 1
             self.n_primitives * streak_goal//2, # cue practice 2
             self.n_primitives * streak_goal, # test practice 1
             self.n_primitives * streak_goal, # test practice 2
+            self.n_primitives * streak_goal_sd, # spell decoder
             ]
-        milestones = self.setMilestones(trial_numbers, weights = [0.1, 1.5, 1.5, 1.0, 1.0])
+        milestones = self.setMilestones(trial_numbers, weights = [0.1, 1.5, 1.5, 1.0, 1.0, 0.5])
         self.init_progbar(milestones=milestones)
         
         # Balance out which cue modality is learned first
@@ -1569,6 +1571,7 @@ class Experiment:
                                 [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
                                 [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
+
         ''' --- 2. Learn Cues --------------------------------------------------------'''
         print("\nLearning first cue type.")
         self.set_progbar_inc()
@@ -1605,6 +1608,7 @@ class Experiment:
                                                  mode=second_modality)
         fname = self.writeFileName("cueMemory"+second_modality.capitalize())
         self.save_object(self.df_out_2, fname, ending='csv')
+
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
@@ -1653,11 +1657,29 @@ class Experiment:
         fname = self.writeFileName("testPractice"+second_test.capitalize())
         self.save_object(self.df_out_4, fname, ending='csv')
 
-        # Wrap up
+
+        ''' --- 4. Spell Decoder --------------------------------------------------------'''
+        print("\nStarting spell decoder trials.")
+        self.set_progbar_inc()
+        
+        self.Instructions(part_key="spellDecoder",
+                        special_displays=[self.iSingleImage,
+                                          self.iSingleImage],
+                        args=[self.magicChart,
+                              self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec,
+                                                  test_goal=trial_numbers[-1])
+        fname = self.writeFileName("spellDecoder")
+        self.save_object(self.df_out_5, fname, ending='csv')
+
+
+        ''' --- Wrap up --------------------------------------------------------'''
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="Bye")
         self.add2meta("t_end", data.getDateStr())
         self.win.close()
+
+
 
     # ###########################################################################
     #  Testing Session
