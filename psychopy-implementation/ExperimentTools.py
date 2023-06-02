@@ -1532,8 +1532,20 @@ class Experiment:
         demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
         demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
         print("Starting Session 1.")
+        
 
-        ''' --- 1. Initial instructions ---------------------------------------------'''
+        ''' --- 1. Initial instructions and object decoder ---------------------------'''
+        # print("Starting Session 2 with adaptive decoder block.")
+        self.set_progbar_inc()
+        
+        # Object decoder block
+        self.df_out_0 = self.adaptiveDecoderBlock(
+            self.trials_obj_dec,
+            decoderType="object",
+            test_goal=trial_numbers[0],
+            )
+        fname = self.writeFileName("objectDecoder")
+        self.save_object(self.df_out_0, fname, ending='csv')
         
         # Navigation
         self.Instructions(part_key="Navigation1",
