@@ -1309,34 +1309,29 @@ class Experiment:
     
     def objectDecoderTrial(self, trial, fixation_duration=0.3):
         """ Subroutine in which the participant sees an object and may encounter a 1-back task"""
-        test_rt, test_resp = None, None
-        self.drawList = []
-        
         # Init
-        self.win.flip()
+        test_rt, test_resp = None, None
         trial["start_time"] = self.exp_clock.getTime()
+        self.drawList = []
         
         # Send trigger
         if self.use_pp:
             self.send_trigger("trial")
         
         # Fixation
-        self.drawFixation(duration=fixation_duration)
+        self.enqueueDraw(func=self.tEmptySquares)
+        self.enqueueDraw(func=self.fixation.draw)    
+        core.wait(fixation_duration)
         
         # Display input
-        display_rt = self.tInput(trial)
-        
-        # Empty display
-        self.win.flip()
+        self.enqueueDraw(func=self.drawStimuli, args=(trial,))    
         core.wait(1)
         
         # Catch trial
         if trial["is_catch_trial"]:
             test_rt, test_resp = self.oneBackTest(trial)
-        self.drawAllAndFlip()
         
         # Save data
-        trial["display_RT"] = display_rt
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         core.wait(0.5)
