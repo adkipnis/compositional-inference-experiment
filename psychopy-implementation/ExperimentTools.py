@@ -1052,17 +1052,21 @@ class Experiment:
                     
         return testRT, testResp
     
-    def tInput(self, trial, duration=1.0, self_paced=False):
-        ''' draw input stimuli and wait for response if self_paced'''
-        # Init
-        stimuli = self.stim_dict.copy()
-        
-        # draw rectangles
+    
+    def tEmptySquares(self, IRClock=None):
+        ''' draw empty squares and wait for response'''
         self.rect.size = self.normal_size
+        
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
-
+            
+        if IRClock is not None:
+            self.win.flip()
+            intermediateRT = self.tIndermediateResponse(IRClock)
+            return intermediateRT
+        
+        
         # draw stimuli
         for i in range(self.set_size):
             stim_name = trial["input_disp"][i]
