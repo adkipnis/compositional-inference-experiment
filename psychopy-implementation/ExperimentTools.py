@@ -1292,7 +1292,7 @@ class Experiment:
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
         self.drawList = []
-        no, yes = self.resp_keys[-2], self.resp_keys[-1]
+        no, yes = self.resp_keys[1:3]
         stimuli = self.stim_dict.copy()
         
         # Draw stimuli
@@ -1303,7 +1303,7 @@ class Experiment:
         if self.use_pp:
             self.send_trigger("catch")
         
-        testRT, testResp = self.tTestResponse(core.Clock(), [no, yes])
+        testRT, testResp = self.tTestResponse(core.Clock(), [no, yes], return_numeric=False)
         return testRT, testResp == yes
     
     
