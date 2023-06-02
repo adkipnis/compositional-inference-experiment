@@ -343,12 +343,14 @@ def gen_trial_dict(stimuli, general_map, resp,
                 np.concatenate(np.char.split(general_map, sep=sep))[2]
             )
 
-        other_items = np.random.choice(stimuli,
-                                       size=display_size-len(necessary_items),
-                                       replace=True)
+        other_items = np.random.choice(
+            stimuli,
+            size=display_size-len(necessary_items),
+            replace=True,
+            )
         display_in = np.append(necessary_items, other_items)
-        display_out, past_transforms = apply_map(display_in, general_map,
-                                                 sep=sep)
+        display_out, past_transforms = apply_map(
+            display_in, general_map, sep=sep)
         instances, instance_count = np.unique(display_out,
                                               return_counts=True)
         max_ic = instance_count.max()
@@ -358,19 +360,24 @@ def gen_trial_dict(stimuli, general_map, resp,
                 stimuli, resp, instances, instance_count, p=p)
         elif test_type == "position":
             target, response_options = draw_position_target(
-                stimuli, resp, display_out, display_size=display_size,
-                n_options=len(resp_list), p=p)
+                stimuli, resp, display_out,
+                display_size=display_size,
+                n_options=len(resp_list),
+                p=p,
+                )
         else:
             raise Exception("Test type not implemented")
 
     # compile down
-    compiled_map = compile_down(general_map, map_type=map_type,
-                                display=display_in, sep=sep)
+    compiled_map = compile_down(general_map,
+                                map_type=map_type,
+                                display=display_in,
+                                sep=sep)
     if np.array_equal(compiled_map, general_map):
         past_transforms_sparse = past_transforms
     else:
-        _, past_transforms_sparse = apply_map(display_in, compiled_map,
-                                              sep=sep)
+        _, past_transforms_sparse = apply_map(
+            display_in, compiled_map, sep=sep)
     output_dict = {"trial_type": trial_type,
                    "input_disp": display_in,
                    "map": general_map,
@@ -387,7 +394,8 @@ def gen_trial_dict(stimuli, general_map, resp,
     return output_dict
 
 
-def gen_trials(stimuli, map_list,
+def gen_trials(stimuli,
+               map_list,
                resp_list=list(range(4)),
                test_type="count",
                trial_type="generic",
@@ -410,8 +418,11 @@ def gen_trials(stimuli, map_list,
     resp_sequence = np.random.permutation(np.tile(resp_list, num_tiles_r))
     target_urn = np.tile(num_trials/len(target_list), len(target_list))
     sample_interval = list(range(jitter_interval[0], jitter_interval[1]+1))
-    jitter = np.random.choice(sample_interval,
-                              replace=True, size=(num_trials, 3))/1000
+    jitter = np.random.choice(
+        sample_interval,
+        replace=True,
+        size=(num_trials, 3),
+        ) / 1000
 
     for i in range(num_trials):
         trial_dict = gen_trial_dict(stimuli, map_list[i], resp_sequence[i],
@@ -459,8 +470,8 @@ def gen_cue_trials(map_list, stimuli,
     for i in range(num_trials):
         general_map = [map_list[i]]
         resp_options = np.random.permutation(stimuli)
-        correct_resp = correct_cue_trial_resp(general_map[0], resp_options,
-                                              sep=sep)
+        correct_resp = correct_cue_trial_resp(
+            general_map[0], resp_options, sep=sep)
         trial_dict = {"trial_type": "cue_memory",
                       "map": general_map,
                       "resp_options": resp_options,
@@ -480,7 +491,7 @@ def compile_down(general_map, map_type=None, display=None, sep='-'):
         compiled_map = general_map[1]
     elif display is not None and map_type == "transitive":
         if general_map[0][2] not in display:
-            compiled_map = general_map[0][0] + sep + general_map[1][2]
+            compiled_map = f"{general_map[0][0]}{sep}{general_map[1][2]}"
     return compiled_map
 
 
@@ -505,11 +516,9 @@ def get_map_list(selection, n_repeats=1, allow_repeats=False, inary_maps=False):
     ''' generate a list of n_repeats * selections such that no two selections are immediately adjacent '''
     if inary_maps:
         selection = inery2prim(selection)
-
     goal_length = len(selection) * n_repeats
     tile = np.random.permutation(
         np.repeat(selection, n_repeats, axis=0)).tolist()
-
     if allow_repeats:
         out = tile
     else:
@@ -522,7 +531,6 @@ def get_map_list(selection, n_repeats=1, allow_repeats=False, inary_maps=False):
             succesful = insert_with_different_neighbors(out, s)
             if not succesful:
                 repeated_selections.append(s)
-
     if inary_maps:
         return prim2inary(out)
     return out
@@ -536,7 +544,6 @@ def inery2prim(inery_list, sep_2='+'):
 
 
 def prim2inary(prim_list, len_inary=2, sep_2='+'):
-
     inaries = []
     for prims in prim_list:
         inaries.append([prims.split(sep_2, 1)[j] for j in range(len_inary)])
@@ -599,24 +606,32 @@ stim_list = [Path(fname).stem for fname in stim_list]
 
 for i in range(first_participant, first_participant+n_participants):
     print(f"Generating trial lists for participant {i}...")
-    # Mappings between cues and stimuli
+    
+    # ========================================================================
+    # 0. Mappings between cues and stimuli
     tcue_list = np.random.permutation(tcue_list)
     vcue_list = np.random.permutation(vcue_list)
     stim_list = np.random.permutation(stim_list)
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "mappinglists"
+    fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_mappinglists"
     data = {'tcue': tcue_list, 'vcue': vcue_list, 'stim': stim_list}
     if save_this:
         save_object(data, fname, ending=ending)
     
-    # 0. Practice blocks
-    # Cue Memory
+    
+    # ========================================================================
+    # 1. Practice blocks
+    # 1.1 Cue Memory
     df_list = []
     for _ in range(maxn_repeats):
         cue_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure_practice*2, allow_repeats=False)
-        df_list.append(gen_cue_trials(cue_list_prim, stimuli))
+            selection_prim,
+            n_repeats=n_exposure_practice*2,
+            allow_repeats=False,
+            )
+        trials = gen_cue_trials(cue_list_prim, stimuli)
+        df_list.append(trials)
     trials_prim_cue = [item for sublist in df_list for item in sublist]
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_cue"
+    fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_prim_cue"
     if save_this:
         save_object(trials_prim_cue, fname, ending=ending)
 
@@ -719,12 +734,13 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(trials_localizer, fname, ending=ending)
 
-    # 4. Primitive Decoder blocks
+
+    # ========================================================================
+    # 4. Spell decoder blocks
     df_list = []
-    # input_stimuli = [selection_prim[i][0] for i in range(len(selection_prim))]
+    
     jitter_interval = range(-30, 30)
-    n_prim_decoder_trials = int(
-        np.ceil(n_exposure_prim_dec/(display_size * 4)))
+    n_prim_decoder_trials = int(np.ceil(n_exposure_prim_dec/(display_size * 4)))
     
     for prim in selection_prim:
         for pos in range(display_size):
@@ -765,7 +781,6 @@ for i in range(first_participant, first_participant+n_participants):
                             }
                     df_list.append(trial)
     trials_prim_decoder = np.random.permutation(df_list).tolist()
-    fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + "trials_prim_dec"
+    fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_prim_dec"
     if save_this:
         save_object(trials_prim_decoder, fname, ending=ending)
-    # print(f"{n_prim_decoder_trials=}, {len(selection_prim)=}, {display_size=}, n_correct_resp=4")
