@@ -695,42 +695,23 @@ for i in range(first_participant, first_participant+n_participants):
             "trials_prim" + use_case
         if save_this:
             save_object(trials_prim, fname, ending=ending)
-
-    # 2. Compositional blocks
-    for use_case in use_cases:
-        df_list = []
-        for _ in range(maxn_repeats//2):
-            block_list = []
-            for test_type in test_types:
-                map_list_binary = get_map_list(
-                    selection_binary, n_repeats=20, inary_maps=True, allow_repeats=True)
-                block_list.append(gen_trials(stimuli,
-                                             map_list_binary,
-                                             resp_list=resp_list,
-                                             test_type=test_type,
-                                             display_size=display_size,
-                                             sep=sep))
-            df_list.append(np.random.permutation(
-                [item for sublist in block_list for item in sublist]).tolist())
-        trials_binary = [item for sublist in df_list for item in sublist]
-        fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" +\
-            "trials_bin" + use_case
-        if save_this:
-            save_object(trials_binary, fname, ending=ending)
-
-    # 3. Functional Localizer blocks
+    
+        
+    # ========================================================================
+    # 3. Object decoder blocks
     df_list = []
-
-    # item trials
-    for j in range(len(stimuli_loc)):
-        df_list.append(gen_trial_dict_loc(stimuli_loc, j, "item"))
-    for j in range(len(stimuli_loc_query)):
-        df_list.append(gen_trial_dict_loc(
-            stimuli_loc_query, j, "item", catch=True))
-
+    
+    for catch in [False, True]:
+        n_exp = n_exposure_loc_catch if catch else n_exposure_loc_quick
+    
+        for _ in range(n_exp):
+            for stim_idx in range(len(stimuli)):
+                for pos_idx in range(display_size):
+                    trial = gen_trial_dict_object_dec(stimuli, stim_idx, pos_idx, catch=catch)
+                    df_list.append(trial)
+    
     trials_localizer = np.random.permutation(df_list).tolist()
-    fname = trial_list_dir + os.sep + \
-        str(i).zfill(2) + "_" + "trials_localizer"
+    fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_obj_dec"
     if save_this:
         save_object(trials_localizer, fname, ending=ending)
 
