@@ -244,27 +244,10 @@ IntroAdvanced = ["Since the last time, you have advanced in your Alteration stud
          0,
          "Ready?"]
 
-IntroMEG = ["Today is the day of your exam\nin the art of Alteration.",
-        "You have trained hard to get here.",
-        "The (very large) magical helmet above you\nreads your spellcasting.",
-        "Everyone's mind is special,\nso before the exam...",
-        "...it has to be attuned to yours.",
-        "For this, you will do a set\nof easy Alteration trials:",
-        "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
-        "Importantly, there is an invisible counter for each spell cue:",
-        0,
-        "The progress bar on the top of the screen\nis the summary of all counters.",
-        "If you answer fast and correctly,\nyour response will be marked green.",
-        "The counter will then increase by 1\nonly if a spell was applied.\n Otherwise it will stay the same.",
-        "It will also stay the same\nif your answer is correct but slow.\nYour response will be marked yellow, though.",
-        "If you answer incorrectly,\nthe counter will stay the same\nbut the trial may reappear later.\nYour response will be marked red.",
-        "Your goal is to reach a counter of 16\nfor each spell.",
-        "The counter cannot go beyond 16,\nso the progress bar won't increase for spells\nwhich you have mastered.",
-        "Please use the following keys for this task:",
-        1,
-        "Try to move as little as possible:\nThe helmet will be "\
-            "attuned quicker this way.",
-        "Ready?"]
+IntroMEG = [
+    "Today is the day of your exam\nin the art of Alteration.",
+    "You have trained hard to get here."] #TODO more text
+        
 
     
 Navigation1 = [0,
@@ -470,7 +453,26 @@ PrimitivesMEGR = [0,
                 "Be as accurate and as fast as possible.",
                 "Remember to move as little as possible for the helmet.",
                 "Ready to begin the exam?"]
-    
+
+spellDecoder = [
+    "The magical helmet above you\nalso reads your spellcasting.",
+    "Before the exam,\nit has to be attuned to yours.",
+    "For this, you will do a set\nof easy Alteration trials:",
+    "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
+    "Importantly, there is an invisible counter for each spell cue:",
+    0,
+    "The progress bar on the top of the screen\nis the summary of all counters.",
+    "If you answer fast and correctly,\nyour response will be marked green.",
+    "The counter will then increase by 1\nonly if a spell was applied.\n Otherwise it will stay the same.",
+    "It will also stay the same\nif your answer is correct but slow.\nYour response will be marked yellow, though.",
+    "If you answer incorrectly,\nthe counter will stay the same\nbut the trial may reappear later.\nYour response will be marked red.",
+    "Your goal is to reach a counter of 16\nfor each spell.",
+    "The counter cannot go beyond 16,\nso the progress bar won't increase for spells\nwhich you have mastered.",
+    "Please use the following keys for this task:",
+    1,
+    "Try to move as little as possible:\nThe helmet will be attuned quicker this way.",
+    "Ready?"]
+
 TestTypes = [0,
              "It is time for some field practice.",
              "You now know the spell names and symbols\nwhich prompt you to "\
