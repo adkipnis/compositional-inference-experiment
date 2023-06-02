@@ -1496,7 +1496,6 @@ class Experiment:
     ###########################################################################
 
     def Session1(self):
-        # init session variables
         self.win.mouseVisible = False
         
         # set up probar        
@@ -1540,7 +1539,17 @@ class Experiment:
         # print("Starting Session 2 with adaptive decoder block.")
         self.set_progbar_inc()
         
+        # Navigation
+        self.Instructions(part_key="Navigation1",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
+                          font="mono",
+                          fontcolor=self.color_dict["mid_grey"])
+        
         # Object decoder block
+        self.Instructions(part_key="objectDecoder",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMegNY"]])
         self.df_out_0 = self.adaptiveDecoderBlock(
             self.trials_obj_dec,
             decoderType="object",
@@ -1548,13 +1557,7 @@ class Experiment:
             )
         fname = self.writeFileName("objectDecoder")
         self.save_object(self.df_out_0, fname, ending='csv')
-        
-        # Navigation
-        self.Instructions(part_key="Navigation1",
-                          special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
-                          font="mono",
-                          fontcolor=self.color_dict["mid_grey"])
+        self.Instructions(part_key="objectDecoderPost")
 
         # Introduction
         self.Instructions(part_key="Intro",
