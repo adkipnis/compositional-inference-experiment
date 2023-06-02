@@ -1067,13 +1067,13 @@ class Experiment:
             return intermediateRT
         
         
+    def tInput(self, trial, duration=1.0, self_paced=False):
+        ''' draw input stimuli and wait for response if self_paced'''
+        # draw rectangles
+        self.tEmptySquares()
+
         # draw stimuli
-        for i in range(self.set_size):
-            stim_name = trial["input_disp"][i]
-            if stim_name is not None:
-                stim = stimuli[stim_name]
-                stim.pos = self.rect_pos[i]
-                stim.draw()
+        self.drawStimuli(trial)
         
         # send trigger
         if self.use_pp:
@@ -1088,14 +1088,6 @@ class Experiment:
             intermediateRT = duration
         return intermediateRT
     
-    def tEmptySquares(self, IRClock):
-        ''' draw empty squares and wait for response'''
-        for pos in self.rect_pos:
-            self.rect.pos = pos
-            self.rect.draw()
-        self.win.flip()
-        intermediateRT = self.tIndermediateResponse(IRClock)
-        return intermediateRT
 
     def tPause(self):
         ''' draw pause screen and wait for response'''
