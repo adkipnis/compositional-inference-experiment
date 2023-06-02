@@ -572,6 +572,7 @@ class Experiment:
                                 np.repeat(rect_vpos, len(rect_hpos))])
         return rect_pos
     
+    
     ###########################################################################
     # Instructions
     ###########################################################################
@@ -1483,7 +1484,7 @@ class Experiment:
                 self.move_prog_bar(end_width=end_width, wait_s=0)
             if decoderType == "spell":
                 core.wait(1)
-            
+                
             # During test mode: Terminate if goal is reached
             if self.test_mode and len(out) >= test_goal:
                 break
@@ -1497,15 +1498,18 @@ class Experiment:
     def Session1(self):
         # init session variables
         self.win.mouseVisible = False
+        
+        # set up probar        
         streak_goal = 2 if self.test_mode else 10 # per map
-        n_trials = [self.n_primitives * streak_goal//2, # cue practice
-                    self.n_primitives * streak_goal//2,
-                    self.n_primitives * streak_goal, # test practice
-                    self.n_primitives * streak_goal]
-        n_total = sum(n_trials)
-        milestones = np.cumsum(n_trials)/n_total
-        self.init_progbar(milestones=milestones[:-1])
-        self.progbar_inc = 1/n_total
+        trial_numbers = [
+            len(self.trials_obj_dec) if not self.test_mode else 6, # object decoder
+            self.n_primitives * streak_goal//2, # cue practice 1
+            self.n_primitives * streak_goal//2, # cue practice 2
+            self.n_primitives * streak_goal, # test practice 1
+            self.n_primitives * streak_goal, # test practice 2
+            ]
+        milestones = self.setMilestones(trial_numbers, weights = [0.1, 1.5, 1.5, 1.0, 1.0])
+        self.init_progbar(milestones=milestones)
         
         # Balance out which cue modality is learned first
         id_is_odd = int(self.expInfo["participant"]) % 2 # 1 3 5 ...
@@ -1555,6 +1559,8 @@ class Experiment:
 
         ''' --- 2. Learn Cues --------------------------------------------------------'''
         print("\nLearning first cue type.")
+        self.set_progbar_inc()
+        
         # Learn first cue type
         self.learnDuration_1 = self.learnCues(min_duration=60)
         self.add2meta("learnDuration_1", self.learnDuration_1)
@@ -1573,6 +1579,7 @@ class Experiment:
 
         # Learn second cue type
         print("\nLearning second cue type.")
+        self.set_progbar_inc()
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
@@ -1590,6 +1597,7 @@ class Experiment:
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
         print("\nLearning first test type.")
+        self.set_progbar_inc()
         self.Instructions(part_key="TestTypes",
                           special_displays=[self.iSingleImage],
                           args=[self.magicWand],
@@ -1618,6 +1626,7 @@ class Experiment:
         
         # Second Test-Type
         print("\nLearning second test type.")
+        self.set_progbar_inc()
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
