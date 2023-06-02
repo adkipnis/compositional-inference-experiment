@@ -1430,13 +1430,26 @@ class Experiment:
                 
             # Enqueue trials with applicable map according to performance
             out.append(trial)
-            if (decoderType == "spell" and trial["applicable"]) or (decoderType == "object" and trial["is_catch_trial"]):
-                if trial["correct_resp"] == trial["emp_resp"] and trial["resp_RT"] <= goal_rt:
+            correct = trial["correct_resp"] == trial["emp_resp"]
+            
+            # Case: spell decoder                    
+            if decoderType == "spell" and trial["applicable"]:
+                fast = trial["resp_RT"] <= goal_rt
+                if correct and fast:
                     succeeded.append(trial)
                     print("# correct:", len(succeeded))
                 else:
                     failed.append(trial)
                     print("# repeat:", len(failed))
+            # Case: object decoder                    
+            elif decoderType == "object":
+                if trial["is_catch_trial"] and not correct:
+                    failed.append(trial)
+                    print("# repeat:", len(failed))
+                else:
+                    succeeded.append(trial)
+                    print("# correct:", len(succeeded))
+                    
                     
             # Restart failed trials
             if trials.nRemaining == 0 and len(failed) > 0:
