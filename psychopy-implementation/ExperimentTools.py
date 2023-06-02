@@ -477,8 +477,14 @@ class Experiment:
             fillColor=self.color_dict["green"],
             autoDraw=True)
         self.start_width = 0.0
-        self.progbar_inc = 0.01  # 1% of bar length
-                                         
+        # self.progbar_inc = 0.01  # 1% of bar length
+                                    
+    def set_progbar_inc(self):
+        if not hasattr(self, "inc_queue"):
+            raise ValueError("No inc_queue attribute found")
+        inc = self.inc_queue.pop(0)
+        self.progbar_inc = inc
+     
     def move_prog_bar_step(self, bar_width_step, flip_win=True):
         # incrementally increase the bar width
         self.progTest.width += bar_width_step
