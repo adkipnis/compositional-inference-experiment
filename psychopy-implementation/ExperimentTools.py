@@ -523,6 +523,21 @@ class Experiment:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
+
+    def setMilestones(self, trial_numbers, weights=None):
+        """ set milestones proportional to weighted trial numbers and save the increments for the progress bar """
+        if weights is None:
+            weights = np.ones(len(trial_numbers))
+        trial_numbers = np.array(trial_numbers)
+        weights = np.array(weights)
+        assert len(trial_numbers) == len(weights), "trial_numbers and weights must have the same length"
+        
+        tn_weighted = trial_numbers * weights
+        n_total = tn_weighted.sum()
+        milestones = np.cumsum(tn_weighted)/n_total
+        self.inc_queue = (tn_weighted/n_total/trial_numbers).tolist()
+        return milestones.tolist()[:-1]
+        
     def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=10):
         angle = 2*np.pi/set_size
         rect_pos = np.empty((set_size, 2), dtype=float).copy()
