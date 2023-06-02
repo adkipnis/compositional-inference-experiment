@@ -635,6 +635,31 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(trials_prim_cue, fname, ending=ending)
 
+    # 1.2 Test Practice
+    for test_type in ["count", "position"]:
+        df_list = []
+        for _ in range(maxn_repeats):
+            map_list_prim = get_map_list(
+                selection_prim,
+                n_repeats=n_exposure_practice,
+                allow_repeats=False,
+                )
+            trials = gen_trials(
+                stimuli,
+                map_list_prim,
+                resp_list=resp_list,
+                trial_type="test_practice",
+                test_type=test_type,
+                display_size=display_size,
+                sep=sep,
+                )
+            df_list.append(trials)
+        trials_prim_practice_c = [item for sublist in df_list for item in sublist]
+        fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_prim_prac_{test_type[0]}"
+        if save_this:
+            save_object(trials_prim_practice_c, fname, ending=ending)
+      
+    
     # ========================================================================
     # 2. Generic blocks
     # generate trials twice with n_exposure/2 and each test display type,
