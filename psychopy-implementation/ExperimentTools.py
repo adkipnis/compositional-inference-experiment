@@ -991,6 +991,15 @@ class Experiment:
         core.wait(duration)
         return mode
 
+    def drawStimuli(self, trial):
+        stimuli = self.stim_dict.copy()
+        for i in range(self.set_size):
+            stim_name = trial["input_disp"][i]
+            if stim_name is not None:
+                stim = stimuli[stim_name]
+                stim.pos = self.rect_pos[i]
+                stim.draw()
+    
     def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=20.0):
         ''' wait for intermediate response and return RT'''
         core.wait(min_wait)
