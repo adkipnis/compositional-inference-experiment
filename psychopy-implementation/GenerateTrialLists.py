@@ -635,64 +635,38 @@ for i in range(first_participant, first_participant+n_participants):
     if save_this:
         save_object(trials_prim_cue, fname, ending=ending)
 
-    # Test Practice: Count
-    df_list = []
-    for _ in range(maxn_repeats):
-        map_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure_practice, allow_repeats=False)
-        df_list.append(gen_trials(stimuli,
-                                  map_list_prim,
-                                  resp_list=resp_list,
-                                  trial_type="test_practice",
-                                  test_type="count",
-                                  display_size=display_size,
-                                  sep=sep))
-    trials_prim_practice_c = [item for sublist in df_list for item in sublist]
-    fname = trial_list_dir + os.sep + \
-        str(i).zfill(2) + "_" + "trials_prim_prac_c"
-    if save_this:
-        save_object(trials_prim_practice_c, fname, ending=ending)
-
-    # Test Practice: Position
-    df_list = []
-    for _ in range(maxn_repeats):
-        map_list_prim = get_map_list(
-            selection_prim, n_repeats=n_exposure_practice, allow_repeats=False)
-        df_list.append(gen_trials(stimuli,
-                                  map_list_prim,
-                                  resp_list=resp_list,
-                                  trial_type="test_practice",
-                                  test_type="position",
-                                  display_size=display_size,
-                                  sep=sep))
-    trials_prim_practice_p = [item for sublist in df_list for item in sublist]
-    fname = trial_list_dir + os.sep + \
-        str(i).zfill(2) + "_" + "trials_prim_prac_p"
-    if save_this:
-        save_object(trials_prim_practice_p, fname, ending=ending)
-
-    # 1. Primitive blocks
+    # ========================================================================
+    # 2. Generic blocks
     # generate trials twice with n_exposure/2 and each test display type,
     # then randomly permute both generated lists
+    spell_types = ["prim", "binary"]
     test_types = ["count", "position"]
-    use_cases = ["", "_MEG"]
-    for use_case in use_cases:
+    for spell_type in spell_types:
+        n_exposure = n_exposure_prim if spell_type == "prim" else n_exposure_binary
+        selection = selection_prim if spell_type == "prim" else selection_binary
         df_list = []
         for _ in range(maxn_repeats//2):
             block_list = []
             for test_type in test_types:
-                map_list_prim = get_map_list(
-                    selection_prim, n_repeats=n_exposure, allow_repeats=True)
-                block_list.append(gen_trials(stimuli, map_list_prim,
-                                             resp_list=resp_list,
-                                             test_type=test_type,
-                                             display_size=display_size,
-                                             sep=sep))
-            df_list.append(np.random.permutation(
-                [item for sublist in block_list for item in sublist]).tolist())
+                map_list = get_map_list(
+                    selection,
+                    n_repeats=n_exposure,
+                    inary_maps=(spell_type == "binary"),
+                    allow_repeats=True,
+                    )
+                trials = gen_trials(
+                    stimuli,
+                    map_list,
+                    resp_list=resp_list,
+                    test_type=test_type,
+                    display_size=display_size,
+                    sep=sep,
+                    )
+                block_list.append(trials)
+            trials_flat = [item for sublist in block_list for item in sublist]
+            df_list.append(np.random.permutation(trials_flat).tolist())
         trials_prim = [item for sublist in df_list for item in sublist]
-        fname = trial_list_dir + os.sep + str(i).zfill(2) + "_" + \
-            "trials_prim" + use_case
+        fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_{spell_type}"
         if save_this:
             save_object(trials_prim, fname, ending=ending)
     
