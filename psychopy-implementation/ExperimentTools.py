@@ -113,8 +113,8 @@ class Experiment:
         self.use_pp = False
 
         if expInfo["MEG"]:
-            # self.init_interface()
-            # self.use_pp = True
+            self.init_interface()
+            self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
             self.proceedKey = self.resp_keys_vpixx[-1]
 
@@ -146,16 +146,19 @@ class Experiment:
         self.trigger_dict = {"trial": 1,
                              "fixate": 2,
                              "display": 3,
-                             "visual": 40,
-                             "textual": 41,
-                             "position": 50,
-                             "count": 51,
-                             "identity": 52,
-                             "run": 6}
+                             "visual": 11,
+                             "textual": 12,
+                             "squares": 20,
+                             "position": 31,
+                             "count": 32,
+                             "catch": 33,
+                             "run": 40}
 
     def send_trigger(self, trigger_type):
+        trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(0)
-        self.port_out.setData(self.trigger_dict[trigger_type])
+        self.port_out.setData(trigger_code)
+        # print(f"Trigger: {trigger_type}")
 
     def load_trials(self):
         print("Loading trials...")
@@ -1155,13 +1158,13 @@ class Experiment:
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
         
-        # Draw stimuli
-        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
-        self.enqueueDraw(func=self.drawCountResponses)
-        
         # Send trigger    
         if self.use_pp:
             self.send_trigger("count")
+
+        # Draw stimuli
+        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCountResponses)        
         
         # Get response
         if not demonstration:
@@ -1219,6 +1222,10 @@ class Experiment:
         self.drawList = []
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
+        
+        # Send trigger
+        if self.use_pp:
+            self.send_trigger("position")
 
         # Draw stimuli
         self.enqueueDraw(func=self.drawPositionTarget, args=(trial["target"],), unroll=False)
@@ -1263,8 +1270,6 @@ class Experiment:
         # Init
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-        
-        # Send trigger
         if self.use_pp:
             self.send_trigger("trial")
         
@@ -1285,6 +1290,8 @@ class Experiment:
             return
         
         # Transformation display
+        if self.use_pp:
+            self.send_trigger("squares")        
         inter_rt = self.tEmptySquares(core.Clock())
         
         # Empty display
@@ -1329,8 +1336,6 @@ class Experiment:
         test_rt, test_resp = None, None
         trial["start_time"] = self.exp_clock.getTime()
         self.drawList = []
-        
-        # Send trigger
         if self.use_pp:
             self.send_trigger("trial")
         
@@ -1340,7 +1345,9 @@ class Experiment:
         core.wait(fixation_duration)
         
         # Display input
-        self.enqueueDraw(func=self.drawStimuli, args=(trial,))    
+        if self.use_pp:
+            self.send_trigger("display")
+        self.enqueueDraw(func=self.drawStimuli, args=(trial,))
         core.wait(1)
         
         # Catch trial
