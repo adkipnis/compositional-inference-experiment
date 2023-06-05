@@ -117,6 +117,9 @@ class Experiment:
             self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
             self.proceedKey = self.resp_keys_vpixx[-1]
+        
+        # response keys for main task
+        self.resp_keys_4 = self.resp_keys[:-2]
 
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
@@ -475,7 +478,7 @@ class Experiment:
             fillColor=self.color_dict["green"],
             autoDraw=True)
         self.start_width = 0.0
-        # self.progbar_inc = 0.01  # 1% of bar length
+        self.progbar_inc = 0.01  # 1% of bar length
                                     
     def set_progbar_inc(self):
         if not hasattr(self, "inc_queue"):
@@ -875,7 +878,7 @@ class Experiment:
         for correctResp in trial["correct_resp"]:
             if testResp == "NA":
                 continue
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
             testRTList.append(testRT)
             testRespList.append(testResp)
             if testResp != "NA":
@@ -1168,7 +1171,7 @@ class Experiment:
         
         # Get response
         if not demonstration:
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
         else:
             # simulate incorrect response
             badoptions = np.array(range(4))
@@ -1231,13 +1234,9 @@ class Experiment:
         self.enqueueDraw(func=self.drawPositionTarget, args=(trial["target"],), unroll=False)
         self.enqueueDraw(func=self.drawPositionResponses, args=(stimuli, trial["resp_options"],))
         
-        # Send trigger
-        if self.use_pp:
-            self.send_trigger("position")
-        
         # Get response
         if not demonstration:
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys)
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
         else:
             # simulate incorrect response
             badoptions = np.array(range(4))
