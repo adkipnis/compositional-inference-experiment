@@ -1,9 +1,8 @@
 import pickle
 import os
-abspath = os.path.abspath(__file__)
-relpath = os.path.relpath(os.path.realpath(__file__))
-trunk = abspath.replace(relpath, "")
-fname = os.path.join(trunk, "psychopy-implementation", "trial-lists", "01_mappinglists.pkl")
+leaf = os.path.join("component-tests", "set-mapping-lists-for-piloting.py")
+trunk = os.path.abspath(__file__).replace(leaf, "")
+fname = os.path.join(trunk, "trial-lists", "01_mappinglists.pkl")
 m = pickle.load(open(fname, "rb"))
 m["stim"] = ['s_heart', 's_shoe', 's_frog', 's_puzzle',
              's_globe', 's_banana', 's_signpost', 's_rocket']
