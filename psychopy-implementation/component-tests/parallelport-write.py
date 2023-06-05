@@ -10,13 +10,29 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from ExperimentTools import Experiment
 
 # Initialize
-Exp = Experiment()
-Exp.init_interface()
+exp = Experiment()
+exp.init_interface()
 
-# Test
-Exp.port_out.setData(0)
-Exp.port_out.setData(8)
-#Exp.port_out.readData()
+# Test setData
+exp.port_out.setData(0)
+exp.port_out.setData(8)
 
-# Start Trial: 1
-# stimulus onset
+# Test send trigger
+exp.send_trigger("trial")
+r = exp.port_out.readData()
+print(r==1)
+
+
+# Test methods that use this as a subroutine
+# init session
+exp.dialogue_box(show=False, participant=1, session=1, meg=True)
+exp.init_window(screen=0, fullscr=True)
+exp.load_trials()
+exp.render_visuals()
+
+# actual test
+exp.drawFixation()
+r = exp.port_out.readData()
+print(r==2)
+
+exp.win.close()
