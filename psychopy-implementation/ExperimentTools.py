@@ -109,13 +109,14 @@ class Experiment:
 
         # set response keys according to device
         self.resp_keys = self.resp_keys_kb
+        self.proceedKey = "space"
         self.use_pp = False
 
         if expInfo["MEG"]:
             # self.init_interface()
             # self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
-            
+            self.proceedKey = self.resp_keys_vpixx[-1]
 
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
@@ -639,8 +640,7 @@ class Experiment:
 
         assert proceed_key in ["/k", "/t", "/e"], "Unkown proceed key"
         
-        left = self.resp_keys[-2]
-        right = self.resp_keys[-1]
+        left, right = self.resp_keys[-2:]
         skip = "return"
         finished = False
         testResp = None
@@ -1036,7 +1036,7 @@ class Experiment:
                 thisKey, intermediateRT = pressed[0]      
             
             # case: valid response
-            if thisKey == "space":
+            if thisKey == self.proceedKey:
                 break
                 
             # case: abort
@@ -1064,7 +1064,7 @@ class Experiment:
                 if thisKey in respKeys:
                     testResp = respKeys.index(thisKey) if return_numeric else thisKey
                 # case: don't know
-                elif thisKey == "space":
+                elif thisKey == self.proceedKey:
                     testResp = "NA"
                 # case: abort
                 elif thisKey == "escape":
