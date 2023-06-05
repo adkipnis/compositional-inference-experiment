@@ -172,7 +172,7 @@ class Experiment:
         self.trials_prim_dec = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_dec.pkl", "rb"))
 
-        #  Practice trials
+        # Practice trials
         self.trials_prim_cue = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_cue.pkl", "rb"))
 
@@ -182,19 +182,13 @@ class Experiment:
         self.trials_prim_prac_p = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_prac_p.pkl", "rb"))
 
-        # Main trials # TODO make this dependent on session
+        # Main trials
         self.trials_prim = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim.pkl", "rb"))
 
         self.trials_bin = pickle.load(
-            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_bin.pkl", "rb"))
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_binary.pkl", "rb"))
 
-        # MEG trials
-        self.trials_prim_MEG = pickle.load(
-            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_prim_MEG.pkl", "rb"))
-
-        self.trials_bin_MEG = pickle.load(
-            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_bin_MEG.pkl", "rb"))
 
         # Individual mappings for each participant
         self.mappinglists = pickle.load(
@@ -1751,7 +1745,7 @@ class Experiment:
                                             self.drawCue],
                           kwargs=[{"trial": demoBin, "duration": 0.0},
                                   {"trial": demoBin, "duration": 0.0}])
-        self.df_out_7 = self.adaptiveBlock(self.trials_bin_MEG,
+        self.df_out_7 = self.adaptiveBlock(self.trials_bin,
                                            streak_goal=goal_streak_b,
                                            cue_duration=0.9,
                                            decrease=True)                          
