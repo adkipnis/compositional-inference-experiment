@@ -444,7 +444,7 @@ PrimitivesMEGR = [0,
 spellDecoder = [
     "The magical helmet above you\nalso reads your spellcasting.",
     "Before the exam,\nit has to be attuned to yours.",
-    "For this, you will do a set\nof easy Alteration trials:",
+    "For this, you need to do a set\nof easy Alteration trials:",
     "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
     "Importantly, there is an invisible counter for each spell cue:",
     0,
