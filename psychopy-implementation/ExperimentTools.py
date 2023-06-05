@@ -1606,6 +1606,8 @@ class Experiment:
         
 
         # Test second cue type
+        self.win.flip()
+        core.wait(2)
         self.df_out_2 = self.adaptiveCuePractice(self.trials_prim_cue[len(self.df_out_1):],
                                                  streak_goal=streak_goal//2,
                                                  mode=second_modality)
