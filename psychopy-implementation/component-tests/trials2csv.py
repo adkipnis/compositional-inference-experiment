@@ -1,7 +1,7 @@
 import copy, pickle, csv
 import numpy as np
 
-def dump(trials, fname, source_of_difference="structure"):
+def dump(trials, fname, source_of_difference=""):
     if source_of_difference:
         print(f"WARNING: Not all trials have the same {source_of_difference}, pickling instead!")
     with open(fname + ".pkl", "wb") as f:
@@ -33,21 +33,25 @@ def listofdicts2csv(trials: list, fname: str):
     
     # === data transformations ===
     # spread out lists and sets to new enumerated keys
-    list_keys = [key for key in unique_keys
+    original_keys = list(unique_keys)
+    list_keys = [key for key in original_keys
                  if isinstance(trials[0][key],
                                (set, list, np.ndarray))]
     if list_keys:
-        all_keys = []
+        new_keys = []
         for trial in trials:
             for key in list_keys:
                 trial_updates = {f"{key}_{i}": item
                                  for i, item in enumerate(trial[key])}
                 trial.update(trial_updates)
-                all_keys.extend(trial_updates.keys())
+                new_keys.extend(trial_updates.keys())
                 del trial[key]
         
-        # update unique_keys (some trials may have more than others)
-        unique_keys = sorted(set(unique_keys).union(all_keys))
+        # update unique_keys (some trials may have more than others) and sort them in original order
+        new_keys = sorted(set(new_keys))
+        unique_keys = np.setdiff1d(original_keys, list_keys)
+        unique_keys = np.union1d(unique_keys, new_keys)
+        unique_keys = sorted(unique_keys, key=lambda x: original_keys.index(x.split('_')[0]))
  
     # === write to csv ===
     with open(fname + ".csv", "w", newline="") as output_file:
@@ -61,12 +65,12 @@ def listofdicts2csv(trials: list, fname: str):
 # --- test ---------------------------------------------------------
 def main():
     trial_list = [
-        {"trial": 1, "condition": "A", "stimulus": ["B", "C"]},
-        {"trial": 2, "condition": "A", "stimulus": ["C"]},
-        {"trial": 3, "condition": "B", "stimulus": ["A", "B", "C"]},
+        {"trial": 1, "condition": "A", "stimulus": ["B", "C"], "response": ["B"]},
+        {"trial": 2, "condition": "A", "stimulus": ["C"], "response": ["B"]},
+        {"trial": 3, "condition": "B", "stimulus": ["A", "B", "C"], "response": ["B", "C"]},
     ]
     listofdicts2csv(trial_list, "testDataSet")
-    dump(trial_list, "testDataSet", source_of_difference=None)
+    # dump(trial_list, "testDataSet")
     
 if __name__ == "__main__":
     main()

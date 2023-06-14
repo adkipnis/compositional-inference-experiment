@@ -426,21 +426,25 @@ class Experiment:
         
         # === data transformations ===
         # spread out lists and sets to new enumerated keys
-        list_keys = [key for key in unique_keys
+        original_keys = list(unique_keys)
+        list_keys = [key for key in original_keys
                     if isinstance(trials[0][key],
                                 (set, list, np.ndarray))]
         if list_keys:
-            all_keys = []
+            new_keys = []
             for trial in trials:
                 for key in list_keys:
                     trial_updates = {f"{key}_{i}": item
                                     for i, item in enumerate(trial[key])}
                     trial.update(trial_updates)
-                    all_keys.extend(trial_updates.keys())
+                    new_keys.extend(trial_updates.keys())
                     del trial[key]
             
-            # update unique_keys (some trials may have more than others)
-            unique_keys = sorted(set(unique_keys).union(all_keys))
+            # update unique_keys (some trials may have more than others) and sort them in original order
+            new_keys = sorted(set(new_keys))
+            unique_keys = np.setdiff1d(original_keys, list_keys)
+            unique_keys = np.union1d(unique_keys, new_keys)
+            unique_keys = sorted(unique_keys, key=lambda x: original_keys.index(x.split('_')[0]))
     
         # === write to csv ===
         with open(fname + ".csv", "w", newline="") as output_file:
@@ -1445,23 +1449,26 @@ class Experiment:
 
     def adaptiveDecoderBlock(self, trial_df,
                              fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
-                             pause_between_runs=True, test_goal=3, decoderType="spell"):
+                             pause_between_runs=True, test_goal=0, decoderType="spell"):
         ''' block of decoder trials, enqueueing failed trials'''
         assert decoderType in ["spell", "object"]
+        if test_goal and not self.test_mode:
+            print("WARNING: test goal is only applicable in test mode.")
         start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         succeeded = []
         failed = []
         out = []
-
+        run_number = 1
+        
         if pause_between_runs:
-            run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
                 self.send_trigger("run")
 
         while trials.nRemaining > 0:
             trial = trials.next()
+            trial["run_number"] = run_number
 
             if decoderType == "spell":
                 self.genericTrial(trial, self_paced=True, feedback=True,
@@ -1474,27 +1481,20 @@ class Experiment:
                 self.objectDecoderTrial(
                     trial, fixation_duration=fixation_duration + trial["jitter"])
 
-            # Pause display between runs
-            if pause_between_runs:
-                trial["run_number"] = run_number
-                if timer.getTime() <= 0:
-                    self.tPause()
-                    timer.reset()
-                    run_number += 1
-
             # Enqueue trials with applicable map according to performance
             out.append(trial)
             correct = trial["correct_resp"] == trial["emp_resp"]
 
             # Case: spell decoder
-            if decoderType == "spell" and trial["applicable"]:
+            if decoderType == "spell":
                 fast = trial["resp_RT"] <= goal_rt
-                if correct and fast:
-                    succeeded.append(trial)
-                    print("# correct:", len(succeeded))
-                else:
+                if trial["applicable"] and not (correct and fast):
                     failed.append(trial)
                     print("# repeat:", len(failed))
+                else:
+                    succeeded.append(trial)
+                    print("# correct:", len(succeeded))
+                    
             # Case: object decoder
             elif decoderType == "object":
                 if trial["is_catch_trial"] and not correct:
@@ -1520,6 +1520,13 @@ class Experiment:
             # During test mode: Terminate if goal is reached
             if self.test_mode and len(out) >= test_goal:
                 break
+            
+            # Pause display between runs
+            if pause_between_runs:
+                if timer.getTime() <= 0:
+                    self.tPause()
+                    timer.reset()
+                    run_number += 1
         return out
 
     ###########################################################################
@@ -1531,17 +1538,16 @@ class Experiment:
 
         # set up probar
         streak_goal = 2 if self.test_mode else 10  # per map
-        streak_goal_sd = 1 if self.test_mode else 16  # spell decoder
         trial_numbers = [
             len(self.trials_obj_dec) if not self.test_mode else 6,  # object decoder
             self.n_primitives * streak_goal//2,  # cue practice 1
             self.n_primitives * streak_goal//2,  # cue practice 2
             self.n_primitives * streak_goal,  # test practice 1
             self.n_primitives * streak_goal,  # test practice 2
-            self.n_primitives * streak_goal_sd,  # spell decoder
+            len(self.trials_prim_dec) if not self.test_mode else 6,  # spell decoder
         ]
         milestones = self.setMilestones(
-            trial_numbers, weights=[0.1, 1.5, 1.5, 1.0, 1.0, 0.5])
+            trial_numbers, weights=[0.1, 1.5, 1.5, 1.0, 1.0, 0.2])
         self.init_progbar(milestones=milestones)
 
         # Balance out which cue modality is learned first
@@ -1711,8 +1717,9 @@ class Experiment:
                                             self.iSingleImage],
                           args=[self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
-        self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec,
-                                                  test_goal=trial_numbers[-1])
+        self.df_out_5 = self.adaptiveDecoderBlock(
+            self.trials_prim_dec,
+            test_goal=trial_numbers[-1])
         fname = self.writeFileName("spellDecoder")
         self.save_object(self.df_out_5, fname, ending='csv')
 
