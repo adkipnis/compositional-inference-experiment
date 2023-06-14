@@ -401,9 +401,7 @@ PrimitivesMEG = [0,
               "Ready to begin the exam?"]
 
 PrimitivesMEGR = [0,
-                "The magical helmet is now accustomed\nto your thought patterns.",
-                "It says, you have a beautiful mind. :)",
-                "You will surely put it to good use in the exam.",
+                "You have studied diligently\nand are well prepared for your magic exam.",
                 "In the first of two exam parts,\nyour task is the one you practiced in the last session.",
                 "One important difference: You will not know"\
                     "\nwhich of the two tests comes at the end of any trial.",
