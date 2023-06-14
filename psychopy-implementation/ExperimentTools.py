@@ -394,43 +394,66 @@ class Experiment:
         }
 
     # Background Components --------------------------------------------------------
-
+    def dump(self, trials, fname, source_of_difference="structure"):
+        if source_of_difference:
+            print(f"WARNING: Not all trials have the same {source_of_difference}, pickling instead!")
+        with open(fname + ".pkl", "wb") as f:
+            pickle.dump(trials, f)
+            print(f"Saved {len(trials)} trials to '{fname}.pkl'")
+        
+        
     def listofdicts2csv(self, trials, fname):
+        """ write a list of trialdicts to a csv """
         trials = copy.deepcopy(trials)
 
-        # Failsafe
-        n_keys_per_trial = set([len(t.keys()) for t in trials])
-        if len(n_keys_per_trial) != 1:
-            warnings.warn(
-                "Not all trials have the same number of keys, saving as pickle instead")
-            with open(fname + '.pkl', "wb") as f:
-                pickle.dump(trials, f)
+        # === data integrity checks ===
+        # 1. check if all trials have the same keys, dump otherwise
+        unique_keys = trials[0].keys()
+        key_check_list = [set(trial.keys()) == set(unique_keys)
+                        for trial in trials]
+        if not all(key_check_list):
+            self.dump(trials, fname, "keys")
             return
-
-        # spread keys which are n-long lists into n separate elements
-        unique_keys = trials[0].keys()
-        list_keys = [key for key in unique_keys if isinstance(
-            trials[0][key], (set, list, np.ndarray))]
-        for trial in trials:
-            for key in list_keys:
-                items = trial.pop(key)
-                n = len(items)
-                newkeys = [f"{key}_{i}" for i in range(n)]
-                trial.update(dict(zip(newkeys, items)))
-        unique_keys = trials[0].keys()
-
-        # write to csv
-        with open(fname, 'w', newline='') as output_file:
+            
+        # 2. check if all trials have the same item types per key, dump otherwise
+        key_types = {key: type(trials[0][key])
+                    for key in unique_keys}
+        type_check_list = [type(trial[key]) == key_types[key]
+                        for trial in trials for key in unique_keys]
+        if not all(type_check_list):
+            self.dump(trials, fname, "key types")
+            return
+        
+        # === data transformations ===
+        # spread out lists and sets to new enumerated keys
+        list_keys = [key for key in unique_keys
+                    if isinstance(trials[0][key],
+                                (set, list, np.ndarray))]
+        if list_keys:
+            all_keys = []
+            for trial in trials:
+                for key in list_keys:
+                    trial_updates = {f"{key}_{i}": item
+                                    for i, item in enumerate(trial[key])}
+                    trial.update(trial_updates)
+                    all_keys.extend(trial_updates.keys())
+                    del trial[key]
+            
+            # update unique_keys (some trials may have more than others)
+            unique_keys = sorted(set(unique_keys).union(all_keys))
+    
+        # === write to csv ===
+        with open(fname + ".csv", "w", newline="") as output_file:
             dict_writer = csv.DictWriter(output_file, unique_keys)
             dict_writer.writeheader()
             dict_writer.writerows(trials)
-
+            print(f"Saved {len(trials)} trials to '{fname}.csv'")
+            
     def save_object(self, obj, fname, ending='pkl'):
         if ending == 'csv':
-            self.listofdicts2csv(obj, fname + '.csv')
+            self.listofdicts2csv(obj, fname)
         elif ending == 'pkl':
-            with open(fname + '.pkl', "wb") as f:
-                pickle.dump(obj, f)
+            self.dump(obj, fname, "")
 
     def writeFileName(self, dataset_name):
         return f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
