@@ -1556,14 +1556,17 @@ class Experiment:
         self.Instructions(part_key="Navigation1",
                           special_displays=[self.iSingleImage],
                           args=[self.keyboard_dict["keyBoardMegBF"]
-                                if self.meg else self.keyboard_dict["keyBoardArrows"]],
+                                if self.meg else self.keyboard_dict["keyBoardArrows"]
+                                ],
                           font="mono",
                           fontcolor=self.color_dict["mid_grey"])
 
         # Object decoder block
         self.Instructions(part_key="objectDecoder",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMegNY"]])
+                          args=[self.keyboard_dict["keyBoardMegNY"]
+                                if self.meg else self.keyboard_dict["keyBoardArrows"]
+                                ])
         self.df_out_0 = self.adaptiveDecoderBlock(
             self.trials_obj_dec,
             decoderType="object",
