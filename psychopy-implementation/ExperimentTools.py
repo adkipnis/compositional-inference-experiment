@@ -303,7 +303,7 @@ class Experiment:
 
         self.pauseText = visual.TextStim(
             self.win,
-            text="Short Break.\nPress spacebar to continue.",
+            text="Short Break.\nPress 'next' key to continue.",
             height=1.8,
             pos=[0, -1],
             wrapWidth=30,
