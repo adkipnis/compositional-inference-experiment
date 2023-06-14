@@ -3,6 +3,9 @@
 """
 Methods for running the compositional inference experiment
 """
+print("Loading psychopy...")
+from psychopy.parallel import ParallelPort
+from psychopy import __version__, core, event, visual, gui, data, monitors
 import os
 import glob
 import warnings
@@ -12,9 +15,6 @@ import sys
 import csv
 from string import ascii_uppercase
 import numpy as np
-print("Loading psychopy...")
-from psychopy import __version__, core, event, visual, gui, data, monitors
-from psychopy.parallel import ParallelPort
 
 
 # =============================================================================
@@ -117,7 +117,7 @@ class Experiment:
             self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
             self.proceedKey = self.resp_keys_vpixx[-1]
-        
+
         # response keys for main task
         self.resp_keys_4 = self.resp_keys[:-2]
 
@@ -195,7 +195,6 @@ class Experiment:
         self.trials_bin = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_binary.pkl", "rb"))
 
-
         # Individual mappings for each participant
         self.mappinglists = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_mappinglists.pkl", "rb"))
@@ -264,7 +263,7 @@ class Experiment:
             wrapWidth=40,
             font="mono",
             color=self.color_dict["mid_grey"])
-        
+
         self.nextPrompt = visual.TextStim(
             self.win,
             text="Navigate 'left' if you are not finished,\notherwise navigate 'right' to continue.",
@@ -288,11 +287,11 @@ class Experiment:
         self.magicBooks = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}magicBooks.png")[0])
-        
+
         self.magicChart = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}magicChart.png")[0])
-        
+
         self.magicWand = visual.ImageStim(
             self.win,
             image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0])
@@ -315,7 +314,6 @@ class Experiment:
             self.win, image=glob.glob(
                 f"{self.stim_dir}{os.sep}philbertine.png")[0])
 
-
         # Count responses
         self.count_dict = {
             str(i): visual.TextStim(
@@ -334,12 +332,12 @@ class Experiment:
                 height=4,
                 color=self.color_dict["black"]),
             False: visual.TextStim(
-                self.win,       
+                self.win,
                 text="N",
                 height=4,
                 color=self.color_dict["black"])
         }
-        
+
         # Keyboard prompts
         keyboard_list = glob.glob(f"{self.stim_dir}{os.sep}keyBoard*.png")
         self.keyboard_dict = {
@@ -395,23 +393,24 @@ class Experiment:
             for i in range(len(stim_list))
         }
 
-
     # Background Components --------------------------------------------------------
 
     def listofdicts2csv(self, trials, fname):
         trials = copy.deepcopy(trials)
-        
+
         # Failsafe
         n_keys_per_trial = set([len(t.keys()) for t in trials])
         if len(n_keys_per_trial) != 1:
-            warnings.warn("Not all trials have the same number of keys, saving as pickle instead")
+            warnings.warn(
+                "Not all trials have the same number of keys, saving as pickle instead")
             with open(fname + '.pkl', "wb") as f:
                 pickle.dump(trials, f)
             return
-        
+
         # spread keys which are n-long lists into n separate elements
         unique_keys = trials[0].keys()
-        list_keys = [key for key in unique_keys if isinstance(trials[0][key], (set, list, np.ndarray))]
+        list_keys = [key for key in unique_keys if isinstance(
+            trials[0][key], (set, list, np.ndarray))]
         for trial in trials:
             for key in list_keys:
                 items = trial.pop(key)
@@ -419,28 +418,27 @@ class Experiment:
                 newkeys = [f"{key}_{i}" for i in range(n)]
                 trial.update(dict(zip(newkeys, items)))
         unique_keys = trials[0].keys()
-        
+
         # write to csv
         with open(fname, 'w', newline='') as output_file:
             dict_writer = csv.DictWriter(output_file, unique_keys)
             dict_writer.writeheader()
             dict_writer.writerows(trials)
-    
-    
+
     def save_object(self, obj, fname, ending='pkl'):
         if ending == 'csv':
             self.listofdicts2csv(obj, fname + '.csv')
         elif ending == 'pkl':
             with open(fname + '.pkl', "wb") as f:
                 pickle.dump(obj, f)
-                
+
     def writeFileName(self, dataset_name):
-        return  f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
-    
+        return f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
+
     def add2meta(self, var, val):
         with open(f"{self.meta_fname}.csv", "a") as f:
             f.write(f"{var},{val}\n")
-            
+
     def init_progbar(self, bar_len=None, bar_height=None, milestones=[0.25, 0.5, 0.75]):
         if bar_len is None:
             bar_len = self.win.size[0]
@@ -479,13 +477,13 @@ class Experiment:
             autoDraw=True)
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
-                                    
+
     def set_progbar_inc(self):
         if not hasattr(self, "inc_queue"):
             raise ValueError("No inc_queue attribute found")
         inc = self.inc_queue.pop(0)
         self.progbar_inc = inc
-     
+
     def move_prog_bar_step(self, bar_width_step, flip_win=True):
         # incrementally increase the bar width
         self.progTest.width += bar_width_step
@@ -524,60 +522,59 @@ class Experiment:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
-
     def setMilestones(self, trial_numbers, weights=None):
         """ set milestones proportional to weighted trial numbers and save the increments for the progress bar """
         if weights is None:
             weights = np.ones(len(trial_numbers))
         trial_numbers = np.array(trial_numbers)
         weights = np.array(weights)
-        assert len(trial_numbers) == len(weights), "trial_numbers and weights must have the same length"
-        
+        assert len(trial_numbers) == len(
+            weights), "trial_numbers and weights must have the same length"
+
         tn_weighted = trial_numbers * weights
         n_total = tn_weighted.sum()
         milestones = np.cumsum(tn_weighted)/n_total
         self.inc_queue = (tn_weighted/n_total/trial_numbers).tolist()
         return milestones.tolist()[:-1]
-        
+
     def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=10):
         angle = 2*np.pi/set_size
         rect_pos = np.empty((set_size, 2), dtype=float).copy()
         for i in range(set_size):
             rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
-                        center_pos[1] + radius * np.cos(i * angle)]
+                           center_pos[1] + radius * np.cos(i * angle)]
         return rect_pos
-    
+
     def rectangularGridPositions(self, center_pos=[0, 0], v_dist=10, h_dist=10, dim=(2, 3)):
         # horizontal positions
         c = np.floor(dim[1]/2)
         if dim[1] % 2 != 0:  # odd number of items on vertical tile => center
             rect_hpos = np.arange(-c * h_dist + center_pos[0],
-                                c * h_dist + 1 + center_pos[0], h_dist).tolist()
+                                  c * h_dist + 1 + center_pos[0], h_dist).tolist()
         else:
             rect_hpos = np.arange(-c * h_dist + h_dist/2 + center_pos[0],
-                                c * h_dist - h_dist/2 + center_pos[0] + 1,
-                                h_dist).tolist()
+                                  c * h_dist - h_dist/2 + center_pos[0] + 1,
+                                  h_dist).tolist()
 
         # vertical positions
         c = np.round(dim[0]/2)
         if dim[0] % 2 != 0:
             rect_vpos = np.arange(-c * v_dist + center_pos[1],
-                                c * v_dist + 1 + center_pos[1], v_dist).tolist()
+                                  c * v_dist + 1 + center_pos[1], v_dist).tolist()
         else:  # even number of items on horizontal tile => shift upwards
             rect_vpos = np.arange(-c * v_dist + v_dist/2 + center_pos[1],
-                                c * v_dist - v_dist/2 + center_pos[1] + 1,
-                                v_dist).tolist()
+                                  c * v_dist - v_dist/2 + center_pos[1] + 1,
+                                  v_dist).tolist()
 
         # combine
         rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
                                 np.repeat(rect_vpos, len(rect_hpos))])
         return rect_pos
-    
-    
+
     ###########################################################################
     # Instructions
     ###########################################################################
-    
+
     def iSingleImage(self, img):
         pos_tmp = img.pos
         img.pos = [0, 0]
@@ -590,8 +587,8 @@ class Experiment:
         stimuli = self.stim_dict.copy()
         categories = sorted(list(stimuli.keys()))
         n_cats = self.n_cats
-        
-        # determine positions        
+
+        # determine positions
         if n_cats > 4:
             dim = [2, np.ceil(n_cats/2)]
         else:
@@ -613,16 +610,16 @@ class Experiment:
         self.drawList = []
         stimuli = self.stim_dict.copy()
         rect_pos = self.circularGridPositions(
-            center_pos=[0,0], set_size=self.set_size, radius=7)
-        
-        def drawInput(dispNum):        
+            center_pos=[0, 0], set_size=self.set_size, radius=7)
+
+        def drawInput(dispNum):
             for i, key in enumerate(displays[dispNum]):
                 self.rect.pos = rect_pos[i]
                 self.rect.draw()
                 stim = stimuli[key]
                 stim.pos = rect_pos[i]
                 stim.draw()
-        
+
         # Input display
         self.enqueueDraw(func=drawInput, args=(0,))
         core.wait(1)
@@ -630,16 +627,16 @@ class Experiment:
         # Let the magic happen
         self.enqueueDraw(func=self.magicWand.draw)
         core.wait(1)
-        
-         # Output display
+
+        # Output display
         self.enqueueDraw(func=drawInput, args=(1,))
         core.wait(1)
-    
+
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
                   proceed_key="/k", wait_s=3, timer=None):
 
         assert proceed_key in ["/k", "/t", "/e"], "Unkown proceed key"
-        
+
         left, right = self.resp_keys[-2:]
         skip = "return"
         finished = False
@@ -686,7 +683,7 @@ class Experiment:
             page -= 1
 
         return page, finished
-    
+
     def Instructions(self, part_key="Intro",
                      special_displays=list(),
                      args=list(),
@@ -710,11 +707,11 @@ class Experiment:
         self.win.flip()
         if log_duration:
             instructions_clock = core.Clock()
-        
-        # Navigate through instructions    
+
+        # Navigate through instructions
         while not finished:
             page_content, proceed_key, proceed_wait = Part[page]
-            
+
             # draw page content
             if isinstance(page_content, str):
                 self.instruct_stim.text = page_content
@@ -728,7 +725,7 @@ class Experiment:
                 idx = int(page_content)
                 kwarg = kwargs[idx]
                 complex_displays[idx](**kwarg)
-            
+
             # wait for response
             page, finished = self.iNavigate(page=page,
                                             max_page=len(Part),
@@ -741,20 +738,20 @@ class Experiment:
         self.win.flip()
         core.wait(loading_time)
 
-    
     ###########################################################################
     # Cues
     ###########################################################################
+
     def drawPracticeCue(self, map_idx, cue_center_pos, vert_dist):
         # Draw map cue
         map_name = self.map_names[map_idx]
         for j, mode in enumerate(["textual", "visual"]):
             cue, _ = self.setCue(map_name, mode=mode)
             cue.pos = [sum(x) for x in
-                        zip(cue_center_pos, [0, (1-j)*vert_dist])]
-            cue.draw()    
+                       zip(cue_center_pos, [0, (1-j)*vert_dist])]
+            cue.draw()
         return map_name.split("-")
-    
+
     def drawMapInstruction(self, categories, category_pos, stimuli):
         for i, category in enumerate(categories):
             self.rect.pos = category_pos[i]
@@ -763,11 +760,11 @@ class Experiment:
             cat.pos = category_pos[i]
             cat.draw()
         self.leftArrow.draw()
-    
+
     def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   min_duration=60):
         ''' Interactive display for learning cues for all maps, return viewing duration '''
-        
+
         # Init
         self.win.flip()
         finished = False
@@ -800,17 +797,17 @@ class Experiment:
         ''' Draw the response options on the screen'''
         self.rect.lineColor = self.color_dict["dark_grey"]
         for i, pos in enumerate(self.cuepractice_pos):
-                self.rect.pos = pos
-                self.rect.draw()
-                resp = stimuli[resp_options[i]]
-                resp.pos = pos
-                resp.draw()
-    
-    def redrawAfterResponse(self, stimulus, rectPos=(0,0), isCorrect=False, isQuick=False, stimPos=None):
+            self.rect.pos = pos
+            self.rect.draw()
+            resp = stimuli[resp_options[i]]
+            resp.pos = pos
+            resp.draw()
+
+    def redrawAfterResponse(self, stimulus, rectPos=(0, 0), isCorrect=False, isQuick=False, stimPos=None):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
         if stimPos is None:
             stimPos = rectPos
-        
+
         # set informative border color
         if not isCorrect:
             lc = self.color_dict["red"]
@@ -818,16 +815,16 @@ class Experiment:
             lc = self.color_dict["yellow"]
         else:
             lc = self.color_dict["green"]
-                    
+
         # redraw rectangle
         self.rect.lineColor = lc
         self.rect.pos = rectPos
         self.rect.draw()
-        self.rect.lineColor = self.color_dict["dark_grey"] #reset
+        self.rect.lineColor = self.color_dict["dark_grey"]  # reset
         stimulus.pos = stimPos
         stimulus.draw()
-        
-    def redrawFeedback(self, stimulus, rectPos=(0,0), stimPos=None, wait_s=1):
+
+    def redrawFeedback(self, stimulus, rectPos=(0, 0), stimPos=None, wait_s=1):
         ''' Mark the correct response option as feedback '''
         if stimPos is None:
             stimPos = rectPos
@@ -836,11 +833,11 @@ class Experiment:
         self.rect.lineColor = self.color_dict["dark_blue"]
         self.rect.fillColor = self.color_dict["blue"]
         self.rect.draw()
-        self.rect.lineColor = self.color_dict["dark_grey"] #reset
-        self.rect.fillColor = self.color_dict["light_grey"] #reset
+        self.rect.lineColor = self.color_dict["dark_grey"]  # reset
+        self.rect.fillColor = self.color_dict["light_grey"]  # reset
         stimulus.pos = stimPos
         stimulus.draw()
-    
+
     def drawAllAndFlip(self):
         for func, args in self.drawList:
             if args is None:
@@ -848,12 +845,12 @@ class Experiment:
             else:
                 func(*args)
         self.win.flip()
-    
+
     def enqueueDraw(self, func=None, args=None, unroll=True):
         self.drawList += [(func, args)]
         if unroll:
             self.drawAllAndFlip()
-    
+
     def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.5):
         ''' Subroutine for the cue practice trials'''
         # Init
@@ -863,10 +860,10 @@ class Experiment:
         testRespList = []
         testRTList = []
         trial["start_time"] = self.exp_clock.getTime()
-        
+
         # Fixation Cross
         self.drawFixation()
-        
+
         # Map Cue and Response Options
         cue, cue_type = self.setCue(trial["map"][0], mode=mode)
         cue.pos = cue_pos
@@ -878,7 +875,8 @@ class Experiment:
         for correctResp in trial["correct_resp"]:
             if testResp == "NA":
                 continue
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
+            testRT, testResp = self.tTestResponse(
+                core.Clock(), self.resp_keys_4)
             testRTList.append(testRT)
             testRespList.append(testResp)
             if testResp != "NA":
@@ -895,21 +893,21 @@ class Experiment:
                                        self.cuepractice_pos[correctResp],
                                        None,
                                        1-i))
-                
+
         # Save data and clear screen
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
         self.drawAllAndFlip()
         core.wait(1.0)
-    
+
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
         for key in self.counter_dict:
             if self.counter_dict[key] < streak_goal:
                 return False
-        return True 
-    
+        return True
+
     def updateCounterDict(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
@@ -917,28 +915,30 @@ class Experiment:
         '''
         map_name = "+".join(trial["map"])
         correct = trial["correct_resp"] == trial["emp_resp"]
-        fast = trial["resp_RT"] <= goal_rt if isinstance(trial["resp_RT"], float) else sum(trial["resp_RT"]) <= goal_rt
-        idk = trial["emp_resp"][0] == "NA" if isinstance(trial["emp_resp"], list) else trial["emp_resp"] == "NA"
-        
+        fast = trial["resp_RT"] <= goal_rt if isinstance(
+            trial["resp_RT"], float) else sum(trial["resp_RT"]) <= goal_rt
+        idk = trial["emp_resp"][0] == "NA" if isinstance(
+            trial["emp_resp"], list) else trial["emp_resp"] == "NA"
+
         if idk:
             pass
-        elif correct and fast and applicable and self.counter_dict[map_name] < streak_goal: 
+        elif correct and fast and applicable and self.counter_dict[map_name] < streak_goal:
             self.counter_dict[map_name] += 1
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
         print(self.counter_dict)
-    
+
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.5, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
-        self.counter_dict = {map:0 for map in self.map_names}
-        start_width_initial = self.start_width # progbar
+        self.counter_dict = {map: 0 for map in self.map_names}
+        start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
-        
+
         while not self.streakGoalReached(streak_goal=streak_goal):
             if trials.nRemaining == 0:
                 self.terminate(out)
-            
+
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
             if self.counter_dict[trial["map"][0]] == streak_goal and np.random.random() > 0.2:
@@ -946,13 +946,14 @@ class Experiment:
             self.cuePracticeTrial(trial, mode=mode, goal_rt=goal_rt)
             self.updateCounterDict(trial, streak_goal, goal_rt)
             out.append(trial)
-            
+
             if self.show_progress:
-                end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
+                end_width = start_width_initial + \
+                    sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-        core.wait(1)        
+        core.wait(1)
         return out
-    
+
     def terminate(self, out):
         ''' Terminate experiment gracefully'''
         print("Aborting experiment due to lack of trials.")
@@ -963,11 +964,11 @@ class Experiment:
         core.wait(10)
         self.win.close()
         core.quit()
-    
+
     ###########################################################################
     # Normal Trials (methods prefaced with "t" may require response)
     ###########################################################################
-    
+
     def drawFixation(self, duration=0.3):
         ''' draw fixation cross'''
         self.win.flip()
@@ -982,7 +983,7 @@ class Experiment:
         # opt: randomize mode
         if mode == "random":
             mode = np.random.choice(["visual", "textual"])
-        
+
         # draw from resp. dict
         if mode == "visual":
             cue = self.vcue_dict.copy()[key]
@@ -997,17 +998,18 @@ class Experiment:
         assert mode in ["visual", "textual", "random"],\
             "Chosen cue mode not implemented."
         n_cues = len(trial["map"])
-        
+
         # draw each cue
         for i, _map in enumerate(trial["map"]):
             cue, mode = self.setCue(_map, mode=mode)
-            cue.pos = self.center_pos if n_cues == 1 else [sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
+            cue.pos = self.center_pos if n_cues == 1 else [
+                sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
             cue.draw()
-        
-        # send triggers            
+
+        # send triggers
         if self.use_pp:
             self.send_trigger(mode)
-        
+
         # flip
         self.win.flip()
         core.wait(duration)
@@ -1021,30 +1023,30 @@ class Experiment:
                 stim = stimuli[stim_name]
                 stim.pos = self.rect_pos[i]
                 stim.draw()
-    
+
     def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=20.0):
         ''' wait for intermediate response and return RT'''
         core.wait(min_wait)
         while True:
-            pressed = event.waitKeys(timeStamped=IRClock, maxWait=max_wait)            
-            
+            pressed = event.waitKeys(timeStamped=IRClock, maxWait=max_wait)
+
             # case: intermediate response is timed but no response is given, yet
             if pressed is None:
                 intermediateRT = max_wait
                 break
             else:
-                thisKey, intermediateRT = pressed[0]      
-            
+                thisKey, intermediateRT = pressed[0]
+
             # case: valid response
             if thisKey == self.proceedKey:
                 break
-                
+
             # case: abort
             elif thisKey == "escape":
                 self.add2meta("t_abort", data.getDateStr())
                 self.win.close()
                 core.quit()  # abort experiment
-        
+
         return intermediateRT
 
     def tTestResponse(self, TestClock, respKeys,
@@ -1053,16 +1055,17 @@ class Experiment:
         testResp, testRT, pressed = None, None, None
         while testResp is None:
             pressed = event.waitKeys(timeStamped=TestClock, maxWait=max_wait)
-            
-            # case: tTestResponse is timed but no response is given, yet 
+
+            # case: tTestResponse is timed but no response is given, yet
             if max_wait < np.inf and pressed is None:
                 break
             else:
                 thisKey, testRT = pressed[0]
-                
+
                 # case: valid response
                 if thisKey in respKeys:
-                    testResp = respKeys.index(thisKey) if return_numeric else thisKey
+                    testResp = respKeys.index(
+                        thisKey) if return_numeric else thisKey
                 # case: don't know
                 elif thisKey == self.proceedKey:
                     testResp = "NA"
@@ -1071,24 +1074,22 @@ class Experiment:
                     self.add2meta("t_abort", data.getDateStr())
                     self.win.close()
                     core.quit()  # abort experiment
-                    
+
         return testRT, testResp
-    
-    
+
     def tEmptySquares(self, IRClock=None):
         ''' draw empty squares and wait for response'''
         self.rect.size = self.normal_size
-        
+
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
-            
+
         if IRClock is not None:
             self.win.flip()
             intermediateRT = self.tIndermediateResponse(IRClock)
             return intermediateRT
-        
-        
+
     def tInput(self, trial, duration=1.0, self_paced=False):
         ''' draw input stimuli and wait for response if self_paced'''
         # draw rectangles
@@ -1096,7 +1097,7 @@ class Experiment:
 
         # draw stimuli
         self.drawStimuli(trial)
-        
+
         # send trigger
         if self.use_pp:
             self.send_trigger("display")
@@ -1109,16 +1110,16 @@ class Experiment:
             core.wait(duration)
             intermediateRT = duration
         return intermediateRT
-    
 
     def tPause(self):
         ''' draw pause screen and wait for response'''
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
-        intermediateRT = self.tIndermediateResponse(core.Clock(), max_wait=float('inf'))
+        intermediateRT = self.tIndermediateResponse(
+            core.Clock(), max_wait=float('inf'))
         self.win.flip()
-        core.wait(1)   
+        core.wait(1)
         if self.use_pp:
             self.send_trigger("run")
         return intermediateRT
@@ -1128,10 +1129,10 @@ class Experiment:
         self.rect.pos = self.center_pos
         self.rect.size = self.center_size
         self.rect.draw()
-        self.rect.size = self.normal_size #reset size
+        self.rect.size = self.normal_size  # reset size
         stimulus.pos = self.center_pos
         stimulus.draw()
-    
+
     def drawCountResponses(self):
         ''' draw response options for count test'''
         self.rect.lineColor = self.color_dict["dark_grey"]
@@ -1141,7 +1142,7 @@ class Experiment:
             resp = self.count_dict[str(i)]
             resp.pos = self.resp_pos_num[i]
             resp.draw()
-            
+
     def drawCatchResponses(self):
         ''' draw response options for one-back test'''
         self.rect.lineColor = self.color_dict["dark_grey"]
@@ -1153,25 +1154,27 @@ class Experiment:
             resp = self.yn_dict[bool(i)]
             resp.pos = yn_positions[i]
             resp.draw()
-    
+
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
-        
-        # Send trigger    
+
+        # Send trigger
         if self.use_pp:
             self.send_trigger("count")
 
         # Draw stimuli
-        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
-        self.enqueueDraw(func=self.drawCountResponses)        
-        
+        self.enqueueDraw(func=self.drawCountTarget, args=(
+            stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCountResponses)
+
         # Get response
         if not demonstration:
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
+            testRT, testResp = self.tTestResponse(
+                core.Clock(), self.resp_keys_4)
         else:
             # simulate incorrect response
             badoptions = np.array(range(4))
@@ -1185,21 +1188,21 @@ class Experiment:
             # immediate
             if testResp != "NA":
                 self.enqueueDraw(func=self.redrawAfterResponse,
-                                 args=(self.count_dict[str(testResp)], 
+                                 args=(self.count_dict[str(testResp)],
                                        self.resp_pos[testResp],
                                        corResp == testResp,
                                        testRT <= goal_rt,
                                        self.resp_pos_num[testResp]))
-                
+
             # correct solution
             if corResp != testResp:
                 self.enqueueDraw(func=self.redrawFeedback,
-                                 args=(self.count_dict[str(corResp)], 
+                                 args=(self.count_dict[str(corResp)],
                                        self.resp_pos[corResp],
                                        self.resp_pos_num[corResp]))
-        
+
         core.wait(duration)
-        return testRT, testResp        
+        return testRT, testResp
 
     def drawPositionTarget(self, target_idx):
         ''' draw target stimulus for position test'''
@@ -1209,7 +1212,7 @@ class Experiment:
             if target_idx == i:
                 self.qm.pos = pos
                 self.qm.draw()
-    
+
     def drawPositionResponses(self, stimuli, resp_options):
         ''' draw response options for position test'''
         for i, pos in enumerate(self.resp_pos):
@@ -1218,25 +1221,28 @@ class Experiment:
             resp = stimuli[resp_options[i]]
             resp.pos = pos
             resp.draw()
-    
+
     def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
-        
+
         # Send trigger
         if self.use_pp:
             self.send_trigger("position")
 
         # Draw stimuli
-        self.enqueueDraw(func=self.drawPositionTarget, args=(trial["target"],), unroll=False)
-        self.enqueueDraw(func=self.drawPositionResponses, args=(stimuli, trial["resp_options"],))
-        
+        self.enqueueDraw(func=self.drawPositionTarget,
+                         args=(trial["target"],), unroll=False)
+        self.enqueueDraw(func=self.drawPositionResponses,
+                         args=(stimuli, trial["resp_options"],))
+
         # Get response
         if not demonstration:
-            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
+            testRT, testResp = self.tTestResponse(
+                core.Clock(), self.resp_keys_4)
         else:
             # simulate incorrect response
             badoptions = np.array(range(4))
@@ -1244,7 +1250,7 @@ class Experiment:
             if feedback:
                 core.wait(1)
             testRT, testResp = 0.0, badoptions[0]
-        
+
         # Feedback
         if feedback:
             # immediate
@@ -1259,10 +1265,10 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawFeedback,
                                  args=(stimuli[trial["resp_options"][corResp]],
                                        self.resp_pos[corResp]))
-        
+
         core.wait(duration)
-        return testRT, testResp        
-    
+        return testRT, testResp
+
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0):
         ''' subroutine for generic trials'''
@@ -1271,37 +1277,38 @@ class Experiment:
         trial["start_time"] = self.exp_clock.getTime()
         if self.use_pp:
             self.send_trigger("trial")
-        
+
         # Fixation
         self.drawFixation(duration=fixation_duration)
-            
+
         # Display input
         display_rt = self.tInput(trial, self_paced=self_paced)
 
         # Cue
         self.drawFixation()
         mode = self.drawCue(trial, mode=mode, duration=cue_duration)
-        
+
         # End trial for demonstration purposes
         if skip_test:
             self.win.clearBuffer()
             self.win.flip()
             return
-        
+
         # Transformation display
         if self.use_pp:
-            self.send_trigger("squares")        
+            self.send_trigger("squares")
         inter_rt = self.tEmptySquares(core.Clock())
-        
+
         # Empty display
         self.win.flip()
         core.wait(1)
-                
+
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
-        test_rt, test_resp = testMethod(trial, feedback=feedback, goal_rt=goal_rt)
+        test_rt, test_resp = testMethod(
+            trial, feedback=feedback, goal_rt=goal_rt)
         self.drawAllAndFlip()
-        
+
         # Save data
         trial["display_RT"] = display_rt
         trial["inter_RT"] = inter_rt
@@ -1309,26 +1316,26 @@ class Experiment:
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
         core.wait(0.5)
-    
-    
+
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
         self.drawList = []
         no, yes = self.resp_keys[-2:]
         stimuli = self.stim_dict.copy()
-        
+
         # Draw stimuli
-        self.enqueueDraw(func=self.drawCountTarget, args=(stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCountTarget, args=(
+            stimuli[trial["target"]],), unroll=False)
         self.enqueueDraw(func=self.drawCatchResponses)
-        
-        # Send trigger    
+
+        # Send trigger
         if self.use_pp:
             self.send_trigger("catch")
-        
-        testRT, testResp = self.tTestResponse(core.Clock(), [no, yes], return_numeric=False)
+
+        testRT, testResp = self.tTestResponse(
+            core.Clock(), [no, yes], return_numeric=False)
         return testRT, testResp == yes
-    
-    
+
     def objectDecoderTrial(self, trial, fixation_duration=0.3):
         """ Subroutine in which the participant sees an object and may encounter a 1-back task"""
         # Init
@@ -1337,70 +1344,70 @@ class Experiment:
         self.drawList = []
         if self.use_pp:
             self.send_trigger("trial")
-        
+
         # Fixation
         self.enqueueDraw(func=self.tEmptySquares)
-        self.enqueueDraw(func=self.fixation.draw)    
+        self.enqueueDraw(func=self.fixation.draw)
         core.wait(fixation_duration)
-        
+
         # Display input
         if self.use_pp:
             self.send_trigger("display")
         self.enqueueDraw(func=self.drawStimuli, args=(trial,))
         core.wait(1)
-        
+
         # Catch trial
         if trial["is_catch_trial"]:
             test_rt, test_resp = self.oneBackTest(trial)
-        
+
         # Save data
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         core.wait(0.5)
-        
-        
+
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
         map_names = self.map_names if map_type == "primitive" else self.map_names_bin
-        self.counter_dict = {map:0 for map in map_names}
-    
-    
+        self.counter_dict = {map: 0 for map in map_names}
+
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
-                     fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
-                     self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
+                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
+                      self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
-        start_width_initial = self.start_width # progbar
+        start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         self.generateCounterDict(map_type=trials.trialList[0]["map_type"])
         out = []
-        
+
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
-                self.send_trigger("run")      
-        
+                self.send_trigger("run")
+
         while not self.streakGoalReached(streak_goal=streak_goal):
             if trials.nRemaining == 0:
                 self.terminate(out)
-             
+
             trial = trials.next()
             # probabilistically skip if this cue has already been mastered
             if self.counter_dict["+".join(trial["map"])] == streak_goal and np.random.random() > 0.2:
                 continue
-            
+
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
-                              fixation_duration=fixation_duration + trial["jitter"][0],
+                              fixation_duration=fixation_duration +
+                              trial["jitter"][0],
                               cue_duration=cue_duration + trial["jitter"][1],
                               goal_rt=goal_rt)
             self.updateCounterDict(trial, streak_goal=streak_goal, goal_rt=goal_rt,
-                                     decrease=decrease)
-            
+                                   decrease=decrease)
+
             # Update progress bar
             if self.show_progress:
-                end_width = start_width_initial + sum(self.counter_dict.values()) * self.progbar_inc
+                end_width = start_width_initial + \
+                    sum(self.counter_dict.values()) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
-        
+
             # Pause display between runs
             if pause_between_runs:
                 trial["run_number"] = run_number
@@ -1413,48 +1420,50 @@ class Experiment:
             core.wait(1)
         return out
 
-
-    def adaptiveDecoderBlock(self, trial_df, 
+    def adaptiveDecoderBlock(self, trial_df,
                              fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
                              pause_between_runs=True, test_goal=3, decoderType="spell"):
         ''' block of decoder trials, enqueueing failed trials'''
         assert decoderType in ["spell", "object"]
-        start_width_initial = self.start_width # progbar
+        start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         succeeded = []
         failed = []
         out = []
-        
+
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
             if self.use_pp:
-                self.send_trigger("run")      
-        
+                self.send_trigger("run")
+
         while trials.nRemaining > 0:
             trial = trials.next()
-            
+
             if decoderType == "spell":
                 self.genericTrial(trial, self_paced=True, feedback=True,
-                                fixation_duration=fixation_duration + trial["jitter"][0],
-                                cue_duration=cue_duration + trial["jitter"][1],
-                                goal_rt=goal_rt)
+                                  fixation_duration=fixation_duration +
+                                  trial["jitter"][0],
+                                  cue_duration=cue_duration +
+                                  trial["jitter"][1],
+                                  goal_rt=goal_rt)
             else:
-                self.objectDecoderTrial(trial, fixation_duration=fixation_duration + trial["jitter"])
-            
+                self.objectDecoderTrial(
+                    trial, fixation_duration=fixation_duration + trial["jitter"])
+
             # Pause display between runs
             if pause_between_runs:
                 trial["run_number"] = run_number
                 if timer.getTime() <= 0:
-                    self.tPause()   
+                    self.tPause()
                     timer.reset()
                     run_number += 1
-                
+
             # Enqueue trials with applicable map according to performance
             out.append(trial)
             correct = trial["correct_resp"] == trial["emp_resp"]
-            
-            # Case: spell decoder                    
+
+            # Case: spell decoder
             if decoderType == "spell" and trial["applicable"]:
                 fast = trial["resp_RT"] <= goal_rt
                 if correct and fast:
@@ -1463,7 +1472,7 @@ class Experiment:
                 else:
                     failed.append(trial)
                     print("# repeat:", len(failed))
-            # Case: object decoder                    
+            # Case: object decoder
             elif decoderType == "object":
                 if trial["is_catch_trial"] and not correct:
                     failed.append(trial)
@@ -1471,81 +1480,86 @@ class Experiment:
                 else:
                     succeeded.append(trial)
                     print("# correct:", len(succeeded))
-                    
-                    
+
             # Restart failed trials
             if trials.nRemaining == 0 and len(failed) > 0:
                 trials = data.TrialHandler(failed, 1, method="random")
                 failed = []
-            
+
             # Update progress bar
             if self.show_progress:
-                end_width = start_width_initial + len(succeeded) * self.progbar_inc
+                end_width = start_width_initial + \
+                    len(succeeded) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
             if decoderType == "spell":
                 core.wait(1)
-                
+
             # During test mode: Terminate if goal is reached
             if self.test_mode and len(out) >= test_goal:
                 break
         return out
-    
-    
+
     ###########################################################################
     # Introduction Session
     ###########################################################################
 
     def Session1(self):
         self.win.mouseVisible = False
-        
-        # set up probar        
-        streak_goal = 2 if self.test_mode else 10 # per map
-        streak_goal_sd = 1 if self.test_mode else 16 # spell decoder
+
+        # set up probar
+        streak_goal = 2 if self.test_mode else 10  # per map
+        streak_goal_sd = 1 if self.test_mode else 16  # spell decoder
         trial_numbers = [
-            len(self.trials_obj_dec) if not self.test_mode else 6, # object decoder
-            self.n_primitives * streak_goal//2, # cue practice 1
-            self.n_primitives * streak_goal//2, # cue practice 2
-            self.n_primitives * streak_goal, # test practice 1
-            self.n_primitives * streak_goal, # test practice 2
-            self.n_primitives * streak_goal_sd, # spell decoder
-            ]
-        milestones = self.setMilestones(trial_numbers, weights = [0.1, 1.5, 1.5, 1.0, 1.0, 0.5])
+            len(self.trials_obj_dec) if not self.test_mode else 6,  # object decoder
+            self.n_primitives * streak_goal//2,  # cue practice 1
+            self.n_primitives * streak_goal//2,  # cue practice 2
+            self.n_primitives * streak_goal,  # test practice 1
+            self.n_primitives * streak_goal,  # test practice 2
+            self.n_primitives * streak_goal_sd,  # spell decoder
+        ]
+        milestones = self.setMilestones(
+            trial_numbers, weights=[0.1, 1.5, 1.5, 1.0, 1.0, 0.5])
         self.init_progbar(milestones=milestones)
-        
+
         # Balance out which cue modality is learned first
-        id_is_odd = int(self.expInfo["participant"]) % 2 # 1 3 5 ...
+        id_is_odd = int(self.expInfo["participant"]) % 2  # 1 3 5 ...
         first_modality = "visual" if id_is_odd else "textual"
         second_modality = "textual" if id_is_odd else "visual"
         self.add2meta("first_modality", first_modality)
 
         # Balance out which test type is learned first
-        id_is_in_seq = int(self.expInfo["participant"]) % 4 in [1, 2] # 1 2 5 6 ...
+        # 1 2 5 6 ...
+        id_is_in_seq = int(self.expInfo["participant"]) % 4 in [1, 2]
         first_test = "count" if id_is_in_seq else "position"
         second_test = "position" if id_is_in_seq else "count"
         self.add2meta("first_test", first_test)
         tFirst = self.tCount if id_is_in_seq else self.tPosition
         tSecond = self.tPosition if id_is_in_seq else self.tCount
-        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_in_seq else self.trials_prim_prac_p.copy()
-        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_in_seq else self.trials_prim_prac_c.copy()
-        
+        trials_test_1 = self.trials_prim_prac_c.copy(
+        ) if id_is_in_seq else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy(
+        ) if id_is_in_seq else self.trials_prim_prac_c.copy()
+
         # Get Demo trials
-        demoTrials1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential")
-        demoTrials2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential")
+        demoTrials1 = data.TrialHandler(
+            trials_test_1[:1], 1, method="sequential")
+        demoTrials2 = data.TrialHandler(
+            trials_test_2[:1], 1, method="sequential")
         demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
         print("Starting Session 1.")
-        
 
         ''' --- 1. Initial instructions and object decoder ---------------------------'''
         # print("Starting Session 2 with adaptive decoder block.")
         self.set_progbar_inc()
-        
+
         # Navigation
         self.Instructions(part_key="Navigation1",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
+                          args=[self.keyboard_dict["keyBoardMegBF"]
+                                if self.meg else self.keyboard_dict["keyBoardArrows"]],
                           font="mono",
                           fontcolor=self.color_dict["mid_grey"])
-        
+
         # Object decoder block
         self.Instructions(part_key="objectDecoder",
                           special_displays=[self.iSingleImage],
@@ -1554,7 +1568,7 @@ class Experiment:
             self.trials_obj_dec,
             decoderType="object",
             test_goal=trial_numbers[0],
-            )
+        )
         fname = self.writeFileName("objectDecoder")
         self.save_object(self.df_out_0, fname, ending='csv')
         self.Instructions(part_key="objectDecoderPost")
@@ -1574,11 +1588,10 @@ class Experiment:
                                 [["A", "B", "C", "D"], ["A", "D", "C", "D"]],
                                 [["A", "B", "B", "D"], ["A", "D", "D", "D"]]])
 
-
         ''' --- 2. Learn Cues --------------------------------------------------------'''
         print("\nLearning first cue type.")
         self.set_progbar_inc()
-        
+
         # Learn first cue type
         self.learnDuration_1 = self.learnCues(min_duration=60)
         self.add2meta("learnDuration_1", self.learnDuration_1)
@@ -1603,7 +1616,6 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         self.learnDuration_2 = self.learnCues(min_duration=30)
         self.add2meta("learnDuration_2", self.learnDuration_2)
-        
 
         # Test second cue type
         self.win.flip()
@@ -1613,7 +1625,6 @@ class Experiment:
                                                  mode=second_modality)
         fname = self.writeFileName("cueMemory"+second_modality.capitalize())
         self.save_object(self.df_out_2, fname, ending='csv')
-
 
         ''' --- 3. Test Types --------------------------------------------------------'''
         # First Test-Type
@@ -1625,7 +1636,7 @@ class Experiment:
                           complex_displays=[self.genericTrial],
                           kwargs=[{"trial": demoTrial1,
                                    "self_paced": False,
-                                   "skip_test": True}],                          
+                                   "skip_test": True}],
                           loading_time=0)
         self.Instructions(part_key=first_test + "First",
                           special_displays=[self.iSingleImage,
@@ -1638,45 +1649,46 @@ class Experiment:
                                             tFirst],
                           kwargs=[{"trial": demoTrial1, "duration": 0.0},
                                   {"trial": demoTrial1, "duration": 0.0},
-                                  {"trial": demoTrial1, "duration": 0.0, "demonstration": True},
+                                  {"trial": demoTrial1, "duration": 0.0,
+                                      "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
         self.df_out_3 = self.adaptiveBlock(trials_test_1,
                                            streak_goal=streak_goal)
         fname = self.writeFileName("testPractice"+first_test.capitalize())
         self.save_object(self.df_out_3, fname, ending='csv')
-        
+
         # Second Test-Type
         print("\nLearning second test type.")
         self.set_progbar_inc()
         self.Instructions(part_key=second_test + "Second",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+                          args=[self.keyboard_dict["keyBoardMeg0123"]
+                                if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.genericTrial,
                                             tSecond,
                                             tSecond],
                           kwargs=[{"trial": demoTrial2, "self_paced": False, "skip_test": True},
-                                  {"trial": demoTrial2, "duration": 0.0, "demonstration": True},
+                                  {"trial": demoTrial2, "duration": 0.0,
+                                      "demonstration": True},
                                   {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
         self.df_out_4 = self.adaptiveBlock(trials_test_2,
                                            streak_goal=streak_goal)
         fname = self.writeFileName("testPractice"+second_test.capitalize())
         self.save_object(self.df_out_4, fname, ending='csv')
 
-
         ''' --- 4. Spell Decoder --------------------------------------------------------'''
         print("\nStarting spell decoder trials.")
         self.set_progbar_inc()
-        
+
         self.Instructions(part_key="spellDecoder",
-                        special_displays=[self.iSingleImage,
-                                          self.iSingleImage],
-                        args=[self.magicChart,
-                              self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+                          special_displays=[self.iSingleImage,
+                                            self.iSingleImage],
+                          args=[self.magicChart,
+                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         self.df_out_5 = self.adaptiveDecoderBlock(self.trials_prim_dec,
                                                   test_goal=trial_numbers[-1])
         fname = self.writeFileName("spellDecoder")
         self.save_object(self.df_out_5, fname, ending='csv')
-
 
         ''' --- Wrap up --------------------------------------------------------'''
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
@@ -1684,40 +1696,45 @@ class Experiment:
         self.add2meta("t_end", data.getDateStr())
         self.win.close()
 
-
-
     # ###########################################################################
     #  Testing Session
     # ###########################################################################
+
     def Session2(self):
         # init session variables
         self.win.mouseVisible = False
         
-        goal_streak_p = 1 if self.test_mode else 20 # primitives
-        goal_streak_b = 1 if self.test_mode else 15 # binaries
-        n_trials = [self.n_primitives * goal_streak_p,
-                    self.n_binaries * goal_streak_b]
-        n_total = sum(n_trials)
-        milestones = np.cumsum(n_trials)/n_total
-        self.init_progbar(milestones=milestones[:-1])
-        self.progbar_inc = 1/n_total
+         # set up probar
+        goal_streak_p = 1 if self.test_mode else 20  # primitives
+        goal_streak_b = 1 if self.test_mode else 15  # binaries
+        trial_numbers = [
+            self.n_primitives * goal_streak_p, # primitives
+            self.n_binaries * goal_streak_b, # binaries
+        ]
+        milestones = self.setMilestones(
+            trial_numbers, weights=[1.0, 1.5])
+        self.init_progbar(milestones=milestones)
+        
+        # Demo trials
+        demoCount = data.TrialHandler(
+            self.trials_prim_prac_c[:1], 1, method="sequential").trialList[0]
+        demoPosition = data.TrialHandler(
+            self.trials_prim_prac_p[:1], 1, method="sequential").trialList[0]
+        demoBin = data.TrialHandler(
+            self.trials_bin[:1], 1, method="sequential").trialList[0]
 
-        demoCount = data.TrialHandler(self.trials_prim_prac_c[:1], 1, method="sequential").trialList[0]
-        demoPosition = data.TrialHandler(self.trials_prim_prac_p[:1], 1, method="sequential").trialList[0]
-        demoBin = data.TrialHandler(self.trials_bin[:1], 1, method="sequential").trialList[0]
+        ''' --- 1. Initial instructions and primitive trials ------------------------'''
+        print("Starting Session 2 with adaptive decoder block.")
+        # Navigation
+        self.Instructions(part_key="Navigation3",
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMegBF"]
+                                if self.meg else self.keyboard_dict["keyBoardArrows"]],
+                          font="mono",
+                          fontcolor=self.color_dict["mid_grey"])
 
-        # ''' --- 1. Initial instructions and function decoder ------------------------'''
-        # print("Starting Session 2 with adaptive decoder block.")
-        # # Navigation
-        # self.Instructions(part_key="Navigation3",
-        #                   special_displays=[self.iSingleImage],
-        #                   args=[self.keyboard_dict["keyBoardMegBF"] if self.meg else self.keyboard_dict["keyBoardArrows"]],
-        #                   font="mono",
-        #                   fontcolor=self.color_dict["mid_grey"])
-
-       
-        ''' --- 2. Primitive trials ------------------------------------------------'''
         print("\nStarting adaptive primitive block.")
+        self.set_progbar_inc()
         self.Instructions(part_key="PrimitivesMEGR",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage,
@@ -1731,17 +1748,19 @@ class Experiment:
                                             self.tPosition],
                           kwargs=[{"trial": demoCount, "duration": 0.0},
                                   {"trial": demoCount, "duration": 0.0},
-                                  {"trial": demoCount, "duration": 0.0, "demonstration": True},
+                                  {"trial": demoCount, "duration": 0.0,
+                                      "demonstration": True},
                                   {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
-        
-        self.df_out_6 = self.adaptiveBlock(self.trials_prim_MEG,
+
+        self.df_out_6 = self.adaptiveBlock(self.trials_prim,
                                            streak_goal=goal_streak_p,
-                                           decrease=True)    
+                                           decrease=True)
         fname = self.writeFileName("primitiveTrials")
         self.save_object(self.df_out_6, fname, ending='csv')
-        
-        ''' --- 3. Binary trials ------------------------------------------------'''
+
+        ''' --- 2. Double spell trials ------------------------------------------------'''
         print("\nStarting adaptive compositional block.")
+        self.set_progbar_inc()
         self.Instructions(part_key="BinariesMEGR",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage,
@@ -1756,7 +1775,7 @@ class Experiment:
         self.df_out_7 = self.adaptiveBlock(self.trials_bin,
                                            streak_goal=goal_streak_b,
                                            cue_duration=0.9,
-                                           decrease=True)                          
+                                           decrease=True)
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
