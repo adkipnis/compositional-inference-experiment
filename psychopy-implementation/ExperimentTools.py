@@ -159,8 +159,8 @@ class Experiment:
 
     def send_trigger(self, trigger_type):
         trigger_code = self.trigger_dict[trigger_type]
-        self.port_out.setData(0)
         self.port_out.setData(trigger_code)
+        self.port_out.setData(0)
         # print(f"Trigger: {trigger_type}")
 
     def load_trials(self):
