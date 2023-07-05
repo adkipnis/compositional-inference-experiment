@@ -51,7 +51,8 @@ class Experiment:
         self.center_pos = [0, 5]
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
-        self.color_dict = {"white": [0.9, 0.9, 0.9],
+        self.color_dict = {"superwhite" : [1.0, 1.0, 1.0],
+                           "white": [0.9, 0.9, 0.9],
                            "instructions": [0.8, 0.8, 0.8],
                            "light_grey": [0.7, 0.7, 0.7],
                            "light_grey2": [0.6, 0.6, 0.6],
@@ -161,6 +162,7 @@ class Experiment:
         trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(trigger_code)
         self.port_out.setData(0)
+        self.diodeRect.draw()
         # print(f"Trigger: {trigger_type}")
 
     def load_trials(self):
@@ -243,9 +245,19 @@ class Experiment:
             height=self.normal_size[1],
             fillColor=self.color_dict["light_grey"],
             lineColor=self.color_dict["dark_grey"])
+        
+        self.diodeRect = visual.Rect(
+            win=self.win,
+            width=self.win.size[1]/16,
+            height=self.win.size[1]/16,
+            fillColor=self.color_dict["white"],
+            units="pix",
+            pos=[self.win.size[0] * 0.495, -self.win.size[1] * 0.49],
+            )
 
         self.fixation = visual.GratingStim(
-            self.win, color=-0.9,
+            self.win,
+            color=-0.9,
             colorSpace="rgb",
             pos=self.center_pos,
             mask="circle",
