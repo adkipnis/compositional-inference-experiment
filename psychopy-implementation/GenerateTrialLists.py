@@ -231,6 +231,7 @@ def select_binary_compositions(binary_comps_dict):
 def apply_map(display, general_map, past_transforms=0, sep='-'):
     ''' recursively apply maps to an initial display and return final image '''
     display_in = display.copy()
+    intermediate_display = display_in.copy()
     if isinstance(general_map, str):
         general_map = [general_map]
     if len(general_map) > 0:
@@ -240,10 +241,11 @@ def apply_map(display, general_map, past_transforms=0, sep='-'):
         t_out = map_tmp.split(sep)[1]
         past_transforms += sum(display_in == t_in)
         display_in[display_in == t_in] = t_out
-        display_in, past_transforms = apply_map(display_in, remaining_maps,
+        intermediate_display = display_in.copy()
+        display_in, _, past_transforms = apply_map(display_in, remaining_maps,
                                                 past_transforms=past_transforms,
                                                 sep=sep)
-    return display_in, past_transforms
+    return display_in, intermediate_display, past_transforms 
 
 
 def draw_count_target(stimuli, resp, instances, instance_count, p=None):
@@ -349,7 +351,8 @@ def gen_trial_dict(stimuli, general_map, resp,
             replace=True,
             )
         display_in = np.append(necessary_items, other_items)
-        display_out, past_transforms = apply_map(
+        display_in = np.random.permutation(display_in)
+        display_out, intermediate_display, past_transforms = apply_map(
             display_in, general_map, sep=sep)
         instances, instance_count = np.unique(display_out,
                                               return_counts=True)
@@ -376,20 +379,20 @@ def gen_trial_dict(stimuli, general_map, resp,
     if np.array_equal(compiled_map, general_map):
         past_transforms_sparse = past_transforms
     else:
-        _, past_transforms_sparse = apply_map(
+        _, _, past_transforms_sparse = apply_map(
             display_in, compiled_map, sep=sep)
     output_dict = {"trial_type": trial_type,
-                   "input_disp": display_in,
-                   "map": general_map,
-                   "output_disp": display_out,
+                   "map_type": map_type,
                    "test_type": test_type,
+                   "map": general_map,
+                   "input_disp": display_in,
+                   "intermediate_disp": intermediate_display,
+                   "output_disp": display_out,
                    "target": target,
                    "resp_options": response_options,
                    "correct_resp": resp,
                    "trans_ub": past_transforms,
                    "trans_lb": past_transforms_sparse,
-                   "map_type": map_type,
-                #    "arg_set": get_arg_set(general_map, sep=sep),
                    "jitter": jitter}
     return output_dict
 
