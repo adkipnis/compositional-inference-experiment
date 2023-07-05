@@ -313,6 +313,12 @@ class Experiment:
         self.philbertine = visual.ImageStim(
             self.win, image=glob.glob(
                 f"{self.stim_dir}{os.sep}philbertine.png")[0])
+        
+        self.splash = visual.ImageStim(
+            self.win,
+            image=glob.glob(
+                f"{self.stim_dir}{os.sep}splash.png")[0],
+            pos=self.center_pos)
 
         # Count responses
         self.count_dict = {
@@ -1314,7 +1320,10 @@ class Experiment:
         # Cue
         self.drawFixation()
         mode = self.drawCue(trial, mode=mode, duration=cue_duration)
-
+        self.splash.draw()
+        self.win.flip()
+        core.wait(0.2)
+        
         # End trial for demonstration purposes
         if skip_test:
             self.win.clearBuffer()
@@ -1328,7 +1337,7 @@ class Experiment:
 
         # Empty display
         self.win.flip()
-        core.wait(1)
+        core.wait(1.)
 
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
