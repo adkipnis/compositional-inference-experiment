@@ -446,8 +446,7 @@ class Experiment:
         # spread out lists and sets to new enumerated keys
         original_keys = list(unique_keys)
         list_keys = [key for key in original_keys
-                    if isinstance(trials[0][key],
-                                (set, list, np.ndarray))]
+                    if isinstance(trials[0][key], (set, list, np.ndarray))]
         if list_keys:
             new_keys = []
             for trial in trials:
@@ -461,8 +460,7 @@ class Experiment:
             # update unique_keys (some trials may have more than others) and sort them in original order
             new_keys = sorted(set(new_keys))
             unique_keys = np.setdiff1d(original_keys, list_keys)
-            unique_keys = np.union1d(unique_keys, new_keys)
-            unique_keys = sorted(unique_keys, key=lambda x: original_keys.index(x.split('_')[0]))
+            unique_keys = sorted(np.union1d(unique_keys, new_keys))
     
         # === write to csv ===
         with open(fname + ".csv", "w", newline="") as output_file:
