@@ -435,9 +435,9 @@ class Experiment:
             
         # 2. check if all trials have the same item types per key, dump otherwise
         key_types = {key: type(trials[0][key])
-                    for key in unique_keys}
+                     for key in unique_keys}
         type_check_list = [type(trial[key]) == key_types[key]
-                        for trial in trials for key in unique_keys]
+                           for trial in trials for key in unique_keys if key != "target"]
         if not all(type_check_list):
             self.dump(trials, fname, "key types")
             return
@@ -916,13 +916,13 @@ class Experiment:
 
         # Wait for response(s)
         for correctResp in trial["correct_resp"]:
-            if testResp == "NA":
+            if testResp == 99:
                 continue
             testRT, testResp = self.tTestResponse(
                 core.Clock(), self.resp_keys_4)
             testRTList.append(testRT)
             testRespList.append(testResp)
-            if testResp != "NA":
+            if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(stimuli[trial["resp_options"][testResp]],
                                        self.cuepractice_pos[testResp],
@@ -960,8 +960,8 @@ class Experiment:
         correct = trial["correct_resp"] == trial["emp_resp"]
         fast = trial["resp_RT"] <= goal_rt if isinstance(
             trial["resp_RT"], float) else sum(trial["resp_RT"]) <= goal_rt
-        idk = trial["emp_resp"][0] == "NA" if isinstance(
-            trial["emp_resp"], list) else trial["emp_resp"] == "NA"
+        idk = trial["emp_resp"][0] == 99 if isinstance(
+            trial["emp_resp"], list) else trial["emp_resp"] == 99
 
         if idk:
             pass
@@ -1111,7 +1111,7 @@ class Experiment:
                         thisKey) if return_numeric else thisKey
                 # case: don't know
                 elif thisKey == self.proceedKey:
-                    testResp = "NA"
+                    testResp = 99
                 # case: abort
                 elif thisKey == "escape":
                     self.add2meta("t_abort", data.getDateStr())
@@ -1229,7 +1229,7 @@ class Experiment:
         # Feedback
         if feedback:
             # immediate
-            if testResp != "NA":
+            if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(self.count_dict[str(testResp)],
                                        self.resp_pos[testResp],
@@ -1297,7 +1297,7 @@ class Experiment:
         # Feedback
         if feedback:
             # immediate
-            if testResp != "NA":
+            if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(stimuli[trial["resp_options"][testResp]],
                                        self.resp_pos[testResp],
