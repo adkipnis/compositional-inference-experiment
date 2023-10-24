@@ -358,7 +358,7 @@ def gen_trial_dict(stimuli, general_map, resp,
                                               return_counts=True)
         max_ic = instance_count.max()
         if test_type == "count":
-            response_options = resp_list.copy()
+            response_options = np.array(resp_list)
             target = draw_count_target(
                 stimuli, resp, instances, instance_count, p=p)
         elif test_type == "position":
