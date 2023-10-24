@@ -10,9 +10,9 @@ exp = Experiment()
 exp.dialogue_box(
     show=False,
     participant=1,
-    session=1,
-    meg=True,
-    test_mode=False,
+    session=2,
+    meg=False,
+    test_mode=True,
     )
 exp.init_window(screen=0, fullscr=True)
 exp.load_trials()
