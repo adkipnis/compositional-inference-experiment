@@ -1264,8 +1264,7 @@ class Experiment:
             self.rect.pos = pos
             self.rect.draw()
             if target_idx == i:
-                self.qm.pos = pos
-                self.qm.pos[1] -= 0.3
+                self.qm.pos = [pos[0], pos[1] + 0.3]
                 self.qm.draw()
 
     def drawPositionResponses(self, stimuli, resp_options):
