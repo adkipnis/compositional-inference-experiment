@@ -1846,8 +1846,6 @@ class Experiment:
         demoBin = data.TrialHandler(
             self.trials_bin[:1], 1, method="sequential").trialList[0]
 
-        ''' --- 1. Initial instructions and primitive trials ------------------------'''
-        print("Starting Session 2 with adaptive decoder block.")
         # Navigation
         self.Instructions(part_key="Navigation3",
                           special_displays=[self.iSingleImage],
@@ -1855,50 +1853,69 @@ class Experiment:
                                 if self.meg else self.keyboard_dict["keyBoardArrows"]],
                           font="mono",
                           fontcolor=self.color_dict["mid_grey"])
+        
+        # ''' --- 1. Initial instructions and primitive trials ------------------------'''
+        # print("\nStarting adaptive primitive block.")
+        # self.set_progbar_inc()
+        # self.Instructions(part_key="PrimitivesMEGR",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.magicWand,
+        #                         self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+        #                   complex_displays=[self.tInput,
+        #                                     self.drawCue,
+        #                                     self.tCount,
+        #                                     self.tPosition],
+        #                   kwargs=[{"trial": demoCount, "duration": 0.0},
+        #                           {"trial": demoCount, "duration": 0.0},
+        #                           {"trial": demoCount, "duration": 0.0,
+        #                               "demonstration": True},
+        #                           {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
 
-        print("\nStarting adaptive primitive block.")
-        self.set_progbar_inc()
-        self.Instructions(part_key="PrimitivesMEGR",
+        # self.df_out_6 = self.adaptiveBlock(self.trials_prim,
+        #                                    streak_goal=goal_streak_p)
+        # fname = self.writeFileName("primitiveTrials")
+        # self.save_object(self.df_out_6, fname, ending='csv')
+
+        # ''' --- 2. Double spell trials ------------------------------------------------'''
+        # print("\nStarting adaptive compositional block.")
+        # self.set_progbar_inc()
+        # self.Instructions(part_key="BinariesMEGR",
+        #                   special_displays=[self.iSingleImage,
+        #                                     self.iSingleImage],
+        #                   args=[self.magicWand,
+        #                         self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+        #                   complex_displays=[self.tInput,
+        #                                     self.drawCue],
+        #                   kwargs=[{"trial": demoBin, "duration": 0.0},
+        #                           {"trial": demoBin, "duration": 0.0}])
+        # self.df_out_7 = self.adaptiveBlock(self.trials_bin,
+        #                                    streak_goal=goal_streak_b,
+        #                                    cue_duration=1.0)
+        # fname = self.writeFileName("compositionalTrials")
+        # self.save_object(self.df_out_7, fname, ending='csv')
+
+        
+        ''' --- Interleaved spell trials ------------------------------------------------'''
+        print("\nStarting adaptive interleaved block.")
+        self.Instructions(part_key="InterleavedMEGR",
                           special_displays=[self.iSingleImage,
                                             self.iSingleImage],
                           args=[self.magicWand,
-                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
-                          complex_displays=[self.tInput,
-                                            self.drawCue,
-                                            self.tCount,
-                                            self.tPosition],
-                          kwargs=[{"trial": demoCount, "duration": 0.0},
-                                  {"trial": demoCount, "duration": 0.0},
-                                  {"trial": demoCount, "duration": 0.0,
-                                      "demonstration": True},
-                                  {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
-
-        self.df_out_6 = self.adaptiveBlock(self.trials_prim,
-                                           streak_goal=goal_streak_p)
-        fname = self.writeFileName("primitiveTrials")
-        self.save_object(self.df_out_6, fname, ending='csv')
-
-        ''' --- 2. Double spell trials ------------------------------------------------'''
-        print("\nStarting adaptive compositional block.")
-        self.set_progbar_inc()
-        self.Instructions(part_key="BinariesMEGR",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.magicWand,
-                                self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue],
                           kwargs=[{"trial": demoBin, "duration": 0.0},
                                   {"trial": demoBin, "duration": 0.0}])
-        self.df_out_7 = self.adaptiveBlock(self.trials_bin,
-                                           streak_goal=goal_streak_b,
-                                           cue_duration=1.0)
-
-        # Finalization
-        fname = self.writeFileName("compositionalTrials")
-        self.save_object(self.df_out_7, fname, ending='csv')
+        self.df_out_inter = self.adaptiveInterleavedBlock(
+            self.trials_prim + self.trials_bin,
+            streak_goals=[goal_streak_p, goal_streak_b], 
+            cue_durations=[0.5, 1.0])
+        fname = self.writeFileName("interleavedTrials")
+        self.save_object(self.df_out_inter, fname, ending='csv')
+        
+        
+        ''' ---  Finalization '''
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="ByeBye")
         self.add2meta("t_end", data.getDateStr())
