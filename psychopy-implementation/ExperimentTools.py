@@ -1482,7 +1482,61 @@ class Experiment:
                     run_number += 1
             # finally
             out.append(trial)
-            core.wait(1)
+            core.wait(0.5)
+        return out
+    
+    def adaptiveInterleavedBlock(
+        self, trial_df, streak_goals=[1, 1,], mode="random",
+        fixation_duration=0.3, cue_durations=[0.5, 1.0,], goal_rt=2.0,
+        self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
+        ''' interleaved block of trials, with streak goal and pause between runs'''
+        start_width_initial = self.start_width  # progbar
+        trials = data.TrialHandler(trial_df, 1, method="random")
+        self.generateCounterDict(map_type="all")
+        out = []
+
+        if pause_between_runs:
+            run_number = 1
+            timer = core.CountdownTimer(self.run_length)
+            if self.use_pp:
+                self.send_trigger("run")
+
+        while not self.streakGoalReachedMultiple(streak_goals,
+                                                 key_lists=[self.map_names, self.map_names_bin]):
+            if trials.nRemaining == 0:
+                self.terminate(out)
+            trial = trials.next()
+            is_primitive = trial["map_type"] == "primitive"
+            cue_duration = cue_durations[0] if is_primitive else cue_durations[1]
+            streak_goal = streak_goals[0] if is_primitive else streak_goals[1]
+
+            # probabilistically skip if this cue has already been mastered
+            if self.counter_dict["+".join(trial["map"])] == streak_goal and np.random.random() > 0.1:
+                continue
+            
+            self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
+                              fixation_duration=fixation_duration + trial["jitter"][0],
+                              cue_duration=cue_duration + trial["jitter"][1],
+                              goal_rt=goal_rt)
+            self.updateCounterDict(trial, streak_goal=streak_goal, goal_rt=goal_rt,
+                                   decrease=decrease)
+
+            # Update progress bar
+            if self.show_progress:
+                end_width = start_width_initial + \
+                    sum(self.counter_dict.values()) * self.progbar_inc
+                self.move_prog_bar(end_width=end_width, wait_s=0)
+
+            # Pause display between runs
+            if pause_between_runs:
+                trial["run_number"] = run_number
+                if timer.getTime() <= 0:
+                    self.tPause()
+                    timer.reset()
+                    run_number += 1
+            # finally
+            out.append(trial)
+            core.wait(0.5)
         return out
 
     def adaptiveDecoderBlock(self, trial_df,
