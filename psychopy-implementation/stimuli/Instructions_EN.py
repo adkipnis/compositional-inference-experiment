@@ -267,6 +267,31 @@ PrimitivesMEGR = [0,
                 "Remember to move as little as possible for the helmet.",
                 "Ready to begin the exam?"]
 
+
+InterleavedMEGR = [0,
+                   "You have studied diligently\nand are well prepared for your magic exam.",
+                   "Your task is like the one\nyou practiced in the last session.",
+                   "However, you will not know\nwhich of the two tests comes at the end of any trial.",
+                   "Additionally, some trials will have two spell cues!",
+                   "Essentially, these 'double spells' require you\nto apply each primitive spell sequentially.",
+                   "The result is as if you apply the first spell,\ntake the intermediate result\nand then apply the second spell on that.",
+                   "Here's an example:",
+                   "(1) Memorize the presented objects.",
+                   0.0,
+                   "When you are done:\n(2) Press the 'next' key (right thumb).",
+                   "You will then see two(!) spell cues.",
+                   1.0,
+                   "(3) In your mind, apply both spells to the memorized display.",
+                   "When you are done:\n(4) Press the 'next' key (right thumb).",
+                   "Then you will receive one of two possible test displays.",
+                   "Again, use the following keys for the decision at the end of each trial:",
+                   1,
+                   "The exam continues\nuntil you have enough correct responses.\nWrong responses prolong it.",
+                   "So if you don't know the answer,\nplease press the 'next' key (right thumb).",
+                   "Be as accurate and as fast as possible.",
+                   "Remember to move as little as possible for the helmet.",
+                   "Ready for the exam?"]
+
 spellDecoder = [
     "The magical helmet above you\nalso reads your spellcasting.",
     "Before the exam,\nit has to be attuned to yours.",
