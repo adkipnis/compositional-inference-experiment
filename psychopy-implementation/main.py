@@ -13,8 +13,9 @@ exp.dialogue_box(
     session=2,
     meg=False,
     test_mode=True,
+    show_progress=False,
     )
-exp.init_window(screen=0, fullscr=True)
+exp.init_window(screen=1, fullscr=True)
 exp.load_trials()
 exp.render_visuals()
 
