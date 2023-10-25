@@ -246,6 +246,16 @@ class Experiment:
             fillColor=self.color_dict["light_grey"],
             lineColor=self.color_dict["dark_grey"])
         
+        self.diodeBack = visual.Rect(
+            win=self.win,
+            width=self.win.size[1]/16,
+            height=self.win.size[1]/16,
+            fillColor=self.color_dict["dark_grey"],
+            units="pix",
+            pos=[self.win.size[0] * 0.495, -self.win.size[1] * 0.49],
+            autoDraw=True,
+            )
+        
         self.diodeRect = visual.Rect(
             win=self.win,
             width=self.win.size[1]/16,
