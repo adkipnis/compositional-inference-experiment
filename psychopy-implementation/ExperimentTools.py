@@ -581,7 +581,7 @@ class Experiment:
         self.inc_queue = (tn_weighted/n_total/trial_numbers).tolist()
         return milestones.tolist()[:-1]
 
-    def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=10):
+    def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=5.5):
         angle = 2*np.pi/set_size
         rect_pos = np.empty((set_size, 2), dtype=float).copy()
         for i in range(set_size):
