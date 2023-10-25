@@ -943,7 +943,7 @@ class Experiment:
         trial["resp_RT"] = testRTList
         trial["cue_type"] = cue_type
         self.drawAllAndFlip()
-        core.wait(1.0)
+        core.wait(0.2)
 
     def streakGoalReached(self, streak_goal=5):
         ''' Evaluates the counter dict for the adaptive cue practice'''
@@ -1314,7 +1314,7 @@ class Experiment:
         return testRT, testResp
 
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
-                     fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0):
+                     fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0):
         ''' subroutine for generic trials'''
         # Init
         self.win.flip()
@@ -1348,7 +1348,7 @@ class Experiment:
 
         # Empty display
         self.win.flip()
-        core.wait(1.)
+        core.wait(0.2)
 
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
@@ -1362,7 +1362,7 @@ class Experiment:
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         trial["cue_type"] = mode
-        core.wait(0.5)
+        core.wait(0.2)
 
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
@@ -1418,7 +1418,7 @@ class Experiment:
         self.counter_dict = {map: 0 for map in map_names}
 
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
-                      fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
+                      fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
                       self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         start_width_initial = self.start_width  # progbar
@@ -1468,7 +1468,7 @@ class Experiment:
         return out
 
     def adaptiveDecoderBlock(self, trial_df,
-                             fixation_duration=0.3, cue_duration=0.3, goal_rt=2.0,
+                             fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
                              pause_between_runs=True, test_goal=0, decoderType="spell"):
         ''' block of decoder trials, enqueueing failed trials'''
         assert decoderType in ["spell", "object"]
@@ -1827,7 +1827,7 @@ class Experiment:
                                   {"trial": demoBin, "duration": 0.0}])
         self.df_out_7 = self.adaptiveBlock(self.trials_bin,
                                            streak_goal=goal_streak_b,
-                                           cue_duration=0.9,
+                                           cue_duration=1.0,
                                            decrease=True)
 
         # Finalization
