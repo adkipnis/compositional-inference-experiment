@@ -500,7 +500,7 @@ class Experiment:
             height=self.bar_height,
             pos=self.bar_pos,
             fillColor=self.color_dict["light_grey"],
-            autoDraw=True)
+            autoDraw=self.show_progress)
         self.mileStones = []
         for m in [m-0.5 for m in milestones]:
             self.mileStones.append(visual.Rect(
@@ -510,7 +510,7 @@ class Experiment:
                 height=self.bar_height,
                 pos=[m*bar_len, self.bar_pos[1]],
                 fillColor=self.color_dict["light_grey2"],
-                autoDraw=True))
+                autoDraw=self.show_progress))
         self.progTest = visual.Rect(
             self.win,
             units="pix",
@@ -518,7 +518,7 @@ class Experiment:
             height=self.bar_height,
             pos=self.bar_pos,
             fillColor=self.color_dict["green"],
-            autoDraw=True)
+            autoDraw=self.show_progress)
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
 
