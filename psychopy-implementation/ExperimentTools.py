@@ -49,8 +49,8 @@ class Experiment:
         # Mapping: 0, 1, 2, 3, False/left, True/right
 
         self.center_pos = [0, 5]
-        self.double_cue_positions_visual = [[0, 2], [0, 8]]
-        self.double_cue_positions_textual = [[0, 3], [0, 7]]
+        self.double_cue_positions_visual = [[0, 8], [0, 2]]
+        self.double_cue_positions_textual = [[0, 7], [0, 3]]
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
         self.color_dict = {"superwhite" : [1.0, 1.0, 1.0],
