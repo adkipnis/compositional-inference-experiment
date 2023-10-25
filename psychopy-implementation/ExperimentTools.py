@@ -239,7 +239,8 @@ class Experiment:
             self.win,
             text='',
             height=1.8,
-            wrapWidth=40)
+            wrapWidth=40,
+            pos=self.center_pos)
 
         self.rect = visual.Rect(
             win=self.win,
@@ -286,7 +287,8 @@ class Experiment:
             height=1.5,
             wrapWidth=40,
             font="mono",
-            color=self.color_dict["mid_grey"])
+            color=self.color_dict["mid_grey"],
+            pos=self.center_pos)
 
         self.nextPrompt = visual.TextStim(
             self.win,
@@ -294,7 +296,8 @@ class Experiment:
             height=1.5,
             wrapWidth=40,
             font="mono",
-            color=self.color_dict["mid_grey"])
+            color=self.color_dict["mid_grey"],
+            pos=self.center_pos)
 
         self.stopPrompt = visual.TextStim(
             self.win,
@@ -302,7 +305,8 @@ class Experiment:
             height=1.5,
             wrapWidth=40,
             font="mono",
-            color=self.color_dict["mid_grey"])
+            color=self.color_dict["mid_grey"],
+            pos=self.center_pos)
 
         self.leftArrow = visual.ImageStim(
             self.win,
@@ -329,7 +333,7 @@ class Experiment:
             self.win,
             text="Short Break.\nPress 'next' key to continue.",
             height=1.8,
-            pos=[0, -1],
+            pos=[0, 1],
             wrapWidth=30,
             font="Times New Roman",
             color=[-0.9, -0.9, -0.9])
@@ -623,7 +627,7 @@ class Experiment:
 
     def iSingleImage(self, img):
         pos_tmp = img.pos
-        img.pos = [0, 0]
+        img.pos = self.center_pos
         img.draw()
         img.pos = pos_tmp
         self.win.flip()
@@ -640,7 +644,7 @@ class Experiment:
         else:
             dim = [1, n_cats]
         category_pos = self.rectangularGridPositions(
-            center_pos=[0, 0], h_dist=8, dim=dim)
+            center_pos=self.center_pos, h_dist=8, dim=dim)
 
         # draw categories
         for i in range(n_cats):
@@ -656,7 +660,7 @@ class Experiment:
         self.drawList = []
         stimuli = self.stim_dict.copy()
         rect_pos = self.circularGridPositions(
-            center_pos=[0, 0], set_size=self.set_size)
+            center_pos=self.center_pos, set_size=self.set_size)
 
         def drawInput(dispNum):
             for i, key in enumerate(displays[dispNum]):
