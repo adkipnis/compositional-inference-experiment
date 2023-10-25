@@ -1425,8 +1425,15 @@ class Experiment:
 
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
-        map_names = self.map_names if map_type == "primitive" else self.map_names_bin
-        self.counter_dict = {map: 0 for map in map_names}
+        if map_type == "primitive":
+            map_names = self.map_names
+        elif map_type == "generic":
+            map_names = self.map_names_bin
+        elif map_type == "all": # concatenate both numpy arrays
+            map_names = np.concatenate((self.map_names, self.map_names_bin))
+        else:
+            raise ValueError("map_type must be one of 'primitive', 'compositional' or 'all'")
+        self.counter_dict = {m: 0 for m in map_names}
 
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                       fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
