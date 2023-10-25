@@ -382,13 +382,6 @@ class Experiment:
         vcue_list = self.mappinglists["vcue"]
         assert len(vcue_list) >= 2*self.n_primitives
 
-        # # use latter half of cues for MEG-Session
-        # if self.expInfo["session"] == "3":
-        #     tcue_list = np.concatenate((tcue_list[self.n_primitives:],
-        #                                 tcue_list[:self.n_primitives]))
-        #     vcue_list = np.concatenate((vcue_list[self.n_primitives:],
-        #                                 vcue_list[:self.n_primitives]))
-
         self.tcue_dict = {
             self.map_names[i]: visual.TextStim(
                 self.win,
@@ -412,8 +405,6 @@ class Experiment:
         stim_list = self.mappinglists["stim"]
         assert len(stim_list) >= 2*self.n_cats, "Not enough stimuli"
         stim_names = ascii_uppercase[0:len(stim_list)]
-        # if self.expInfo["session"] == "3":
-        #     stim_names = stim_names[self.n_cats:] + stim_names[:self.n_cats]
         self.stim_dict = {
             stim_names[i]: visual.ImageStim(
                 self.win,
