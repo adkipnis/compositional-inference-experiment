@@ -49,6 +49,8 @@ class Experiment:
         # Mapping: 0, 1, 2, 3, False/left, True/right
 
         self.center_pos = [0, 5]
+        self.double_cue_positions_visual = [[0, 2], [0, 8]]
+        self.double_cue_positions_textual = [[0, 3], [0, 7]]
         self.center_size = [8, 8]
         self.normal_size = [5, 5]
         self.color_dict = {"superwhite" : [1.0, 1.0, 1.0],
@@ -1055,8 +1057,10 @@ class Experiment:
         # draw each cue
         for i, _map in enumerate(trial["map"]):
             cue, mode = self.setCue(_map, mode=mode)
-            cue.pos = self.center_pos if n_cues == 1 else [
-                sum(x) for x in zip(self.center_pos, [0, (1-i)*6])]
+            if n_cues == 1:
+                cue.pos = self.center_pos
+            else:
+                cue.pos = self.double_cue_positions_visual[i] if mode == "visual" else self.double_cue_positions_textual[i]
             cue.draw()
 
         # send triggers
