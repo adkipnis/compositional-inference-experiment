@@ -945,13 +945,22 @@ class Experiment:
         self.drawAllAndFlip()
         core.wait(0.2)
 
-    def streakGoalReached(self, streak_goal=5):
+    def streakGoalReached(self, streak_goal=5, keys=[]):
         ''' Evaluates the counter dict for the adaptive cue practice'''
-        for key in self.counter_dict:
-            if self.counter_dict[key] < streak_goal:
+        if len(keys) == 0:
+            keys = self.counter_dict.keys()
+        for k in keys:
+            if self.counter_dict[k] < streak_goal:
                 return False
         return True
-
+    
+    def streakGoalReachedMultiple(self, streak_goals=[1, 1], key_lists=[[], []]):
+        ''' Evaluates the counter dict for the adaptive cue practice'''
+        outcomes = []
+        for streak_goal, keys in zip(streak_goals, key_lists):
+            outcomes += [self.streakGoalReached(streak_goal=streak_goal, keys=keys)]
+        return all(outcomes)
+    
     def updateCounterDict(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
