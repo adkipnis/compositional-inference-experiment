@@ -1831,7 +1831,7 @@ class Experiment:
         self.win.mouseVisible = False
         
          # set up probar
-        goal_streak_p = 1 if self.test_mode else 30  # single spells
+        goal_streak_p = 2 if self.test_mode else 30  # single spells
         goal_streak_b = 1 if self.test_mode else 20  # double spells
         trial_numbers = [
             self.n_primitives * goal_streak_p,
