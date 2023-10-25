@@ -222,13 +222,13 @@ class Experiment:
 
         # Determine_positions
         self.rect_pos = self.circularGridPositions(
-            center_pos=self.center_pos, set_size=self.set_size, radius=7)
+            center_pos=self.center_pos, set_size=self.set_size)
         self.resp_pos = self.rectangularGridPositions(
-            center_pos=[0, -10], h_dist=10, dim=(1, 4))
+            center_pos=[0, -7.], h_dist=7, dim=(1, 4))
         self.resp_pos_num = self.rectangularGridPositions(
-            center_pos=[0, -9.6], h_dist=10, dim=(1, 4))
+            center_pos=[0, -6.7], h_dist=7, dim=(1, 4))
         self.cuepractice_pos = self.rectangularGridPositions(
-            center_pos=[0, -8], h_dist=8, dim=(1, self.n_cats))
+            center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats))
 
     def render_visuals(self):
         print("Rendering unique visual objects...")
