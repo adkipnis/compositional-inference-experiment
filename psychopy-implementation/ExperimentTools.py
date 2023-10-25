@@ -1123,6 +1123,7 @@ class Experiment:
 
     def tEmptySquares(self, IRClock=None):
         ''' draw empty squares and wait for response'''
+        self.fixation.draw()
         self.rect.size = self.normal_size
 
         for pos in self.rect_pos:
