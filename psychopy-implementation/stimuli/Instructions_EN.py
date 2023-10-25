@@ -81,7 +81,7 @@ countFirst = ["Here is what you do:",
                 "(5) From the options below, choose how often "\
                     "this object appears in the scene after the transformation.",
                 "For training purposes you will get immediate feedback.",
-                "Let's say, you incorrectly chose the leftmost option:",
+                "Let's say, you incorrectly chose the leftmost option, then you will see this:",
                 3.0,
                 "Use the following keys for this choice:",
                 1,
@@ -148,8 +148,8 @@ Intro = [0,
              "another beginner object!",
          "Here you see an example of such an Alteration spell:",
          4,
-         "Note, that these spells have an area effect: If you cast it,"\
-             " all susceptible objects will be transformed.",
+         "Note, that these spells affect,"\
+             " all susceptible objects on the display.",
          5,
          "Each spell has a specific name and symbol. Philbertine provides a"\
              " cheat-sheet for the " + str(nMaps) + " beginner spells.",
@@ -177,14 +177,13 @@ Navigation3 = [0,
 
 objectDecoder = [
     "The (very large) magical helmet above you\nreads your mind.",
-    "Everyone's mind is special,\nso before your magical journey start...",
+    "Everyone's mind is special,\nso before your magical journey starts...",
     "...the helmet has to be attuned to your mind.",
     "For this, you will see objects on the screen.",
     "Sometimes, you will see a big object\nin the center of the screen:",
     "You then need to indicate via keypress,\nwhether the object is the same as the previous one.",
     "Please use the following keys for this task:",
     0,
-    "Place your fingers\non only the marked keys now.",
     "Ready?"]
 
 objectDecoderPost = [
@@ -212,10 +211,10 @@ positionFirst = ["Here is what you do:",
                 "Use the following keys for this choice:",
                 1,
                 "If you don't know the answer,\npress the 'next' key (right thumb).",
-                "Place your fingers\non only the marked keys now.",
+                "This test continues\nuntil you have enough correct responses.",
                 "Ready?"]
     
-positionSecond = ["Some magic students tend to cheat on the test above.",
+positionSecond = ["Well done! Some magic students tend to cheat on this test though.",
                   "In order to make sure\nthat you transform the objects in your mind "\
                       "first\nand only then answer a test question...",
                   "...there are two test displays\n(both equally likely to appear).",
