@@ -1874,8 +1874,7 @@ class Experiment:
                                   {"trial": demoPosition, "duration": 0.0, "demonstration": True}])
 
         self.df_out_6 = self.adaptiveBlock(self.trials_prim,
-                                           streak_goal=goal_streak_p,
-                                           decrease=True)
+                                           streak_goal=goal_streak_p)
         fname = self.writeFileName("primitiveTrials")
         self.save_object(self.df_out_6, fname, ending='csv')
 
@@ -1895,8 +1894,7 @@ class Experiment:
                                   {"trial": demoBin, "duration": 0.0}])
         self.df_out_7 = self.adaptiveBlock(self.trials_bin,
                                            streak_goal=goal_streak_b,
-                                           cue_duration=1.0,
-                                           decrease=True)
+                                           cue_duration=1.0)
 
         # Finalization
         fname = self.writeFileName("compositionalTrials")
