@@ -654,7 +654,7 @@ class Experiment:
         self.drawList = []
         stimuli = self.stim_dict.copy()
         rect_pos = self.circularGridPositions(
-            center_pos=[0, 0], set_size=self.set_size, radius=7)
+            center_pos=[0, 0], set_size=self.set_size)
 
         def drawInput(dispNum):
             for i, key in enumerate(displays[dispNum]):
