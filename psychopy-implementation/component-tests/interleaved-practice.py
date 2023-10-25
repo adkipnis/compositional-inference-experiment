@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jun 10 14:31:39 2022
+
+@author: alex
+"""
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from ExperimentTools import Experiment
+
+# Initialize
+exp = Experiment()
+exp.dialogue_box(show=False, participant=1, session=1, meg=False, test_mode=False)
+exp.init_window(screen=1, fullscr=True)
+exp.load_trials()
+exp.render_visuals()
+exp.init_progbar()
+
+# Run Cue Practice Session task
+out = exp.adaptiveInterleavedBlock(exp.trials_prim + exp.trials_bin,
+                                   streak_goals=[1,1])
+exp.win.close()
