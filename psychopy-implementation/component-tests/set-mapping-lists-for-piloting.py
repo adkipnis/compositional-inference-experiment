@@ -14,4 +14,4 @@ m["vcue"] = ['c_F', 'c_A', 'c_E',
 
 with open(fname, "wb") as f:
     pickle.dump(m, f)
-    print("Changed mapping lists suffecfully.")
+    print("Changed mapping lists successfully.")
