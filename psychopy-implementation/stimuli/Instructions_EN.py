@@ -148,8 +148,7 @@ Intro = [0,
              "another beginner object!",
          "Here you see an example of such an Alteration spell:",
          4,
-         "Note, that these spells affect,"\
-             " all susceptible objects on the display.",
+         "Note, that these spells affect\nall susceptible objects on the display.",
          5,
          "Each spell has a specific name and symbol. Philbertine provides a"\
              " cheat-sheet for the " + str(nMaps) + " beginner spells.",
