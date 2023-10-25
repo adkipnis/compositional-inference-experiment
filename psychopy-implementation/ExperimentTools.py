@@ -1828,12 +1828,12 @@ class Experiment:
         self.win.mouseVisible = False
         
          # set up probar
-        goal_streak_p = 1 if self.test_mode else 20  # primitives
-        goal_streak_b = 1 if self.test_mode else 15  # binaries
+        goal_streak_p = 1 if self.test_mode else 30  # single spells
+        goal_streak_b = 1 if self.test_mode else 20  # double spells
         trial_numbers = [
-            self.n_primitives * goal_streak_p, # primitives
-            self.n_binaries * goal_streak_b, # binaries
-        ]
+            self.n_primitives * goal_streak_p,
+            self.n_binaries * goal_streak_b,
+            ]
         milestones = self.setMilestones(
             trial_numbers, weights=[1.0, 1.5])
         self.init_progbar(milestones=milestones)
