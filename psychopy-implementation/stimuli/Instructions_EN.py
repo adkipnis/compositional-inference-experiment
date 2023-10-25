@@ -320,30 +320,28 @@ instructions ={
   "lang": "Eng",  
   "exp": "CompInf",
   
-  "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
-  
-  "Bye": AddProceedKey2All(Bye, '/k'),
-  "ByeBye": AddProceedKey2All(ByeBye, '/k'),
-  
-  "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
-  "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
-  
   "Intro": AddProceedKey2All(Intro, '/k'),
-  
   "Navigation1": AddProceedKey2All(Navigation1, '/k'),
   "Navigation3": AddProceedKey2All(Navigation3, '/k'),
-  
-  "objectDecoder": AddProceedKey2All(objectDecoder, '/k'),
-  "objectDecoderPost": AddProceedKey2All(objectDecoderPost, '/k'),
-  "spellDecoder": AddProceedKey2All(spellDecoder, '/k'),
-  
-  "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
+  "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
+  "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
+  "Bye": AddProceedKey2All(Bye, '/k'),
+  "ByeBye": AddProceedKey2All(ByeBye, '/k'),
   
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),
   "positionFirst": AddProceedKey2All(positionFirst, '/k'),
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
+  
+  "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
+  "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
+  "InterleavedMEGR": AddProceedKey2All(InterleavedMEGR, '/k'),
+  
+  "objectDecoder": AddProceedKey2All(objectDecoder, '/k'),
+  "objectDecoderPost": AddProceedKey2All(objectDecoderPost, '/k'),
+  "spellDecoder": AddProceedKey2All(spellDecoder, '/k'),
+  
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
