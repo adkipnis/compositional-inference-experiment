@@ -110,7 +110,7 @@ class Experiment:
 
         # set response keys according to device
         self.resp_keys = self.resp_keys_kb
-        self.proceedKey = "space"
+        self.proceedKey = "right"
         self.use_pp = False
 
         if expInfo["MEG"]:
