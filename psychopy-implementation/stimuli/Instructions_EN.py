@@ -37,41 +37,6 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 # ============================================================================
 
 
-Binaries = [0,
-            "Well done!",
-            "Today's final lesson: Cues for different spells"\
-                "\ncan be combined to produce new spells.",
-            "Essentially, the final result of a double spell\nis as if you apply the first spell,...",
-            "take the intermediate result\nand then apply the second spell on it.",
-            
-            "Here's an example:",
-            "(1) Memorize the presented objects.",
-            0.0,
-            "When you are done:\n(2) Press the (red) 'next' key.",
-            "You will then see two(!) spell cues.",
-            1.0,
-            "(3) In your mind, apply both spells\nto the memorized display.",
-            "When you are done:\n(4) Press the (red) 'next' key.",
-            2.0,
-            "Then you can receive one of two possible test displays,\nthey are analogous to the previous trials.",
-            "You will now be tested on these 'composed' spells.",
-            "This time you only need to get at least 75% of them right.",
-            "Again, use the following keys for the decision at the end of each trial:",
-            1,
-            "If you don't know the answer, press the (red) 'next' key.",
-            "Ready?"]
-
-BinariesMEG = [0,
-            "Well done, you have finished the first part!",
-            "The second part of the exam is like the first one,\nbut with two spell cues:",
-            "You apply the first spell,\ntake the intermediate result"\
-                "\nand then apply the second spell on it.",
-            "Again, use the following keys:",
-            1,
-            "If you don't know the answer, press the (red) 'next' key.",
-            "Be as accurate as possible.",
-            "Ready?"]
-    
 BinariesMEGR = [0,
             "Well done, you have finished the first part!",
             "The second part of the exam is like the first one,\nbut with two spell cues",
@@ -159,23 +124,7 @@ countSecond = ["Some magic students tend to cheat on the test above.",
               "Place your fingers\non only the marked keys now.",
               "Ready?"] 
 
-DropOut = ["Luck is not on your side today.",
-           "You've answered less than 80%\nof the questions correctly, again.",
-           "The magical helmet judges that\nyou are not ready.",
-           "Unfortunately this concludes the experiment.",
-           "Your participation will be\ncompensated nonetheless, of course.",
-           "Have a nice day, goodbye!"]
 
-Feedback0 = ["In this training run, your score was:",
-             0,
-             "You feel like you can do better, so you decide to have another "\
-                 "look at the cheat sheet and then train a little more."]
-Feedback0Test =  ["In this training run, your score was:",
-                  0,
-                  "You feel like you can do better."]   
-Feedback1 = ["In this training run, your score was:", 
-             0, 
-             "This is good, you are confident to continue..."]
 
 Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
                    " want to make sure\nyou remember them correctly.",
@@ -234,21 +183,6 @@ Intro = [0,
          "You may go back across the cheat sheet pages.",
          "Ready?"]
 
-IntroAdvanced = ["Since the last time, you have advanced in your Alteration studies.",
-         "Philbertine would be impressed.",
-         "You now know all elements of Alteration:",
-         "(1) The two types of spell cue...",
-         "And (2) the two types of spell tests...",
-         "Just as a refresher you will do\na couple of trials for each of these.",
-         "You start with the spell cues.\nUse the following keys:",
-         0,
-         "Ready?"]
-
-IntroMEG = [
-    "Today is the day of your exam\nin the art of Alteration.",
-    "You have trained hard to get here."] #TODO more text
-        
-
     
 Navigation1 = [0,
               "Don't worry, there is no shame in going back pages.",
@@ -257,15 +191,6 @@ Navigation1 = [0,
               "Now, the experiment begins..."
               ]
 
-Navigation2 = [0,
-              "In this second session, you will train the actual task.",
-              "If for some reason you need to abort the experiment, you can"\
-                  " do so by pressing Esc:",
-              1,
-              "Please be careful not to press this key by accident!",
-              "Finally, if you have any questions, please ask the examiner.",
-              "Now, the experiment begins..."
-              ]
 
 Navigation3 = [0,
               "This is the final session of the experiment.",
@@ -343,63 +268,7 @@ positionSecond = ["Some magic students tend to cheat on the test above.",
                   "Place your fingers\non only the marked keys now.",
                   "Ready?"] 
 
-PrimDecMEG1 = [0,
-              "Now that you have familiarized yourself\nwith the new objects,...",
-              "...you probably know what comes next.",
-              "Next come three new spells,\nwhich are very similar to the ones\nyou have practiced earlier.",
-              "Memorize them."]
-PrimDecMEG2 = ["You get a chance to practice applying the spells.",
-               "This time, only one object will be presented\nto you on each trial.",
-               "Apply the cued spell on it and choose the object\ninto which you have transformed it.",
-               "Use the following keys:",
-               0,
-               "This will also help to fine-tune the magical helmet.",
-               "Therefore, try to move as little as possible.\nThe helmet will be "\
-                   "attuned quicker\nthis way.",
-               "Ready?"]    
     
-Primitives = [0,
-              "In your examination during the next session, you will perform tasks"\
-                  " which are very similar to the ones you trained in the first session.",
-              "One important difference: You will not know"\
-                  "\nwhich of the two tests comes at the end of any trial.",
-              "To ensure that you achieve your study goals,\nyou practice this scenario now.",
-              "You need to get at least 90% of all practice trials right.",
-              "Again, use the following keys for the decision\nat the end of each trial:",
-              1,
-              "If you don't know the answer, press the (red) 'next' key.",
-              "Ready?"]
-    
-PrimitivesMEG = [0,
-              "The magical helmet is now accustomed\nto your thought patterns.",
-              "It says, you have a beautiful mind. :)",
-              "You will surely put it to good use in the exam.",
-              "In the first of two exam parts,\nyour task is the one you practiced in the last session.",
-              "You hopefully still remember it, but here's a reminder:",
-              "You first see a set of objects:\n(1) Memorize the presented objects.",
-              0.0,
-              "When you are done with memorizing:\n(2) Press the right thumb button.",
-              "You will then see a spell cue.",
-              1.0,
-              "(3) In your head, apply it to the memorized display.",
-              "When you are done:\n(4) Press the right thumb button.",
-              "Then you can receive one of two possible test displays:\nCounting or Position.",
-              "Type 1 - Counting: You will see an object category and integers on the bottom.",
-              2.0,
-              "(5) From the options below, choose how often "\
-              "this object appears in the scene after the transformation.",
-              "Type 2 - Position query: You will see all the squares on which the objects stood, "\
-                         "one of them will be marked.",
-              3.0,
-              "(5) From the options below, choose the object that would be "\
-                     "on the marked square after the transformation.",
-              "Use the following keys:",
-              1,
-              "If you don't know the answer, press the (red) 'next' key.",
-              "Be as accurate as possible\n-\nyour reward will depend on it!",
-              "Remember to move as little as possible for the helmet.",
-              "Ready to begin the exam?"]
-
 PrimitivesMEGR = [0,
                 "You have studied diligently\nand are well prepared for your magic exam.",
                 "In the first of two exam parts,\nyour task is the one you practiced in the last session.",
@@ -469,34 +338,6 @@ TestTypes = [0,
              "It will look like this:",
              0.0]
     
-TestTypesReminder = [0,
-             "You hopefully still remember\nhow you used spells in your first session.",
-             "Just to be safe, here's a reminder:",
-             "You first see a set of objects:\n(1) Memorize the presented objects.",
-             0.0,
-             "When you are done with memorizing:\n(2) Press the (red) 'next' key.",
-             "You will then see a spell cue.",
-             1.0,
-             "(3) In your head, apply it to the memorized display.",
-             "When you are done:\n(4) Press the (red) 'next' key.",
-             2.0,
-             "Then you can receive one of two possible test displays:\nCounting or Position.",
-             "Type 1 - Counting: You will see an object category and integers on the bottom.",
-             3.0,
-             "(5) From the options below, choose how often "\
-             "this object appears in the scene after the transformation.",
-             "Type 2 - Position query: You will see all the squares on which the objects stood, "\
-                        "one of them will be marked.",
-             4.0,
-             "(5) From the options below, choose the object that would be "\
-                    "on the marked square after the transformation.",
-             "Use the following keys for your choice:",
-             1,
-             "If you don't know the answer, press the (red) 'next' key.",
-             "It's important that you understand the instructions, so please go "\
-                 "back and review them if you are unsure. Otherwise click next."
-             ]    
-
     
 # ============================================================================
 # Store as Dictionary
@@ -504,34 +345,23 @@ instructions ={
   "lang": "Eng",  
   "exp": "CompInf",
   
-  "Binaries": AddProceedKey2All(Binaries, '/k'),
   "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
   
   "Bye": AddProceedKey2All(Bye, '/k'),
   "ByeBye": AddProceedKey2All(ByeBye, '/k'),
-  "DropOut": AddProceedKey2All(DropOut, '/k'),
-  
-  "Feedback0": AddProceedKey2All(Feedback0, '/e', wait_s = 3),
-  "Feedback0Test": AddProceedKey2All(Feedback0Test, '/e', wait_s = 3),
-  "Feedback1": AddProceedKey2All(Feedback1, '/e', wait_s = 2),
   
   "Intermezzo1": AddProceedKey2All(Intermezzo1, '/k'),
   "Intermezzo2": AddProceedKey2All(Intermezzo2, '/k'),
   
   "Intro": AddProceedKey2All(Intro, '/k'),
-  "IntroAdvanced": AddProceedKey2All(IntroAdvanced, '/k'),  
-  "IntroMEG": AddProceedKey2All(IntroMEG, '/k'),  
   
   "Navigation1": AddProceedKey2All(Navigation1, '/k'),
-  "Navigation2": AddProceedKey2All(Navigation2, '/k'),
   "Navigation3": AddProceedKey2All(Navigation3, '/k'),
   
   "objectDecoder": AddProceedKey2All(objectDecoder, '/k'),
   "objectDecoderPost": AddProceedKey2All(objectDecoderPost, '/k'),
   "spellDecoder": AddProceedKey2All(spellDecoder, '/k'),
-  "PrimDecMEG1": AddProceedKey2All(PrimDecMEG1, '/k'),
-  "PrimDecMEG2": AddProceedKey2All(PrimDecMEG2, '/k'),
-  "Primitives": AddProceedKey2All(Primitives, '/k'),
+  
   "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
   
   "TestTypes": AddProceedKey2All(TestTypes, '/k'),
@@ -539,7 +369,6 @@ instructions ={
   "positionSecond": AddProceedKey2All(positionSecond, '/k'),
   "countFirst": AddProceedKey2All(countFirst, '/k'),
   "countSecond": AddProceedKey2All(countSecond, '/k'),
-  "TestTypesReminder": AddProceedKey2All(TestTypesReminder, '/k'),
 }  
 
 with open('instructions_en.pkl', 'wb') as handle:
