@@ -1733,10 +1733,8 @@ class Experiment:
         self.set_progbar_inc()
 
         self.Instructions(part_key="spellDecoder",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.magicChart,
-                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
         self.df_out_5 = self.adaptiveDecoderBlock(
             self.trials_prim_dec,
             test_goal=trial_numbers[-1])
@@ -1790,10 +1788,8 @@ class Experiment:
         self.set_progbar_inc()
         self.Instructions(part_key="PrimitivesMEGR",
                           special_displays=[self.iSingleImage,
-                                            self.iSingleImage,
                                             self.iSingleImage],
                           args=[self.magicWand,
-                                self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.drawCue,
