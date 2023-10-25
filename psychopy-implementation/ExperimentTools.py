@@ -43,9 +43,9 @@ class Experiment:
             os.makedirs(self.data_dir)
 
         # inputs and dimensions
-        self.resp_keys_kb = ["d", "f", "j", "k", "a", "ö"]
-        self.resp_keys_vpixx = ["2", "1", "up", "left", "4", "right"]
-        # Buttons: lMiddlefinger, lIndex, rIndex, rMiddlefinger, lThumb, rThumb
+        self.resp_keys_kb = ["a", "s", "d", "f", "left", "right"]
+        self.resp_keys_vpixx = ["0", "3", "2", "1", "4", "right"]
+        # Buttons: l_little, l_ring, l_middle, l_index, l_thumb, r_thumb
         # Mapping: 0, 1, 2, 3, False/left, True/right
 
         self.center_pos = [0, 5]
