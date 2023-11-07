@@ -1189,18 +1189,18 @@ class Experiment:
 
     def tInput(self, trial, duration=1.0, self_paced=False):
         ''' draw input stimuli and wait for response if self_paced'''
+        self.drawList = []
+        
         # draw rectangles
-        self.tEmptySquares()
+        self.enqueueDraw(func=self.drawEmptySquares, unroll=False)
 
         # draw stimuli
-        self.drawStimuli(trial)
+        self.enqueueDraw(func=self.drawStimuli, args=(trial,), unroll=False)
 
         # send trigger
-        if self.use_pp:
-            self.send_trigger("display")
-
+        self.optionally_send_trigger("display")
+        
         # flip
-        self.win.flip()
         if self_paced:
             intermediateRT = self.tIndermediateResponse(core.Clock())
         else:
