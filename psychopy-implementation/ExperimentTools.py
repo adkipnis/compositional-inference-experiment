@@ -1372,20 +1372,24 @@ class Experiment:
                      fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0):
         ''' subroutine for generic trials'''
         # Init
+        self.drawList = []
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
         if self.use_pp:
             self.send_trigger("trial")
 
         # Fixation
-        self.drawFixation(duration=fixation_duration)
+        self.tFixation(duration=fixation_duration)
 
         # Display input
         display_rt = self.tInput(trial, self_paced=self_paced)
 
         # Cue
-        self.drawFixation()
-        mode = self.drawCue(trial, mode=mode, duration=cue_duration)
+        self.tFixation()
+        self.tCue(trial, mode=mode)
+        core.wait(cue_duration)
+        
+        # Splash Screen
         self.splash.draw()
         self.win.flip()
         core.wait(0.2)
@@ -1397,8 +1401,6 @@ class Experiment:
             return
 
         # Transformation display
-        if self.use_pp:
-            self.send_trigger("squares")
         inter_rt = self.tEmptySquares(core.Clock())
 
         # Empty display
@@ -1416,7 +1418,7 @@ class Experiment:
         trial["inter_RT"] = inter_rt
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
-        trial["cue_type"] = mode
+        trial["cue_type"] = self.currentMode
         core.wait(0.2)
 
     def oneBackTest(self, trial):
