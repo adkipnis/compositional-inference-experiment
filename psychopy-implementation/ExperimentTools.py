@@ -816,7 +816,7 @@ class Experiment:
         # Draw map cue
         map_name = self.map_names[map_idx]
         for j, mode in enumerate(["textual", "visual"]):
-            cue, _ = self.setCue(map_name, mode=mode)
+            cue = self.setCue(map_name, mode=mode)
             cue.pos = [sum(x) for x in
                        zip(cue_center_pos, [0, (1-j)*vert_dist])]
             cue.draw()
@@ -935,7 +935,9 @@ class Experiment:
         self.drawFixation()
 
         # Map Cue and Response Options
-        cue, cue_type = self.setCue(trial["map"][0], mode=mode)
+        if mode == "random":
+            mode = np.random.choice(["textual", "visual"])
+        cue = self.setCue(trial["map"][0], mode=mode)
         cue.pos = cue_pos
         self.enqueueDraw(func=cue.draw, unroll=False)
         self.enqueueDraw(func=self.drawResponseOptions,
@@ -1063,14 +1065,16 @@ class Experiment:
         if mode == "random":
             mode = np.random.choice(["visual", "textual"])
 
-        # draw from resp. dict
+    def setCue(self, key, mode):
+        ''' return cue stimulus for a given mode'''
         if mode == "visual":
             cue = self.vcue_dict.copy()[key]
         elif mode == "textual":
             cue = self.tcue_dict.copy()[key]
         else:
             raise ValueError("Chosen cue mode not implemented.")
-        return cue, mode
+        return cue
+
 
     def drawCue(self, trial, mode="random", duration=0.3):
         ''' draw cue(s) for a given trial, return the mode'''
