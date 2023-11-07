@@ -166,10 +166,22 @@ class Experiment:
     def send_trigger(self, trigger_type):
         trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(trigger_code)
+        self.diodeBack.autoDraw = False
+        print(f"Trigger: {trigger_type}")
+        self.drawAllAndFlip()
+        core.wait(0.05)
         self.port_out.setData(0)
-        self.diodeRect.draw()
-        # print(f"Trigger: {trigger_type}")
+        self.diodeBack.autoDraw = True
+        self.drawAllAndFlip()
 
+
+    def optionally_send_trigger(self, trigger_type="trial"):
+        if self.use_pp:
+            self.send_trigger(trigger_type)
+        else:
+            self.drawAllAndFlip()
+
+    
     def load_trials(self):
         print("Loading trials...")
         pid = self.expInfo["participant"]
