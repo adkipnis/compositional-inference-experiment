@@ -271,21 +271,12 @@ class Experiment:
             win=self.win,
             width=self.win.size[1]/16,
             height=self.win.size[1]/16,
-            fillColor=self.color_dict["dark_grey"],
+            fillColor=self.color_dict["mid_grey"],
             units="pix",
             pos=[self.win.size[0] * 0.495, -self.win.size[1] * 0.49],
-            autoDraw=True,
+            autoDraw=self.meg,
             )
         
-        self.diodeRect = visual.Rect(
-            win=self.win,
-            width=self.win.size[1]/16,
-            height=self.win.size[1]/16,
-            fillColor=self.color_dict["white"],
-            units="pix",
-            pos=[self.win.size[0] * 0.495, -self.win.size[1] * 0.49],
-            )
-
         self.fixation = visual.GratingStim(
             self.win,
             color=-0.9,
