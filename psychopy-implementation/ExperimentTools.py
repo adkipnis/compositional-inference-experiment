@@ -1159,19 +1159,29 @@ class Experiment:
 
         return testRT, testResp
 
-    def tEmptySquares(self, IRClock=None):
-        ''' draw empty squares and wait for response'''
+
+    def drawEmptySquares(self):
         self.fixation.draw()
         self.rect.size = self.normal_size
-
         for pos in self.rect_pos:
             self.rect.pos = pos
             self.rect.draw()
 
-        if IRClock is not None:
-            self.win.flip()
-            intermediateRT = self.tIndermediateResponse(IRClock)
-            return intermediateRT
+
+    def tEmptySquares(self, IRClock):
+        ''' draw empty squares and wait for response'''
+        self.drawList = []
+        
+        # draw cue(s)
+        self.enqueueDraw(func=self.drawEmptySquares, unroll=False)
+
+        # send trigger
+        self.optionally_send_trigger("squares")
+
+        # get response
+        intermediateRT = self.tIndermediateResponse(IRClock)
+        return intermediateRT
+    
 
     def tInput(self, trial, duration=1.0, self_paced=False):
         ''' draw input stimuli and wait for response if self_paced'''
