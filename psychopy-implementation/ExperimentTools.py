@@ -1259,14 +1259,15 @@ class Experiment:
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
 
-        # Send trigger
-        if self.use_pp:
-            self.send_trigger("count")
-
         # Draw stimuli
-        self.enqueueDraw(func=self.drawCountTarget, args=(
-            stimuli[trial["target"]],), unroll=False)
-        self.enqueueDraw(func=self.drawCountResponses)
+        self.enqueueDraw(func=self.drawCountTarget,
+                         args=(stimuli[trial["target"]],),
+                         unroll=False)
+        self.enqueueDraw(func=self.drawCountResponses,
+                         unroll=False)
+
+        # Send trigger
+        self.optionally_send_trigger("count")
 
         # Get response
         if not demonstration:
@@ -1326,15 +1327,16 @@ class Experiment:
         stimuli = self.stim_dict.copy()
         corResp = trial["correct_resp"]
 
-        # Send trigger
-        if self.use_pp:
-            self.send_trigger("position")
-
         # Draw stimuli
         self.enqueueDraw(func=self.drawPositionTarget,
-                         args=(trial["target"],), unroll=False)
+                         args=(trial["target"],),
+                         unroll=False)
         self.enqueueDraw(func=self.drawPositionResponses,
-                         args=(stimuli, trial["resp_options"],))
+                         args=(stimuli, trial["resp_options"],),
+                         unroll=False)
+        
+        # Send trigger
+        self.optionally_send_trigger("position")
 
         # Get response
         if not demonstration:
