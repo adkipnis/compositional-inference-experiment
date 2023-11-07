@@ -1088,15 +1088,21 @@ class Experiment:
             else:
                 cue.pos = self.double_cue_positions_visual[i] if mode == "visual" else self.double_cue_positions_textual[i]
             cue.draw()
+            
 
-        # send triggers
-        if self.use_pp:
-            self.send_trigger(mode)
+    def tCue(self, trial, mode="random"):
+        if mode == "random":
+            mode = np.random.choice(["visual", "textual"])
+        self.currentMode = mode
+            
+        self.drawList = []
+        
+        # draw cue(s)
+        self.enqueueDraw(func=self.drawCue, args=(trial, mode), unroll=False)
 
-        # flip
-        self.win.flip()
-        core.wait(duration)
-        return mode
+        # send trigger
+        self.optionally_send_trigger(self.currentMode)
+
 
     def drawStimuli(self, trial):
         stimuli = self.stim_dict.copy()
