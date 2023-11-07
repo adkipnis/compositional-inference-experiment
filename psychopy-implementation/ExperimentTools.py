@@ -331,6 +331,7 @@ class Experiment:
 
         self.magicWand = visual.ImageStim(
             self.win,
+            pos=self.center_pos,
             image=glob.glob(f"{self.stim_dir}{os.sep}magicWand.png")[0])
 
         self.pauseClock = visual.ImageStim(
