@@ -149,6 +149,8 @@ class Experiment:
             monitor="testMonitor",
             units="deg")
         self.add2meta("frameRate", self.win.getActualFrameRate())
+        self.drawList = []
+        self.currentMode = "visual" # init cue modality
 
     def init_interface(self):
         ''' Initialize parallel port for sending MEG triggers '''
