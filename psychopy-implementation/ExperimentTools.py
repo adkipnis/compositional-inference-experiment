@@ -1076,15 +1076,13 @@ class Experiment:
         return cue
 
 
-    def drawCue(self, trial, mode="random", duration=0.3):
-        ''' draw cue(s) for a given trial, return the mode'''
-        assert mode in ["visual", "textual", "random"],\
-            "Chosen cue mode not implemented."
+    def drawCue(self, trial, mode):
+        ''' draw cue(s) for a given trial'''
         n_cues = len(trial["map"])
 
         # draw each cue
         for i, _map in enumerate(trial["map"]):
-            cue, mode = self.setCue(_map, mode=mode)
+            cue = self.setCue(_map, mode)
             if n_cues == 1:
                 cue.pos = self.center_pos
             else:
