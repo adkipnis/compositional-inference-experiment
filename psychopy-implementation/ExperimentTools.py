@@ -1483,6 +1483,7 @@ class Experiment:
                       fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
                       self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
+        self.drawList = []
         start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         self.generateCounterDict(map_type=trials.trialList[0]["map_type"])
@@ -1534,6 +1535,7 @@ class Experiment:
         fixation_duration=0.3, cue_durations=[0.5, 1.0,], goal_rt=2.0,
         self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' interleaved block of trials, with streak goal and pause between runs'''
+        self.drawList = []
         start_width_initial = self.start_width  # progbar
         trials = data.TrialHandler(trial_df, 1, method="random")
         self.generateCounterDict(map_type="all")
@@ -1588,6 +1590,7 @@ class Experiment:
                              pause_between_runs=True, test_goal=0, decoderType="spell"):
         ''' block of decoder trials, enqueueing failed trials'''
         assert decoderType in ["spell", "object"]
+        self.drawList = []
         if test_goal and not self.test_mode:
             print("WARNING: test goal is only applicable in test mode.")
         start_width_initial = self.start_width  # progbar
