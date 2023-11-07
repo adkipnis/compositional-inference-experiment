@@ -1449,15 +1449,14 @@ class Experiment:
             self.send_trigger("trial")
 
         # Fixation
-        self.enqueueDraw(func=self.tEmptySquares)
-        self.enqueueDraw(func=self.fixation.draw)
+        self.enqueueDraw(func=self.fixation.draw, unroll=False)
+        self.enqueueDraw(func=self.drawEmptySquares)
         core.wait(fixation_duration)
 
         # Display input
-        if self.use_pp:
-            self.send_trigger("display")
-        self.enqueueDraw(func=self.drawStimuli, args=(trial,))
-        core.wait(1)
+        self.enqueueDraw(func=self.drawStimuli, args=(trial,), unroll=False)
+        self.optionally_send_trigger("display")
+        core.wait(1.0)
 
         # Catch trial
         if trial["is_catch_trial"]:
