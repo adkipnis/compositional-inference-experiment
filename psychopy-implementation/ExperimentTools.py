@@ -925,14 +925,17 @@ class Experiment:
         ''' Subroutine for the cue practice trials'''
         # Init
         self.drawList = []
+        self.win.flip()
         stimuli = self.stim_dict.copy()
         testResp = ""
         testRespList = []
         testRTList = []
         trial["start_time"] = self.exp_clock.getTime()
+        if self.use_pp:
+            self.send_trigger("trial")
 
         # Fixation Cross
-        self.drawFixation()
+        self.tFixation()
 
         # Map Cue and Response Options
         if mode == "random":
@@ -942,6 +945,7 @@ class Experiment:
         self.enqueueDraw(func=cue.draw, unroll=False)
         self.enqueueDraw(func=self.drawResponseOptions,
                          args=(stimuli, trial["resp_options"]))
+        self.optionally_send_trigger(mode)
 
         # Wait for response(s)
         for correctResp in trial["correct_resp"]:
