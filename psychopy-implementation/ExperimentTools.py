@@ -136,6 +136,7 @@ class Experiment:
         # response keys for main task
         self.resp_keys_4 = self.resp_keys[:-2]
 
+
     def init_window(self, res=None, screen=0, fullscr=False):
         ''' Initialize window '''
         if res is None:
@@ -151,6 +152,7 @@ class Experiment:
         self.add2meta("frameRate", self.win.getActualFrameRate())
         self.drawList = []
         self.currentMode = "visual" # init cue modality
+
 
     def init_interface(self):
         ''' Initialize parallel port for sending MEG triggers '''
@@ -249,6 +251,7 @@ class Experiment:
         self.cuepractice_pos = self.dragApartHorizontally(
             self.rectangularGridPositions(center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats)),
             by = 1.)
+
 
     def render_visuals(self):
         print("Rendering unique visual objects...")
@@ -428,6 +431,7 @@ class Experiment:
             for i in range(len(stim_list))
         }
 
+
     # Background Components --------------------------------------------------------
     def dump(self, trials, fname, source_of_difference="structure"):
         if source_of_difference:
@@ -486,18 +490,22 @@ class Experiment:
             dict_writer.writerows(trials)
             print(f"Saved {len(trials)} trials to '{fname}.csv'")
             
+
     def save_object(self, obj, fname, ending='pkl'):
         if ending == 'csv':
             self.listofdicts2csv(obj, fname)
         elif ending == 'pkl':
             self.dump(obj, fname, "")
 
+
     def writeFileName(self, dataset_name):
         return f"{self.data_dir}{os.sep}{self.expInfo['expName']}_id={self.expInfo['participant']}_start={self.expInfo['dateStr']}_data={dataset_name}"
+
 
     def add2meta(self, var, val):
         with open(f"{self.meta_fname}.csv", "a") as f:
             f.write(f"{var},{val}\n")
+
 
     def init_progbar(self, bar_len=None, bar_height=None, milestones=[0.25, 0.5, 0.75]):
         if bar_len is None:
@@ -538,11 +546,13 @@ class Experiment:
         self.start_width = 0.0
         self.progbar_inc = 0.01  # 1% of bar length
 
+
     def set_progbar_inc(self):
         if not hasattr(self, "inc_queue"):
             raise ValueError("No inc_queue attribute found")
         inc = self.inc_queue.pop(0)
         self.progbar_inc = inc
+
 
     def move_prog_bar_step(self, bar_width_step, flip_win=True):
         # incrementally increase the bar width
@@ -552,6 +562,7 @@ class Experiment:
         self.progTest.pos = self.progTest.pos.tolist()
         if flip_win:
             self.win.flip()
+
 
     def move_prog_bar(self, start_width=None, end_width=1.0,
                       n_steps=20, wait_s=0.75, flip_win=True):
@@ -582,6 +593,7 @@ class Experiment:
             core.wait(1.5 * wait_s)
         self.start_width = self.progTest.width / self.progBack.width
 
+
     def setMilestones(self, trial_numbers, weights=None):
         """ set milestones proportional to weighted trial numbers and save the increments for the progress bar """
         if weights is None:
@@ -597,6 +609,7 @@ class Experiment:
         self.inc_queue = (tn_weighted/n_total/trial_numbers).tolist()
         return milestones.tolist()[:-1]
     
+
     @staticmethod
     def circularGridPositions(center_pos=[0, 0], set_size=6, radius=5.5):
         angle = 2*np.pi/set_size
@@ -605,6 +618,7 @@ class Experiment:
             rect_pos[i] = [center_pos[0] + radius * np.sin(i * angle),
                            center_pos[1] + radius * np.cos(i * angle)]
         return rect_pos
+
 
     @staticmethod
     def rectangularGridPositions(center_pos=[0, 0], v_dist=10, h_dist=10, dim=(2, 3)):
@@ -633,6 +647,7 @@ class Experiment:
                                  np.repeat(rect_vpos, len(rect_hpos))])
         return rect_pos
     
+
     @staticmethod
     def dragApartHorizontally(response_positions, by=1.):
         for pos in response_positions:
@@ -652,6 +667,7 @@ class Experiment:
         img.pos = pos_tmp
         self.win.flip()
         core.wait(0.2)
+
 
     def iTransmutableObjects(self, none):
         stimuli = self.stim_dict.copy()
@@ -674,6 +690,7 @@ class Experiment:
             stim.pos = category_pos[i]
             stim.draw()
         self.win.flip()
+
 
     def iSpellExample(self, displays):
         assert len(displays) == 2, "displays must be a list of two lists"
@@ -701,6 +718,7 @@ class Experiment:
         # Output display
         self.enqueueDraw(func=drawInput, args=(1,))
         core.wait(1)
+
 
     def iNavigate(self, page=0, max_page=99, continue_after_last_page=True,
                   proceed_key="/k", wait_s=3, timer=None):
@@ -753,6 +771,7 @@ class Experiment:
             page -= 1
 
         return page, finished
+
 
     def Instructions(self, part_key="Intro",
                      special_displays=list(),
@@ -822,6 +841,7 @@ class Experiment:
             cue.draw()
         return map_name.split("-")
 
+
     def drawMapInstruction(self, categories, category_pos, stimuli):
         for i, category in enumerate(categories):
             self.rect.pos = category_pos[i]
@@ -830,6 +850,7 @@ class Experiment:
             cat.pos = category_pos[i]
             cat.draw()
         self.leftArrow.draw()
+
 
     def learnCues(self, cue_center_pos=[0, 2], vert_dist=7,
                   min_duration=60):
@@ -863,6 +884,7 @@ class Experiment:
 
         return learn_clock.getTime()
 
+
     def drawResponseOptions(self, stimuli, resp_options):
         ''' Draw the response options on the screen'''
         self.rect.lineColor = self.color_dict["dark_grey"]
@@ -894,6 +916,7 @@ class Experiment:
         stimulus.pos = stimPos
         stimulus.draw()
 
+
     def redrawFeedback(self, stimulus, rectPos=(0, 0), stimPos=None, wait_s=1):
         ''' Mark the correct response option as feedback '''
         if stimPos is None:
@@ -908,6 +931,7 @@ class Experiment:
         stimulus.pos = stimPos
         stimulus.draw()
 
+
     def drawAllAndFlip(self):
         for func, args in self.drawList:
             if args is None:
@@ -916,10 +940,12 @@ class Experiment:
                 func(*args)
         self.win.flip()
 
+
     def enqueueDraw(self, func=None, args=None, unroll=True):
         self.drawList += [(func, args)]
         if unroll:
             self.drawAllAndFlip()
+
 
     def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.5):
         ''' Subroutine for the cue practice trials'''
@@ -977,6 +1003,7 @@ class Experiment:
         self.drawAllAndFlip()
         core.wait(0.2)
 
+
     def streakGoalReached(self, streak_goal=5, keys=[]):
         ''' Evaluates the counter dict for the adaptive cue practice'''
         if len(keys) == 0:
@@ -986,6 +1013,7 @@ class Experiment:
                 return False
         return True
     
+
     def streakGoalReachedMultiple(self, streak_goals=[1, 1], key_lists=[[], []]):
         ''' Evaluates the counter dict for the adaptive cue practice'''
         outcomes = []
@@ -993,6 +1021,7 @@ class Experiment:
             outcomes += [self.streakGoalReached(streak_goal=streak_goal, keys=keys)]
         return all(outcomes)
     
+
     def updateCounterDict(self, trial, streak_goal=10, goal_rt=2.0, applicable=True, decrease=True):
         ''' Updates the counter dict for the adaptive generic blocks:
             - increase counter if correct response if below streak goal
@@ -1012,6 +1041,7 @@ class Experiment:
         elif decrease and not correct and self.counter_dict[map_name] > 0:
             self.counter_dict[map_name] -= 1
         print(self.counter_dict)
+
 
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.5, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
@@ -1039,6 +1069,7 @@ class Experiment:
         core.wait(1)
         return out
 
+
     def terminate(self, out):
         ''' Terminate experiment gracefully'''
         print("Aborting experiment due to lack of trials.")
@@ -1049,6 +1080,7 @@ class Experiment:
         core.wait(10)
         self.win.close()
         core.quit()
+
 
     ###########################################################################
     # Normal Trials (methods prefaced with "t" may require response)
@@ -1110,6 +1142,7 @@ class Experiment:
                 stim.pos = self.rect_pos[i]
                 stim.draw()
 
+
     def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=20.0):
         ''' wait for intermediate response and return RT'''
         core.wait(min_wait)
@@ -1134,6 +1167,7 @@ class Experiment:
                 core.quit()  # abort experiment
 
         return intermediateRT
+
 
     def tTestResponse(self, TestClock, respKeys,
                       return_numeric=True, max_wait=np.inf):
@@ -1208,6 +1242,7 @@ class Experiment:
             intermediateRT = duration
         return intermediateRT
 
+
     def tPause(self):
         ''' draw pause screen and wait for response'''
         self.pauseClock.draw()
@@ -1221,6 +1256,7 @@ class Experiment:
             self.send_trigger("run")
         return intermediateRT
 
+
     def drawCountTarget(self, stimulus):
         ''' draw target stimulus for count test'''
         self.rect.pos = self.center_pos
@@ -1229,6 +1265,7 @@ class Experiment:
         self.rect.size = self.normal_size  # reset size
         stimulus.pos = self.center_pos
         stimulus.draw()
+
 
     def drawCountResponses(self):
         ''' draw response options for count test'''
@@ -1239,6 +1276,7 @@ class Experiment:
             resp = self.count_dict[str(i)]
             resp.pos = self.resp_pos_num[i]
             resp.draw()
+
 
     def drawCatchResponses(self):
         ''' draw response options for one-back test'''
@@ -1251,6 +1289,7 @@ class Experiment:
             resp = self.yn_dict[bool(i)]
             resp.pos = yn_positions[i]
             resp.draw()
+
 
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
@@ -1302,6 +1341,7 @@ class Experiment:
         core.wait(duration)
         return testRT, testResp
 
+
     def drawPositionTarget(self, target_idx):
         ''' draw target stimulus for position test'''
         for i, pos in enumerate(self.rect_pos):
@@ -1319,6 +1359,7 @@ class Experiment:
             resp = stimuli[resp_options[i]]
             resp.pos = pos
             resp.draw()
+
 
     def tPosition(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for position test'''
@@ -1367,6 +1408,7 @@ class Experiment:
 
         core.wait(duration)
         return testRT, testResp
+
 
     def genericTrial(self, trial, mode="random", self_paced=True, feedback=True, skip_test=False,
                      fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0):
@@ -1421,6 +1463,7 @@ class Experiment:
         trial["cue_type"] = self.currentMode
         core.wait(0.2)
 
+
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
         self.drawList = []
@@ -1438,6 +1481,7 @@ class Experiment:
         testRT, testResp = self.tTestResponse(
             core.Clock(), [no, yes], return_numeric=False)
         return testRT, testResp == yes
+
 
     def objectDecoderTrial(self, trial, fixation_duration=0.3):
         """ Subroutine in which the participant sees an object and may encounter a 1-back task"""
@@ -1467,6 +1511,7 @@ class Experiment:
         trial["emp_resp"] = test_resp
         core.wait(0.5)
 
+
     def generateCounterDict(self, map_type="primitive"):
         ''' Generates a dictionary with the counter for each map'''
         if map_type == "primitive":
@@ -1478,6 +1523,7 @@ class Experiment:
         else:
             raise ValueError("map_type must be one of 'primitive', 'compositional' or 'all'")
         self.counter_dict = {m: 0 for m in map_names}
+
 
     def adaptiveBlock(self, trial_df, streak_goal=10, mode="random",
                       fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
@@ -1530,6 +1576,7 @@ class Experiment:
             core.wait(0.5)
         return out
     
+
     def adaptiveInterleavedBlock(
         self, trial_df, streak_goals=[1, 1,], mode="random",
         fixation_duration=0.3, cue_durations=[0.5, 1.0,], goal_rt=2.0,
@@ -1584,6 +1631,7 @@ class Experiment:
             out.append(trial)
             core.wait(0.5)
         return out
+
 
     def adaptiveDecoderBlock(self, trial_df,
                              fixation_duration=0.3, cue_duration=0.5, goal_rt=2.0,
@@ -1667,6 +1715,7 @@ class Experiment:
                     timer.reset()
                     run_number += 1
         return out
+
 
     ###########################################################################
     # Introduction Session
@@ -1865,6 +1914,7 @@ class Experiment:
         self.Instructions(part_key="Bye")
         self.add2meta("t_end", data.getDateStr())
         self.win.close()
+
 
     # ###########################################################################
     #  Testing Session
