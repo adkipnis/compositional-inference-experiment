@@ -246,8 +246,9 @@ class Experiment:
         self.resp_pos_num = self.dragApartHorizontally(
             self.rectangularGridPositions(center_pos=[0, -6.7], h_dist=7, dim=(1, 4)),
             by = 1.)
-        self.cuepractice_pos = self.rectangularGridPositions(
-            center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats))
+        self.cuepractice_pos = self.dragApartHorizontally(
+            self.rectangularGridPositions(center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats)),
+            by = 1.)
 
     def render_visuals(self):
         print("Rendering unique visual objects...")
