@@ -68,6 +68,18 @@ class Experiment:
                            "dark_blue": [0.1, 0.3, 1.0],
                            }
 
+        # Trigger codes
+        self.trigger_dict = {"trial": 1,
+                             "display": 2,
+                             "visual": 3,
+                             "textual": 4,
+                             "squares": 5,
+                             "position": 6,
+                             "count": 7,
+                             "catch": 8,
+                             "run": 9}
+
+
     def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
         ''' Show dialogue box to get participant info '''
 
@@ -148,18 +160,7 @@ class Experiment:
         self.port_out = ParallelPort(address="0xd110")
         self.port_out.setData(0)
 
-        # Trigger codes
-        self.trigger_dict = {"trial": 1,
-                             "fixate": 2,
-                             "display": 3,
-                             "visual": 11,
-                             "textual": 12,
-                             "squares": 20,
-                             "position": 31,
-                             "count": 32,
-                             "catch": 33,
-                             "run": 40}
-
+        
     def send_trigger(self, trigger_type):
         trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(trigger_code)
