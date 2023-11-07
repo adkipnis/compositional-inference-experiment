@@ -973,7 +973,7 @@ class Experiment:
         # Save data and clear screen
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
-        trial["cue_type"] = cue_type
+        trial["cue_type"] = mode
         self.drawAllAndFlip()
         core.wait(0.2)
 
