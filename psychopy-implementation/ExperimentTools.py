@@ -225,10 +225,12 @@ class Experiment:
         # Determine_positions
         self.rect_pos = self.circularGridPositions(
             center_pos=self.center_pos, set_size=self.set_size)
-        self.resp_pos = self.rectangularGridPositions(
-            center_pos=[0, -7.], h_dist=7, dim=(1, 4))
-        self.resp_pos_num = self.rectangularGridPositions(
-            center_pos=[0, -6.7], h_dist=7, dim=(1, 4))
+        self.resp_pos = self.dragApartHorizontally(
+            self.rectangularGridPositions(center_pos=[0, -7.], h_dist=7, dim=(1, 4)),
+            by = 1.)
+        self.resp_pos_num = self.dragApartHorizontally(
+            self.rectangularGridPositions(center_pos=[0, -6.7], h_dist=7, dim=(1, 4)),
+            by = 1.)
         self.cuepractice_pos = self.rectangularGridPositions(
             center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats))
 
@@ -586,8 +588,9 @@ class Experiment:
         milestones = np.cumsum(tn_weighted)/n_total
         self.inc_queue = (tn_weighted/n_total/trial_numbers).tolist()
         return milestones.tolist()[:-1]
-
-    def circularGridPositions(self, center_pos=[0, 0], set_size=6, radius=5.5):
+    
+    @staticmethod
+    def circularGridPositions(center_pos=[0, 0], set_size=6, radius=5.5):
         angle = 2*np.pi/set_size
         rect_pos = np.empty((set_size, 2), dtype=float).copy()
         for i in range(set_size):
@@ -595,7 +598,8 @@ class Experiment:
                            center_pos[1] + radius * np.cos(i * angle)]
         return rect_pos
 
-    def rectangularGridPositions(self, center_pos=[0, 0], v_dist=10, h_dist=10, dim=(2, 3)):
+    @staticmethod
+    def rectangularGridPositions(center_pos=[0, 0], v_dist=10, h_dist=10, dim=(2, 3)):
         # horizontal positions
         c = np.floor(dim[1]/2)
         if dim[1] % 2 != 0:  # odd number of items on vertical tile => center
@@ -618,8 +622,16 @@ class Experiment:
 
         # combine
         rect_pos = np.transpose([np.tile(rect_hpos, len(rect_vpos)),
-                                np.repeat(rect_vpos, len(rect_hpos))])
+                                 np.repeat(rect_vpos, len(rect_hpos))])
         return rect_pos
+    
+    @staticmethod
+    def dragApartHorizontally(response_positions, by=1.):
+        for pos in response_positions:
+            sign = np.sign(pos[0])
+            pos[0] += sign * by
+        return response_positions
+
 
     ###########################################################################
     # Instructions
