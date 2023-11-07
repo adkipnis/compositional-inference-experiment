@@ -1430,11 +1430,10 @@ class Experiment:
         # Draw stimuli
         self.enqueueDraw(func=self.drawCountTarget, args=(
             stimuli[trial["target"]],), unroll=False)
-        self.enqueueDraw(func=self.drawCatchResponses)
+        self.enqueueDraw(func=self.drawCatchResponses, unroll=False)
 
         # Send trigger
-        if self.use_pp:
-            self.send_trigger("catch")
+        self.optionally_send_trigger("catch")
 
         testRT, testResp = self.tTestResponse(
             core.Clock(), [no, yes], return_numeric=False)
