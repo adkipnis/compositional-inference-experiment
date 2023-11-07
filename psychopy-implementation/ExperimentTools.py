@@ -1050,20 +1050,13 @@ class Experiment:
     # Normal Trials (methods prefaced with "t" may require response)
     ###########################################################################
 
-    def drawFixation(self, duration=0.3):
+    def tFixation(self, duration=0.3):
         ''' draw fixation cross'''
         self.win.flip()
         self.fixation.draw()
         self.win.flip()
-        if self.use_pp:
-            self.send_trigger("fixate")
         core.wait(duration)
-
-    def setCue(self, key, mode="random"):
-        ''' return cue stimulus for a given mode'''
-        # opt: randomize mode
-        if mode == "random":
-            mode = np.random.choice(["visual", "textual"])
+        
 
     def setCue(self, key, mode):
         ''' return cue stimulus for a given mode'''
