@@ -1815,11 +1815,11 @@ class Experiment:
                           args=[self.magicChart,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
-                                            self.drawCue,
+                                            self.tCue,
                                             tFirst,
                                             tFirst],
                           kwargs=[{"trial": demoTrial1, "duration": 0.0},
-                                  {"trial": demoTrial1, "duration": 0.0},
+                                  {"trial": demoTrial1},
                                   {"trial": demoTrial1, "duration": 0.0,
                                       "demonstration": True},
                                   {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
@@ -1951,9 +1951,9 @@ class Experiment:
                           args=[self.magicWand,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
-                                            self.drawCue],
+                                            self.tCue],
                           kwargs=[{"trial": demoBin, "duration": 0.0},
-                                  {"trial": demoBin, "duration": 0.0}])
+                                  {"trial": demoBin}])
         self.df_out_inter = self.adaptiveInterleavedBlock(
             self.trials_prim + self.trials_bin,
             streak_goals=[goal_streak_p, goal_streak_b], 
