@@ -255,6 +255,9 @@ class Experiment:
         self.cuepractice_pos = self.dragApartHorizontally(
             self.rectangularGridPositions(center_pos=[0, -4.], h_dist=7, dim=(1, self.n_cats)),
             by = 1.)
+        self.spell_pos = self.dragApartHorizontally(
+            self.rectangularGridPositions(center_pos=self.center_pos, h_dist=9, dim=(1, 4)),
+            by = 1.)
 
 
     def render_visuals(self):
