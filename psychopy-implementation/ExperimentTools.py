@@ -1514,6 +1514,54 @@ class Experiment:
         core.wait(0.2)
 
 
+    def autonomousTrial(self, trial, self_paced=True, fixation_duration=0.3, goal_rt=4.0):
+        ''' subroutine for generic trials'''
+        # Init
+        self.drawList = []
+        self.win.flip()
+        trial["start_time"] = self.exp_clock.getTime()
+        if self.use_pp:
+            self.send_trigger("trial")
+
+        # Fixation
+        self.tFixation(duration=fixation_duration)
+
+        # Display input
+        display_rt = self.tInput(trial, self_paced=self_paced)
+
+        # Cue
+        self.tFixation()
+        self.splash.draw()
+        self.win.flip()
+        core.wait(0.2)
+
+        # Transformation display
+        inter_rt = self.tEmptySquares(core.Clock())
+
+        # Empty display
+        self.win.flip()
+        core.wait(0.2)
+
+        # Test display
+        testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
+        test_rt, test_resp = testMethod(trial, feedback=False, demonstration=False, goal_rt=goal_rt)
+        self.drawAllAndFlip()
+        
+        # Choice Display
+        self.tFixation()
+        test_rt, test_resp = self.tSpellOptions(demonstration=False, goal_rt=goal_rt)
+        self.win.flip()
+
+        # Save data
+        trial["display_RT"] = display_rt
+        trial["inter_RT"] = inter_rt
+        trial["resp_RT"] = test_rt
+        trial["emp_resp"] = test_resp
+        trial["cue_type"] = self.currentMode
+        core.wait(0.2)
+
+    
+
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
         self.drawList = []
