@@ -77,7 +77,8 @@ class Experiment:
                              "position": 6,
                              "count": 7,
                              "catch": 8,
-                             "run": 9}
+                             "auto": 9,
+                             "run": 10}
 
 
     def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
@@ -215,6 +216,9 @@ class Experiment:
 
         self.trials_bin = pickle.load(
             open(f"{self.trial_list_dir}{os.sep}{pid}_trials_binary.pkl", "rb"))
+        
+        self.trials_auto = pickle.load(
+            open(f"{self.trial_list_dir}{os.sep}{pid}_trials_auto.pkl", "rb"))
 
         # Individual mappings for each participant
         self.mappinglists = pickle.load(
