@@ -1284,6 +1284,18 @@ class Experiment:
             resp.pos = self.resp_pos_num[i]
             resp.draw()
 
+    
+    def drawSpellOptions(self):
+        ''' draw spell response options for autonomous trials'''
+        self.rect.lineColor = self.color_dict["dark_grey"]
+        self.rect.size = self.center_size
+        vcues = list(self.vcue_dict.values()) + [self.qm]
+        for vcue, pos in zip(vcues, self.spell_pos):
+            self.rect.pos = pos
+            self.rect.draw()
+            vcue.pos = pos
+            vcue.draw()
+    
 
     def drawCatchResponses(self):
         ''' draw response options for one-back test'''
