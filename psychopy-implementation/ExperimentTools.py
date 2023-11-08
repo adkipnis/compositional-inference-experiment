@@ -1344,7 +1344,8 @@ class Experiment:
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
-        corResp = trial["correct_resp"]
+        if feedback or demonstration:
+            corResp = trial["correct_resp"]
 
         # Draw stimuli
         self.enqueueDraw(func=self.drawCountTarget,
@@ -1414,7 +1415,8 @@ class Experiment:
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
-        corResp = trial["correct_resp"]
+        if feedback or demonstration:
+            corResp = trial["correct_resp"]
 
         # Draw stimuli
         self.enqueueDraw(func=self.drawPositionTarget,
