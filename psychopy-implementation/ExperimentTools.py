@@ -1309,6 +1309,35 @@ class Experiment:
             resp.pos = yn_positions[i]
             resp.draw()
 
+    
+    def tSpellOptions(self, demonstration=False, duration=1.0, goal_rt=4.0,):
+        ''' wrapper for count test'''
+        # Init
+        self.drawList = []
+        stimuli = list(self.vcue_dict.values()) + [self.qm]
+        self.enqueueDraw(func=self.drawSpellOptions, unroll=False)
+
+        # Send trigger
+        self.optionally_send_trigger("auto")
+        
+        # Optionally break for demonstration purposes        
+        if demonstration:
+            return None, None
+
+        # Get response
+        testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4, max_wait=goal_rt)
+        if testResp != 99:
+            self.enqueueDraw(func=self.redrawAfterResponse,
+                             args=(stimuli[testResp],
+                                   self.spell_pos[testResp],
+                                   True,
+                                   False,
+                                   False,
+                                   self.spell_pos[testResp]))
+        # Wait
+        core.wait(duration)
+        return testRT, testResp
+    
 
     def tCount(self, trial, feedback=False, demonstration=False, duration=1.0, goal_rt=2.0):
         ''' wrapper for count test'''
