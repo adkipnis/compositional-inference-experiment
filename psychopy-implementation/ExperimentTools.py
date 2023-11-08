@@ -1561,6 +1561,33 @@ class Experiment:
         core.wait(0.2)
 
     
+    def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=4.0):
+        self.drawList = []
+        trials = data.TrialHandler(trial_df, 1, method="sequential")
+        out = []
+
+        if pause_between_runs:
+            run_number = 1
+            timer = core.CountdownTimer(self.run_length)
+            if self.use_pp:
+                self.send_trigger("run")
+
+        for trial in trials:
+            self.autonomousTrial(trial, self_paced=self_paced, goal_rt=goal_rt)
+
+            # Pause display between runs
+            if pause_between_runs:
+                trial["run_number"] = run_number
+                if timer.getTime() <= 0:
+                    self.tPause()
+                    timer.reset()
+                    run_number += 1
+                    
+            # finally
+            out.append(trial)
+            core.wait(0.2)
+        return out
+    
 
     def oneBackTest(self, trial):
         """ display the target object and ask the participant if it is the same as the previous trial """
