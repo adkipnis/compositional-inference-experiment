@@ -1328,7 +1328,7 @@ class Experiment:
 
         # Get response
         testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4, max_wait=goal_rt)
-        if testResp != 99:
+        if testResp != 99 and testResp is not None:
             self.enqueueDraw(func=self.redrawAfterResponse,
                              args=(stimuli[testResp],
                                    self.spell_pos[testResp],
