@@ -293,7 +293,7 @@ def draw_position_target(stimuli, resp, display_out,
     return target_position, response_options
 
 
-def gen_trial_dict_object_dec(stimuli, stim_idx, pos_idx, jitter_interval=[-30, 30], catch=False):
+def gen_trial_dict_object_dec(stimuli, stim_idx, pos_idx, jitter_interval=range(-30, 30), catch=False):
     """ subroutine to generate a trial dictionary for object decoding task"""
     # input display
     stim = stimuli[stim_idx]
@@ -442,6 +442,57 @@ def gen_trials(stimuli,
         trials.append(trial_dict)
     if randomize:
         trials = np.random.permutation(trials).tolist()
+    return trials
+
+
+def gen_autonomous_trials(test_type, num_trials, discriminative=False):
+    trials = []
+    jitter = np.random.choice(range(-30, 30), replace=True, size=(num_trials, 3)) / 1000
+    base_display = stimuli[:3]
+    i = 0
+    
+    while len(trials) < num_trials:
+        # init
+        # display_in is base display with one additional item
+        display_in = base_display.copy()
+        display_in = np.append(display_in, np.random.choice(stimuli))
+        display_in = np.random.permutation(display_in)
+        target = np.random.choice(stimuli) if test_type == "count" else np.random.choice(range(display_size))
+        response_options = np.arange(display_size) if test_type == "count" else np.random.permutation(stimuli)
+        
+        # apply the selection primitive to the display
+        displays_out = []
+        correct_responses = []
+        for spell in selection_prim:
+            _, display_out, _ = apply_map(display_in, spell)
+            displays_out.append(display_out)
+            if test_type == "count":
+                correct_responses.append(np.count_nonzero(display_out == target))
+            else:
+                correct_responses.append(display_out[target])
+        
+        # optionally test if the correct response is not the same for all displays
+        if discriminative:
+            if test_type == "count" and len(np.unique(correct_responses)) != len(correct_responses):
+                continue
+            elif test_type == "position" and len(np.unique(correct_responses)) == 1:
+                continue
+            
+        trial_dict = {"trial_type": "autonomous",
+                      "map_type": "primitive",
+                    "test_type": test_type,
+                    "input_disp": display_in,
+                    "output_disp_0": displays_out[0],
+                    "output_disp_1": displays_out[1],
+                    "output_disp_2": displays_out[2],
+                    "target": target,
+                    "resp_options": response_options,
+                    "correct_resp_0": correct_responses[0],
+                    "correct_resp_1": correct_responses[1],
+                    "correct_resp_2": correct_responses[2],
+                    "jitter": jitter[i,]}
+        trials.append(trial_dict)
+        i += 1
     return trials
 
 
@@ -763,7 +814,20 @@ for i in range(first_participant, first_participant+n_participants):
                                 jitter_interval, 3, replace=True)/1000
                             }
                     df_list.append(trial)
+    
     trials_prim_decoder = np.random.permutation(df_list).tolist()
     fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_prim_dec"
     if save_this:
         save_object(trials_prim_decoder, fname, ending=ending)
+                    
+    # ========================================================================
+    # 5. Autonomous blocks
+    df_list = [gen_autonomous_trials(test_type, 60, discriminative=True) for test_type in ["count", "position"]]
+    trials_auto = [item for sublist in df_list for item in sublist]
+    trials_auto = np.random.permutation(trials_auto).tolist()
+    fname = f"{trial_list_dir}{os.sep}{str(i).zfill(2)}_trials_auto"
+    if save_this:
+        save_object(trials_auto, fname, ending=ending)
+   
+        
+        
