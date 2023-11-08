@@ -902,13 +902,15 @@ class Experiment:
             resp.pos = pos
             resp.draw()
 
-    def redrawAfterResponse(self, stimulus, rectPos=(0, 0), isCorrect=False, isQuick=False, stimPos=None):
+    def redrawAfterResponse(self, stimulus, rectPos=(0, 0), isNeutral=False, isCorrect=False, isQuick=False, stimPos=None):
         ''' Redraw the stimulus after a response has been made and indicate performance via color '''
         if stimPos is None:
             stimPos = rectPos
 
         # set informative border color
-        if not isCorrect:
+        if isNeutral:
+            lc = self.color_dict["dark_blue"]
+        elif not isCorrect:
             lc = self.color_dict["red"]
         elif not isQuick:
             lc = self.color_dict["yellow"]
@@ -1376,6 +1378,7 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(self.count_dict[str(testResp)],
                                        self.resp_pos[testResp],
+                                       False,
                                        corResp == testResp,
                                        testRT <= goal_rt,
                                        self.resp_pos_num[testResp]))
@@ -1386,7 +1389,14 @@ class Experiment:
                                  args=(self.count_dict[str(corResp)],
                                        self.resp_pos[corResp],
                                        self.resp_pos_num[corResp]))
-
+        elif testResp != 99:
+            self.enqueueDraw(func=self.redrawAfterResponse,
+                                 args=(self.count_dict[str(testResp)],
+                                       self.resp_pos[testResp],
+                                       True,
+                                       False,
+                                       False,
+                                       self.resp_pos_num[testResp]))
         core.wait(duration)
         return testRT, testResp
 
@@ -1448,6 +1458,7 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(stimuli[trial["resp_options"][testResp]],
                                        self.resp_pos[testResp],
+                                       False,
                                        corResp == testResp,
                                        testRT <= goal_rt))
             # correct solution
@@ -1455,6 +1466,13 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawFeedback,
                                  args=(stimuli[trial["resp_options"][corResp]],
                                        self.resp_pos[corResp]))
+        elif testResp != 99:
+            self.enqueueDraw(func=self.redrawAfterResponse,
+                             args=(stimuli[trial["resp_options"][testResp]],
+                                   self.resp_pos[testResp],
+                                   True,
+                                   False,
+                                   False))
 
         core.wait(duration)
         return testRT, testResp
