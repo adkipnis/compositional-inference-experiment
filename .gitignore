@@ -1,4 +1,5 @@
 psychopy-implementation/.*
+psychopy-implementation/*.ipynb
 archive/*
 psychopy-implementation/__pycache__/*
 psychopy-implementation/stimuli/__pycache__/*
@@ -14,3 +15,4 @@ experiment-documents/consent-sheet.docx
 psychopy-implementation/data-collected/*.csv
 psychopy-implementation/data-collected/*.pdf
 psychopy-implementation/data-collected/.*
+
