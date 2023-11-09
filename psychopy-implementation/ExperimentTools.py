@@ -994,6 +994,7 @@ class Experiment:
                 self.enqueueDraw(func=self.redrawAfterResponse,
                                  args=(stimuli[trial["resp_options"][testResp]],
                                        self.cuepractice_pos[testResp],
+                                       False,
                                        correctResp == testResp,
                                        sum(testRTList) <= goal_rt))
         # Feedback (if incorrect)
