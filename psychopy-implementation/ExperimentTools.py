@@ -1580,10 +1580,12 @@ class Experiment:
         core.wait(0.2)
 
     
-    def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=4.0):
+    def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=4.0, numTrials=20):
         self.drawList = []
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         out = []
+        numTrials = min(numTrials, trials.nTotal)
+        i = 0
 
         if pause_between_runs:
             run_number = 1
@@ -1605,6 +1607,9 @@ class Experiment:
             # finally
             out.append(trial)
             core.wait(0.2)
+            i += 1
+            if i >= numTrials:
+                break
         return out
     
 
