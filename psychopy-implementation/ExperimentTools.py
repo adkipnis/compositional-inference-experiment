@@ -1851,7 +1851,7 @@ class Experiment:
                     len(succeeded) * self.progbar_inc
                 self.move_prog_bar(end_width=end_width, wait_s=0)
             if decoderType == "spell":
-                core.wait(1)
+                core.wait(0.2)
 
             # During test mode: Terminate if goal is reached
             if self.test_mode and len(out) >= test_goal:
