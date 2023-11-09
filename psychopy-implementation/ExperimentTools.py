@@ -2161,6 +2161,25 @@ class Experiment:
         self.save_object(self.df_out_inter, fname, ending='csv')
         
         
+        ''' --- Autonomous spell trials ------------------------------------------------'''
+        print("\nStarting autonomous block.")
+        # TODO
+#        self.Instructions(part_key="Autonomous",
+#                          special_displays=[self.iSingleImage,
+#                                            self.iSingleImage],
+#                          args=[self.magicWand,
+#                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+#                          complex_displays=[self.tInput,
+#                                            self.tSpellOptions],
+#                          kwargs=[{"trial": demoBin, "duration": 0.0},
+#                                  {"trial": demoBin}])
+        
+        self.df_out_outo = self.autonomousBlock(self.trials_auto, goal_rt=4.0,
+                                                numTrials= 1 if self.test_mode else 20)
+        fname = self.writeFileName("autonomousTrials")
+        self.save_object(self.df_out_outo, fname, ending='csv')
+                
+        
         ''' ---  Finalization '''
         self.move_prog_bar(end_width=1, n_steps=50, wait_s=0)
         self.Instructions(part_key="ByeBye")
