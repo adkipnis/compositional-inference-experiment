@@ -353,7 +353,6 @@ class Experiment:
             self.win,
             text="Short Break.\nPress 'next' key to continue.",
             height=1.8,
-            pos=[0, 1],
             wrapWidth=30,
             font="Times New Roman",
             color=[-0.9, -0.9, -0.9])
@@ -1261,8 +1260,9 @@ class Experiment:
         intermediateRT = self.tIndermediateResponse(
             core.Clock(), max_wait=float('inf'))
         self.win.flip()
-        core.wait(1)
+        core.wait(0.5)
         if self.use_pp:
+            self.drawList = []
             self.send_trigger("run")
         return intermediateRT
 
