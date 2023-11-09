@@ -1874,7 +1874,7 @@ class Experiment:
         self.win.mouseVisible = False
 
         # set up probar
-        streak_goal = 2 if self.test_mode else 10  # per map
+        streak_goal = 1 if self.test_mode else 8  # per map
         trial_numbers = [
             len(self.trials_obj_dec) if not self.test_mode else 6,  # object decoder
             self.n_primitives * streak_goal//2,  # cue practice 1
@@ -2074,7 +2074,7 @@ class Experiment:
         self.win.mouseVisible = False
         
          # set up probar
-        goal_streak_p = 2 if self.test_mode else 30  # single spells
+        goal_streak_p = 1 if self.test_mode else 20  # single spells
         goal_streak_b = 1 if self.test_mode else 20  # double spells
         trial_numbers = [
             self.n_primitives * goal_streak_p,
