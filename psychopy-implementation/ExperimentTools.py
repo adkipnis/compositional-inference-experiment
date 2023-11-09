@@ -170,7 +170,7 @@ class Experiment:
         trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(trigger_code)
         self.diodeBack.autoDraw = False
-        print(f"Trigger: {trigger_type}")
+#        print(f"Trigger: {trigger_type}")
         self.drawAllAndFlip()
         core.wait(0.05)
         self.port_out.setData(0)
