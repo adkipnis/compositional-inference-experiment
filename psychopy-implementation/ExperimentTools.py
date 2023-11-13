@@ -1152,7 +1152,7 @@ class Experiment:
         stimuli = self.stim_dict.copy()
         for i in range(self.set_size):
             stim_name = trial["input_disp"][i]
-            if stim_name is not None:
+            if stim_name:
                 stim = stimuli[stim_name]
                 stim.pos = self.rect_pos[i]
                 stim.draw()

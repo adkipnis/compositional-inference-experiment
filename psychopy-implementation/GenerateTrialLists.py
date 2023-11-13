@@ -787,7 +787,7 @@ for i in range(first_participant, first_participant+n_participants):
                         stim_tmp.remove(prim[0])
                         input = np.random.choice(stim_tmp)
                         output = input
-                    input_disp = [None] * display_size
+                    input_disp = [''] * display_size
                     input_disp[pos] = input
                     output_disp = input_disp.copy()
                     output_disp[pos] = output
