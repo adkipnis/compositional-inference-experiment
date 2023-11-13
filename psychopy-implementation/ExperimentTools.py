@@ -1739,9 +1739,11 @@ class Experiment:
         ''' interleaved block of trials, with streak goal and pause between runs'''
         self.drawList = []
         start_width_initial = self.start_width if self.show_progress else 0. # progbar
-        trials = data.TrialHandler(trial_df, 1, method="random")
+        trials = data.TrialHandler(trial_df, 1, method="sequential")
         self.generateCounterDict(map_type="all")
         out = []
+        queue = []
+        requeue_counter = 0
 
         if pause_between_runs:
             run_number = 1
@@ -1752,14 +1754,22 @@ class Experiment:
         while not self.streakGoalReachedMultiple(streak_goals,
                                                  key_lists=[self.map_names, self.map_names_bin]):
             if trials.nRemaining == 0:
-                self.terminate(out)
+                if len(queue) > 0 and requeue_counter < 2:
+                    requeue_counter += 1
+                    print(f"No remaining trials, requeue #{requeue_counter}...")
+                    trials = data.TrialHandler(queue, 1, method="random")
+                    continue
+                else:
+                    self.terminate(out)
             trial = trials.next()
             is_primitive = trial["map_type"] == "primitive"
             cue_duration = cue_durations[0] if is_primitive else cue_durations[1]
             streak_goal = streak_goals[0] if is_primitive else streak_goals[1]
 
-            # probabilistically skip if this cue has already been mastered
-            if self.counter_dict["+".join(trial["map"])] == streak_goal and np.random.random() > 0.1:
+            # skip if this cue has already been mastered
+            if self.counter_dict["+".join(trial["map"])] == streak_goal:
+                print("Skipping mastered spell...")
+                queue += [trial]
                 continue
             
             self.genericTrial(trial, mode=mode, self_paced=self_paced, feedback=feedback,
