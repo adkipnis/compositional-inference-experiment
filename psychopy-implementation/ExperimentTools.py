@@ -1061,7 +1061,7 @@ class Experiment:
     def adaptiveCuePractice(self, trials_prim_cue, streak_goal=5, goal_rt=2.5, mode="random"):
         ''' Practice cues until for each map the last streak_goal trials are correct and below the goal_rt'''
         self.counter_dict = {map: 0 for map in self.map_names}
-        start_width_initial = self.start_width  # progbar
+        start_width_initial = self.start_width if self.show_progress else 0. # progbar
         trials = data.TrialHandler(trials_prim_cue, 1, method="sequential")
         out = []
 
@@ -1685,7 +1685,7 @@ class Experiment:
                       self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' generic block of trials, with streak goal and pause between runs'''
         self.drawList = []
-        start_width_initial = self.start_width  # progbar
+        start_width_initial = self.start_width if self.show_progress else 0. # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         self.generateCounterDict(map_type=trials.trialList[0]["map_type"])
         out = []
@@ -1738,7 +1738,7 @@ class Experiment:
         self_paced=True, feedback=True, pause_between_runs=True, decrease=True):
         ''' interleaved block of trials, with streak goal and pause between runs'''
         self.drawList = []
-        start_width_initial = self.start_width  # progbar
+        start_width_initial = self.start_width if self.show_progress else 0. # progbar
         trials = data.TrialHandler(trial_df, 1, method="random")
         self.generateCounterDict(map_type="all")
         out = []
@@ -1796,7 +1796,7 @@ class Experiment:
         self.drawList = []
         if test_goal and not self.test_mode:
             print("WARNING: test goal is only applicable in test mode.")
-        start_width_initial = self.start_width  # progbar
+        start_width_initial = self.start_width if self.show_progress else 0. # progbar
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         succeeded = []
         failed = []
