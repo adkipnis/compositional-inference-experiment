@@ -1566,7 +1566,7 @@ class Experiment:
         core.wait(0.2)
 
 
-    def autonomousTrial(self, trial, self_paced=True, fixation_duration=0.3, goal_rt=4.0):
+    def autonomousTrial(self, trial, self_paced=True, fixation_duration=0.3, goal_rt=2.0):
         ''' subroutine for generic trials'''
         # Init
         self.drawList = []
@@ -1600,7 +1600,7 @@ class Experiment:
 
         # Test display
         testMethod = self.tCount if trial["test_type"] == "count" else self.tPosition
-        test_rt, test_resp = testMethod(trial, feedback=False, demonstration=False, goal_rt=goal_rt)
+        test_rt, test_resp = testMethod(trial, feedback=False, demonstration=False, goal_rt=goal_rt, duration=0.5)
         self.drawAllAndFlip()
         
         # Choice Display
