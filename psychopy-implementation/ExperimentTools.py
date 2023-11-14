@@ -1834,6 +1834,7 @@ class Experiment:
                     requeue_counter += 1
                     print(f"No remaining trials, requeue #{requeue_counter}...")
                     trials = data.TrialHandler(queue, 1, method="random")
+                    queue = []
                     continue
                 else:
                     self.terminate(out)
