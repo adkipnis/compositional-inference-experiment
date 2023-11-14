@@ -269,8 +269,9 @@ class Experiment:
         self.instruct_stim = visual.TextStim(
             self.win,
             text='',
-            height=1.8,
-            wrapWidth=40,
+            height=1.3,
+            font="mono",
+            wrapWidth=35,
             pos=self.center_pos)
 
         self.rect = visual.Rect(
