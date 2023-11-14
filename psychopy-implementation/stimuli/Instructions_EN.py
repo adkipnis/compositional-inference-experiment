@@ -79,108 +79,119 @@ BinariesMEGR = [0,
             "Ready to finish the exam?"]
     
 Bye = ["Congrats!",
-       "You are done with your Alteration studies for today.",
-       "See you in your next session!"]
+       "You are done with the first session.",
+       "Have a quick break!"]
 
 ByeBye = ["Congrats!",
        "You have finished your exam.",
-       "The magical council will send you your grade and reward soon.",
-       "Farewell on your remaining magical journey. :)"]
+       "The council will send you your grade and reward soon.",
+       "Farewell on your further journey! :)"]
+
+TestTypes = [0,
+             "It is time for the next chapter in Philbertine's book: \n\nYou will apply alteration spells\nto groups of objects.",
+             "Again, the textbook provides\ntwo magical practice boards.\nThe trials go as follows:",
+             "(Step 1)\nMemorize the presented objects.\n\nThen, press the 'next' key (right thumb).",
+             0.0,
+             "(Step 2)\nYou will see a spell cue.",
+             1.0,
+             "(Step 3)\nYou will see empty squares. Apply the spell to the memorized display.\n\nThen, press the 'next' key (right thumb).",
+             1]
+
+countFirst = TestTypes + [
+    "(Step 4)\nYou will see an object. Count how often it appears in the output display.\n\nChoose the corresponding integer below.",
+    2.0,
+    "Use the following keys for this choice:",
+    2,
+    "If you don't know the answer,\npress the 'next' key (right thumb).",
+    "This test continues\nuntil you have enough correct responses.",
+    "Ready?"]
+
+countSecond = ["Nicely done! Some magic students tend to cheat on this though.",
+               "We need to make sure that you transform the objects in your mind first and only then answer a test question.\n\nThat's why there are two test displays!",
+               "The previous one was based on object positions. The next will be based on the object counting.",
+               "(Steps 1-3) The procedure is the same as before.",
+               0.0,
+               "(Step 4)\nYou will see an object. Count how often it appears in the output display.\n\nChoose the corresponding integer below.",
+               1.0,
+               "Again, use the following keys for this choice:",
+               0,
+               "If you don't know the answer,\npress the 'next' key (right thumb).",
+               "Ready?"] 
 
 
-countFirst = ["Here is what you do:",
-                "(1) Memorize the presented objects:",
-                0.0,
-                "When you are done with memorizing:\n(2) Press the 'next' key (right thumb).",
-                "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
-                1.0,
-                "When you are done:\n(4) Press the 'next' key (right thumb).",
-                "You will now see an object category\nand some integers on the bottom",
-                2.0,
-                "(5) From the options below, choose how often "\
-                    "this object appears in the scene after the transformation.",
-                "For training purposes you will get immediate feedback.",
-                "Let's say, you incorrectly chose the leftmost option, then you will see this:",
-                3.0,
-                "Use the following keys for this choice:",
-                1,
-                "You will be tested on these spells\nuntil you have enough correct responses.",
-                "If you don't know the answer,\npress the 'next' key (right thumb).",
-                "Ready?"]
-
-countSecond = ["Some magic students tend to cheat on the test above.",
-               "In order to make sure\nthat you transform the objects in your mind "\
-                   "first\nand only then answer a test question...",
-              "...there are two test displays\n(both equally likely to appear):",
-              "The previous one was based on object positions.\nThe next will be based "\
-                  "on the object count.",
-              "After memorizing and transforming the objects\n(steps 1-4)...",
-              0.0,
-              "you will see an object category\nand some integers on the bottom.",
-              1.0,
-              "(5) From the options below, choose how often "\
-                  "this object appears in the scene after the transformation.",
-              "For training purposes you will get immediate feedback:",
-              2.0,
-              "Again, use the following keys for this choice:",
-              0,
-              "If you don't know the answer,\npress the 'next' key (right thumb).",
-              "Ready?"] 
+InterleavedMEGR = [0,
+                   "You have studied diligently.\nYou are well prepared for the magic exam.",
+                   "The first part consists of\nnormal Alteration trials.",
+                   "However, the test is\nrandomly chosen each time.",
+                   "On top, some trials will have two spell cues!",
+                   "These 'double spells' require you\nto apply each primitive spell sequentially.",
+                   "The result is as if you apply the first spell, take the intermediate result, and then apply the second spell on that.",
+                   "Here's an example:",
+                   "(Step 1)\nMemorize the presented objects.\n\nThen, press the 'next' key (right thumb).",
+                   0.0,
+                   "(Step 2)\nYou will see two(!) spell cues.",
+                   1.0,
+                   "(Step 3)\nApply both spells to the memorized display.\n\nThen, press the 'next' key (right thumb).",
+                   1,
+                   "(Step 4)\nDo the test on the output display.",
+                   2.0,
+                   "Use the following keys for the decision:",
+                   2,
+                   "The exam continues until you have enough correct responses.\n\nWrong responses prolong it.",
+                   "So if you don't know the answer,\nplease press the 'next' key (right thumb).",
+                   "This will be the longest part of both sessions.",
+                   "Be as accurate and as fast as possible.",
+                   "Remember to move as little as possible\nfor the magical helmet.",
+                   "Ready for the exam?"]
 
 
-
-Intermezzo1 = ["Now that you have committed the spell cues\nto your memory, you"\
-                   " want to make sure\nyou remember them correctly.",
-               "In her wise anticipation, Philbertine provides you\nwith a"\
-                   " magical practice board.",
-               "You will first see the spell cue.\nThen you need to select the"\
-                   " two corresponding objects:",
-               "(1) The object which is susceptible to the spell",
-               "...and (2) the object into which it is transformed.",
-               "You choose the two objects using the marked keys\non your keyboard:",
+Intermezzo1 = ["Next, you need to make sure\nyou remember the spells correctly.",
+               "Philbertine's textbook provides\ntwo magical practice boards.",
+               "One for spell symbols and one for spell names. The trials go as follows:",
+               "(Step 1)\nYou will see the spell cue.\nBelow are the objects.",
+               0.0,
+               "(Step 2)\nFirst, select the input object.\nSecond, select the output object.",
+               "Use the marked keys for your choice:",
                0,
                "The blue keys will correspond to your options\nfrom left to right.",
                "If you don't know the answer,\npress the 'next' key (right thumb).",
                "You will now be tested on the cues\nuntil you have enough correct responses.",
                "Ready?"]
     
-Intermezzo2 = ["You have mastered the first type of spell cue.\nCongrats!",
-               "Next, you will see if you have correctly learned\nthe second type of spell cue.",
-                "The following practice board is\ncompletely analogous to the previous"\
-                    " one.",
-                "Again, you choose the objects using\nthe marked keys on your keyboard:",
-                0,
-                "If you don't know the answer,\npress the 'next' key (right thumb).",
-                "Just as a refresher you get a second look\nat Philbertines cheat sheet before you continue."]
+Intermezzo2 = ["Nice, you have mastered the first cue modality!",
+               "Next, you train on the second modality.",
+               "The following practice board is\ncompletely analogous.",
+               "(Step 1)\nYou will see the spell cue.\nBelow are the objects.",
+               0.0,
+               "(Step 2)\nFirst, select the input object.\nSecond, select the output object.",
+               "Again, use the marked keys for your choice:",
+               0,
+               "If you don't know the answer,\npress the 'next' key (right thumb).",
+               "As a refresher you get a second look at Philbertines cheat sheet before you continue."]
 
 Intro = [0, 
-         "You are a magic novice preparing for\nyour course in Alteration magic.",
+         "You are a magic novice preparing for\nyour exam in Alteration magic!",
          "As you may know, Alteration spells\nchange the world around you.",
-         "Luckily, you own a copy of the famous book series"\
-             " 'Principles of Alteration Magic'...",
+         "Luckily, you own a copy of the famous book 'Elements of Alteration Magic'...",
          1,
          "... famously written by Philbertine:",
          2,
          "The introductory chapter\nlists the following beginner objects:",
          3,
-         "With the correct spell, each beginner object\ncan be transformed into "\
-             "another beginner object!",
-         "Here you see an example of such an Alteration spell:",
+         "With the correct spell, each beginner object\ncan be transformed into another!",
+         "Here you see an example of such a spell:",
          4,
          "Note, that these spells affect\nall susceptible objects on the display.",
          5,
          "Each spell has a specific name and symbol. Philbertine provides a"\
              " cheat-sheet for the " + str(nMaps) + " beginner spells.",
-         "You need to spend a minute to study them really well.",
-             "Specifically, you need to learn the exact name and symbol "\
-         "which are associated with each respective spell.",
+         "You need to spend a minute to memorize them.",
          "You may go back across the cheat sheet pages.",
          "Ready?"]
 
     
 Navigation1 = [0,
-              "Don't worry, there is no shame in going back pages.",
-              "In this first session, you will prepare the basics of the task.",
+              "There is no shame in going back pages.",
               "If you have any questions\nor need to abort the experiment,\nplease ask the examiner.",
               "Now, the experiment begins..."
               ]
@@ -197,7 +208,7 @@ objectDecoder = [
     "The (very large) magical helmet above you\nreads your mind.",
     "Everyone's mind is special,\nso before your magical journey starts...",
     "...the helmet has to be attuned to your mind.",
-    "For this, you will see objects on the screen.",
+    "You will see objects on the screen.",
     "Sometimes, you will see a big object\nin the center of the screen:",
     "You then need to indicate via keypress,\nwhether the object is the same as the previous one.",
     "Please use the following keys for this task:",
@@ -211,42 +222,22 @@ objectDecoderPost = [
     
 
 
-positionFirst = ["Here is what you do:",
-                "(1) Memorize the presented objects:",
-                0.0,
-                "When you are done with memorizing:\n(2) Press the 'next' key (right thumb).",
-                "You will then see a spell cue.\n(3) In your mind, apply it to the memorized display.",
-                1.0,
-                "When you are done:\n(4) Press the 'next' key (right thumb).",
-                "You will see all the squares on which the objects stood, "\
-                    "one of them will be marked.",
-                2.0,
-                "(5) From the options below, choose the object that would be "\
-                        "on the marked square after the transformation.",
-                "For training purposes you will get immediate feedback.",
-                "Let's say, you incorrectly chose the following option -\nthen feedback would look like this:",
-                3.0,
-                "Use the following keys for this choice:",
-                1,
-                "If you don't know the answer,\npress the 'next' key (right thumb).",
-                "This test continues\nuntil you have enough correct responses.",
-                "Ready?"]
-    
-positionSecond = ["Well done! Some magic students tend to cheat on this test though.",
-                  "In order to make sure\nthat you transform the objects in your mind "\
-                      "first\nand only then answer a test question...",
-                  "...there are two test displays\n(both equally likely to appear).",
-                  "The previous one was based on object count.\nThe next will be based "\
-                      "on the object positions.",
-                  "After memorizing and transforming the objects\n(steps 1-4)...",
+positionFirst = TestTypes + [
+    "(Step 4)\nOne of the squares will be marked.\n\nChoose the object on that square after the transformation.",
+    2.0,
+    "Use the following keys for this choice:",
+    2,
+    "If you don't know the answer,\npress the 'next' key (right thumb).",
+    "This test continues\nuntil you have enough correct responses.",
+    "Ready?"]
+
+positionSecond = ["Nicely done! Some magic students tend to cheat on this though.",
+                  "We need to make sure that you transform the objects in your mind first and only then answer a test question.\n\nThat's why there are two test displays!",
+                  "The previous one was based on object counting. The next will be based on the object positions.",
+                  "(Steps 1-3) The procedure is the same as before.",
                   0.0,
-                  "you will see all the squares on which the objects stood. "\
-                      "\nOne of them will be marked.",
+                  "(Step 4)\nOne of the squares will be marked.\n\nChoose the object on that square after the transformation.",
                   1.0,
-                  "(5) From the options below, choose the object that would be "\
-                      "on the marked square after the transformation.",
-                  "For training purposes you will get immediate feedback:",
-                  2.0,
                   "Again, use the following keys for this choice:",
                   0,
                   "If you don't know the answer,\npress the 'next' key (right thumb).",
@@ -286,50 +277,17 @@ PrimitivesMEGR = [0,
                 "Ready to begin the exam?"]
 
 
-InterleavedMEGR = [0,
-                   "You have studied diligently\nand are well prepared for your magic exam.",
-                   "Your task is like the one\nyou practiced in the last session.",
-                   "However, you will not know\nwhich of the two tests comes at the end of any trial.",
-                   "Additionally, some trials will have two spell cues!",
-                   "Essentially, these 'double spells' require you\nto apply each primitive spell sequentially.",
-                   "The result is as if you apply the first spell,\ntake the intermediate result\nand then apply the second spell on that.",
-                   "Here's an example:",
-                   "(1) Memorize the presented objects.",
-                   0.0,
-                   "When you are done:\n(2) Press the 'next' key (right thumb).",
-                   "You will then see two(!) spell cues.",
-                   1.0,
-                   "(3) In your mind, apply both spells to the memorized display.",
-                   "When you are done:\n(4) Press the 'next' key (right thumb).",
-                   "Then you will receive one of two possible test displays.",
-                   "Again, use the following keys for the decision at the end of each trial:",
-                   1,
-                   "The exam continues\nuntil you have enough correct responses.\nWrong responses prolong it.",
-                   "So if you don't know the answer,\nplease press the 'next' key (right thumb).",
-                   "Be as accurate and as fast as possible.",
-                   "Remember to move as little as possible for the helmet.",
-                   "Ready for the exam?"]
-
-spellDecoder = [
-    "The magical helmet above you\nalso reads your spellcasting.",
-    "Before the exam,\nit has to be attuned to yours.",
+spellDecoder = ["Nicely done!\nYou are almost ready for the exam.",
+    "The magical helmet above you\nalso reads your spellcasting.\n\nBefore the exam,\nit has to be attuned to yours.",
     "For this, you need to do a set\nof easy Alteration trials:",
     "Only one object will be shown in each trial.\nYou will have to transform it as usual.",
     "Please use the following keys for this task:",
     0,
+    "Be as accurate and as fast as possible.",
     "Try to move as little as possible:\nThe helmet will be attuned quicker this way.",
     "Ready?"]
 
-TestTypes = [0,
-             "It is time for some field practice.",
-             "You now know the spell names and symbols\nwhich prompt you to "\
-                 "cast a spell.",
-             "You will now practice applying these spells\nto groups of objects.",
-             "Earlier, you saw what effect alteration spells had.",
-             "For the following trials, you will first see the spell cue "\
-                 "and then the objects you need to transform using it.",  
-             "It will look like this:",
-             0.0]
+
     
     
 # ============================================================================
