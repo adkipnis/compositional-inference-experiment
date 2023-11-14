@@ -2175,6 +2175,8 @@ class Experiment:
             self.trials_prim_prac_p[:1], 1, method="sequential").trialList[0]
         demoBin = data.TrialHandler(
             self.trials_bin[:1], 1, method="sequential").trialList[0]
+        demoAuto = data.TrialHandler(
+            self.trials_auto[:1], 1, method="sequential").trialList[0]
 
         # Navigation
         self.Instructions(part_key="Navigation3",
@@ -2230,13 +2232,17 @@ class Experiment:
         print("\nStarting adaptive interleaved block.")
         self.Instructions(part_key="InterleavedMEGR",
                           special_displays=[self.iSingleImage,
+                                            self.tEmptySquares,
                                             self.iSingleImage],
                           args=[self.magicWand,
+                                None,
                                 self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
-                                            self.tCue],
+                                            self.tCue,
+                                            self.tCount if demoBin["test_type"] == "count" else self.tPosition],
                           kwargs=[{"trial": demoBin, "duration": 0.0},
-                                  {"trial": demoBin}])
+                                  {"trial": demoBin},
+                                  {"trial": demoBin, "duration": 0.0, "demonstration": True,}])
         self.df_out_inter = self.adaptiveInterleavedBlock(
             self.trials_prim + self.trials_bin,
             streak_goals=[goal_streak_p, goal_streak_b], 
@@ -2247,16 +2253,23 @@ class Experiment:
         
         ''' --- Autonomous spell trials ------------------------------------------------'''
         print("\nStarting autonomous block.")
-        # TODO
-#        self.Instructions(part_key="Autonomous",
-#                          special_displays=[self.iSingleImage,
-#                                            self.iSingleImage],
-#                          args=[self.magicWand,
-#                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
-#                          complex_displays=[self.tInput,
-#                                            self.tSpellOptions],
-#                          kwargs=[{"trial": demoBin, "duration": 0.0},
-#                                  {"trial": demoBin}])
+        self.Instructions(part_key="AutonomousMEGR",
+                         special_displays=[self.iSingleImage,
+                                           self.iSingleImage,
+                                           self.tEmptySquares,
+                                           self.iSingleImage],
+                         args=[self.magicWand,
+                               self.qm,
+                               None,
+                               self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+                         complex_displays=[self.tInput,
+                                           self.tCount if demoAuto["test_type"] == "count" else self.tPosition,
+                                           self.tSpellOptions,
+                                           ],
+                         kwargs=[{"trial": demoAuto, "duration": 0.0},
+                                 {"trial": demoAuto, "duration": 0.0, "demonstration": True,},
+                                 {"demonstration": True},
+                                 ])
         
         self.df_out_outo = self.autonomousBlock(self.trials_auto, goal_rt=4.0,
                                                 numTrials= 1 if self.test_mode else 20)
