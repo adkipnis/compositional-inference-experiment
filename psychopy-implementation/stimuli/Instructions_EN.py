@@ -35,7 +35,26 @@ def AddProceedKey2All(instruction_list, proceed_key, wait_s = 3):
 
 
 # ============================================================================
-
+AutonomousMEGR = [0,
+              "Rejoice!\n\nYou have reached the final part of the exam.\nIt will be much shorter than the last one.",
+              "The school wants its students\nto be autonomous magicians.",
+              "For the following trials\nyou will have to choose the spell yourself!",
+              "(Step 1)\nMemorize the presented objects.\n\nThen, press the 'next' key (right thumb).",
+              0.0,
+              "(Step 2)\nYou will see a question mark.\nChoose a single spell.\n\nThen, press the 'next' key.",
+              1,
+              "(Step 3)\nApply the chosen spell\nto the memorized display.\n\nThen, press the 'next' key.",
+              2,
+              "(Step 4)\nDo the given test on the output display.",
+              1.0,
+              "(Step 5)\nIndicate which spell you chose.",
+              2.0,
+              "Use the following keys\nfor each decision:",
+              3,
+              "The exam continues until you have enough consistent responses.",
+              "Be as accurate and as fast as possible.",
+              "Remember to move as little as possible\nfor the helmet.",
+              "Ready for the exam?"]
 
 BinariesMEGR = [0,
             "Well done, you have finished the first part!",
@@ -336,6 +355,7 @@ instructions ={
   "PrimitivesMEGR": AddProceedKey2All(PrimitivesMEGR, '/k'),
   "BinariesMEGR": AddProceedKey2All(BinariesMEGR, '/k'),
   "InterleavedMEGR": AddProceedKey2All(InterleavedMEGR, '/k'),
+  "AutonomousMEGR": AddProceedKey2All(AutonomousMEGR, '/k'),
   
   "objectDecoder": AddProceedKey2All(objectDecoder, '/k'),
   "objectDecoderPost": AddProceedKey2All(objectDecoderPost, '/k'),
