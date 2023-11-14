@@ -1540,14 +1540,12 @@ class Experiment:
         self.win.flip()
         core.wait(0.2)
         
+        # Transformation display
+        inter_rt = self.tEmptySquares(None if skip_test else core.Clock())
+
         # End trial for demonstration purposes
         if skip_test:
-            self.win.clearBuffer()
-            self.win.flip()
             return
-
-        # Transformation display
-        inter_rt = self.tEmptySquares(core.Clock())
 
         # Empty display
         self.win.flip()
