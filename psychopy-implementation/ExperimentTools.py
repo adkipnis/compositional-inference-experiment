@@ -1353,7 +1353,7 @@ class Experiment:
             resp.draw()
 
     
-    def tSpellOptions(self, demonstration=False, duration=1.0, goal_rt=4.0,):
+    def tSpellOptions(self, demonstration=False, duration=0.5, goal_rt=2.0,):
         ''' wrapper for count test'''
         # Init
         self.drawList = []
@@ -1368,7 +1368,11 @@ class Experiment:
             return None, None
 
         # Get response
-        testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4, max_wait=goal_rt)
+        testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
+        
+        # Feedback
+        if testResp == 99:
+            testResp = 3
         if testResp != 99 and testResp is not None:
             self.enqueueDraw(func=self.redrawAfterResponse,
                              args=(stimuli[testResp],
@@ -1377,6 +1381,9 @@ class Experiment:
                                    False,
                                    False,
                                    self.spell_pos[testResp]))
+        if testResp == 3:
+            testResp = 99
+            
         # Wait
         core.wait(duration)
         return testRT, testResp
