@@ -82,7 +82,7 @@ class Experiment:
                              "run": 10}
 
 
-    def dialogue_box(self, participant=None, session=1, run_length=180, test_mode=False, meg=False, show_progress=True, show=True, ):
+    def dialogue_box(self, participant=None, session=1, run_length=300, test_mode=False, meg=False, show_progress=True, show=True, ):
         ''' Show dialogue box to get participant info '''
 
         if participant is None:
@@ -117,6 +117,8 @@ class Experiment:
         self.show_progress = expInfo["showProgress"]
         self.test_mode = expInfo["testMode"]
         self.run_length = expInfo["runLength"]
+        if self.test_mode:
+            self.run_length /= 10
         self.meg = expInfo["MEG"]
         self.meta_fname = f"{self.data_dir}{os.sep}{expInfo['expName']}_id={expInfo['participant']}_start={expInfo['dateStr']}_metadata"
         for key in expInfo:
