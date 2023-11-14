@@ -2057,10 +2057,12 @@ class Experiment:
 
         # Test first cue type
         self.Instructions(part_key="Intermezzo1",
-                          special_displays=[self.iSingleImage,
-                                            self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"],
-                                self.magicChart])
+                          special_displays=[self.iSingleImage],
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg
+                                else self.keyboard_dict["keyBoard4"]],
+                          complex_displays=[self.cuePracticeTrial],
+                          kwargs=[{"trial": demoTrial0, "mode": first_modality, "demonstration": True}],
+                          )
         self.df_out_1 = self.adaptiveCuePractice(self.trials_prim_cue,
                                                  streak_goal=streak_goal//2,
                                                  mode=first_modality)
@@ -2072,7 +2074,11 @@ class Experiment:
         self.set_progbar_inc()
         self.Instructions(part_key="Intermezzo2",
                           special_displays=[self.iSingleImage],
-                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]])
+                          args=[self.keyboard_dict["keyBoardMeg0123"] if self.meg
+                                else self.keyboard_dict["keyBoard4"]],
+                          complex_displays=[self.cuePracticeTrial],
+                          kwargs=[{"trial": demoTrial0, "mode": second_modality, "demonstration": True}],
+                          )
         self.learnDuration_2 = self.learnCues(min_duration=30)
         self.add2meta("learnDuration_2", self.learnDuration_2)
 
@@ -2089,30 +2095,21 @@ class Experiment:
         # First Test-Type
         print("\nLearning first test type.")
         self.set_progbar_inc()
-        self.Instructions(part_key="TestTypes",
-                          special_displays=[self.iSingleImage],
-                          args=[self.magicWand],
-                          complex_displays=[self.genericTrial],
-                          kwargs=[{"trial": demoTrial1,
-                                   "self_paced": False,
-                                   "skip_test": True}],
-                          loading_time=0)
         self.Instructions(part_key=first_test + "First",
                           special_displays=[self.iSingleImage,
+                                            self.tEmptySquares,
                                             self.iSingleImage],
-                          args=[self.magicChart,
-                                self.keyboard_dict["keyBoardMeg0123"] if self.meg else self.keyboard_dict["keyBoard4"]],
+                          args=[self.magicWand,
+                                None,
+                                self.keyboard_dict["keyBoardMeg0123"] if self.meg
+                                else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.tInput,
                                             self.tCue,
-                                            tFirst,
                                             tFirst],
                           kwargs=[{"trial": demoTrial1, "duration": 0.0},
                                   {"trial": demoTrial1},
-                                  {"trial": demoTrial1, "duration": 0.0,
-                                      "demonstration": True},
-                                  {"trial": demoTrial1, "duration": 0.0, "demonstration": True, "feedback": True}])
-        self.df_out_3 = self.adaptiveBlock(trials_test_1,
-                                           streak_goal=streak_goal)
+                                  {"trial": demoTrial1, "duration": 0.0, "demonstration": True,}],
+                          )
         fname = self.writeFileName("testPractice"+first_test.capitalize())
         self.save_object(self.df_out_3, fname, ending='csv')
 
@@ -2124,12 +2121,9 @@ class Experiment:
                           args=[self.keyboard_dict["keyBoardMeg0123"]
                                 if self.meg else self.keyboard_dict["keyBoard4"]],
                           complex_displays=[self.genericTrial,
-                                            tSecond,
                                             tSecond],
                           kwargs=[{"trial": demoTrial2, "self_paced": False, "skip_test": True},
-                                  {"trial": demoTrial2, "duration": 0.0,
-                                      "demonstration": True},
-                                  {"trial": demoTrial2, "duration": 0.0, "demonstration": True, "feedback": True}])
+                                  {"trial": demoTrial2, "duration": 0.0, "demonstration": True,}])
         self.df_out_4 = self.adaptiveBlock(trials_test_2,
                                            streak_goal=streak_goal)
         fname = self.writeFileName("testPractice"+second_test.capitalize())
