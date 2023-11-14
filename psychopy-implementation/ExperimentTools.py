@@ -1583,6 +1583,10 @@ class Experiment:
 
         # Cue
         self.tFixation()
+        self.qm.pos = self.center_pos
+        self.qm.draw()
+        self.win.flip()
+        splash_rt = self.tIndermediateResponse(core.Clock())
         self.splash.draw()
         self.win.flip()
         core.wait(0.2)
@@ -1606,6 +1610,7 @@ class Experiment:
 
         # Save data
         trial["display_RT"] = display_rt
+        trial["splash_RT"] = splash_rt
         trial["inter_RT"] = inter_rt
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
