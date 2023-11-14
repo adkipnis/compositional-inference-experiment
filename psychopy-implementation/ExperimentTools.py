@@ -815,8 +815,8 @@ class Experiment:
                      args=list(),
                      complex_displays=list(),
                      kwargs=list(),
-                     font="Times New Roman",
-                     fontcolor=[-0.9, -0.9, -0.9],
+                     font="Mono",
+                     fontcolor=[-0.8, -0.8, -0.8],
                      log_duration=True,
                      loading_time=1):
         assert part_key in self.instructions.keys(),\
