@@ -63,6 +63,7 @@ class Experiment:
                            "black": [-0.9, -0.9, -0.9],
                            "red": [0.8, 0.0, 0.0],
                            "yellow": [1.0, 0.8, 0.0],
+                           "dark_yellow": [0.8, 0.6, 0.0],
                            "green": [0.0, 0.6, 0.0],
                            "blue": [0.2, 0.6, 1.0],
                            "dark_blue": [0.1, 0.3, 1.0],
@@ -299,6 +300,27 @@ class Experiment:
                                   text="?",
                                   height=4,
                                   color=self.color_dict["black"])
+        
+        self.match = visual.TextStim(self.win,
+                                  text="Okay!",
+                                  height=4,
+                                  wrapWidth=40,
+                                  pos=self.center_pos,
+                                  color=self.color_dict["green"])
+        
+        self.slowmatch = visual.TextStim(self.win,
+                                  text="Too slow!",
+                                  height=4,
+                                  wrapWidth=40,
+                                  pos=self.center_pos,
+                                  color=self.color_dict["dark_yellow"])
+        
+        self.nomatch = visual.TextStim(self.win,
+                                       text="Inconsistent!",
+                                       wrapWidth=40,
+                                       height=4,
+                                       pos=self.center_pos,
+                                       color=self.color_dict["red"])
 
         self.moreTime = visual.TextStim(
             self.win,
