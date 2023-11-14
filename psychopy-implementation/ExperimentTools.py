@@ -1222,6 +1222,9 @@ class Experiment:
 
             # case: tTestResponse is timed but no response is given, yet
             if max_wait < np.inf and pressed is None:
+                print("tTestResponse timed out")
+                testResp = 99
+                testRT = max_wait
                 break
             else:
                 thisKey, testRT = pressed[0]
