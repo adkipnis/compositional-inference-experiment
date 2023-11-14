@@ -1604,9 +1604,12 @@ class Experiment:
         self.drawAllAndFlip()
         
         # Choice Display
-        self.tFixation()
-        test_rt, test_resp = self.tSpellOptions(demonstration=False, goal_rt=goal_rt)
-        self.win.flip()
+        if test_resp != 99:
+            self.tFixation()
+            choice_rt, choice_resp = self.tSpellOptions(demonstration=False, goal_rt=goal_rt, duration=0.5)
+            self.win.flip()
+        else:
+            choice_rt, choice_resp = 0.0, 99
 
         # Save data
         trial["display_RT"] = display_rt
