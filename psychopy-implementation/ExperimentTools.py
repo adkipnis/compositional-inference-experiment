@@ -1627,12 +1627,13 @@ class Experiment:
         core.wait(0.2)
 
     
-    def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=4.0, numTrials=20):
+    def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=2.0, correct_goal=10,):
         self.drawList = []
         trials = data.TrialHandler(trial_df, 1, method="sequential")
         out = []
-        numTrials = min(numTrials, trials.nTotal)
-        i = 0
+        queue = []
+        requeue_counter = 0
+        n_correct = 0
 
         if pause_between_runs:
             run_number = 1
@@ -1640,9 +1641,45 @@ class Experiment:
             if self.use_pp:
                 self.send_trigger("run")
 
-        for trial in trials:
+        while n_correct < correct_goal:
+            # Optionally requeue trials
+            if trials.nRemaining == 0:
+                if len(queue) > 0 and requeue_counter < 2:
+                    requeue_counter += 1
+                    print(f"No remaining trials, requeue #{requeue_counter}...")
+                    trials = data.TrialHandler(queue, 1, method="random")
+                    queue = []
+                    continue
+                else:
+                    self.terminate(out)
+            
+            # Run trial
+            trial = trials.next()
             self.autonomousTrial(trial, self_paced=self_paced, goal_rt=goal_rt)
 
+            # Evaluate performance
+            correct = trial["correct_resp"] == trial["emp_resp"]
+            fast = trial["resp_RT"] <= goal_rt and trial["choice_RT"] <= goal_rt
+            idk = trial["emp_resp"] == 99 or trial["choice_resp"] == 99
+            
+            # Give feedback
+            if idk:
+                queue += [trial]
+            else:
+                if correct and fast:
+                    self.match.draw()
+                    n_correct += 1
+                    print(f"Correct! {n_correct}/{correct_goal}")
+                else:
+                    queue += [trial]
+                    if correct:
+                        self.slowmatch.draw()
+                    else:
+                        self.nomatch.draw()
+                self.win.flip()
+                core.wait(0.4)
+                self.win.flip()
+            
             # Pause display between runs
             if pause_between_runs:
                 trial["run_number"] = run_number
@@ -1654,9 +1691,7 @@ class Experiment:
             # finally
             out.append(trial)
             core.wait(0.2)
-            i += 1
-            if i >= numTrials:
-                break
+           
         return out
     
 
