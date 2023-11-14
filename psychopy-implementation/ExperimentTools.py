@@ -986,7 +986,7 @@ class Experiment:
             self.drawAllAndFlip()
 
 
-    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.5):
+    def cuePracticeTrial(self, trial, mode="random", cue_pos=(0, 5), goal_rt=2.5, demonstration=False):
         ''' Subroutine for the cue practice trials'''
         # Init
         self.drawList = []
@@ -1012,6 +1012,10 @@ class Experiment:
                          args=(stimuli, trial["resp_options"]))
         self.optionally_send_trigger(mode)
 
+        # Optionally terminate demonstration
+        if demonstration:
+            return
+        
         # Wait for response(s)
         for correctResp in trial["correct_resp"]:
             if testResp == 99:
