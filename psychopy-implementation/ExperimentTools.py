@@ -1394,7 +1394,7 @@ class Experiment:
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
-        if feedback or demonstration:
+        if feedback:
             corResp = trial["correct_resp"]
 
         # Draw stimuli
@@ -1408,16 +1408,10 @@ class Experiment:
         self.optionally_send_trigger("count")
 
         # Get response
-        if not demonstration:
-            testRT, testResp = self.tTestResponse(
-                core.Clock(), self.resp_keys_4)
+        if demonstration:
+            testRT, testResp = 0.0, 99
         else:
-            # simulate incorrect response
-            badoptions = np.array(range(4))
-            badoptions = np.delete(badoptions, corResp)
-            if feedback:
-                core.wait(1)
-            testRT, testResp = 0.0, badoptions[0]
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
 
         # Feedback
         if feedback:
@@ -1473,7 +1467,7 @@ class Experiment:
         # Init
         self.drawList = []
         stimuli = self.stim_dict.copy()
-        if feedback or demonstration:
+        if feedback:
             corResp = trial["correct_resp"]
 
         # Draw stimuli
@@ -1488,16 +1482,10 @@ class Experiment:
         self.optionally_send_trigger("position")
 
         # Get response
-        if not demonstration:
-            testRT, testResp = self.tTestResponse(
-                core.Clock(), self.resp_keys_4)
+        if demonstration:
+            testRT, testResp = 0.0, 99
         else:
-            # simulate incorrect response
-            badoptions = np.array(range(4))
-            badoptions = np.delete(badoptions, corResp)
-            if feedback:
-                core.wait(1)
-            testRT, testResp = 0.0, badoptions[0]
+            testRT, testResp = self.tTestResponse(core.Clock(), self.resp_keys_4)
 
         # Feedback
         if feedback:
