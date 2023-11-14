@@ -1253,7 +1253,7 @@ class Experiment:
             self.rect.draw()
 
 
-    def tEmptySquares(self, IRClock):
+    def tEmptySquares(self, IRClock=None):
         ''' draw empty squares and wait for response'''
         self.drawList = []
         
@@ -1264,8 +1264,10 @@ class Experiment:
         self.optionally_send_trigger("squares")
 
         # get response
-        intermediateRT = self.tIndermediateResponse(IRClock)
-        return intermediateRT
+        if IRClock is None:
+            return 0.0
+        else:
+            return self.tIndermediateResponse(IRClock)
     
 
     def tInput(self, trial, duration=1.0, self_paced=False):
