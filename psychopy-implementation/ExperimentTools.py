@@ -1611,13 +1611,19 @@ class Experiment:
         else:
             choice_rt, choice_resp = 0.0, 99
 
-        # Save data
+        # Save remaining data
         trial["display_RT"] = display_rt
         trial["splash_RT"] = splash_rt
         trial["inter_RT"] = inter_rt
         trial["resp_RT"] = test_rt
+        trial["choice_RT"] = choice_rt
+        trial["choice_resp"] = choice_resp
+        if choice_resp in range(3):
+            cr = trial[f"correct_resp_{choice_resp}"]
+            trial["correct_resp"] = np.where(trial["resp_options"] == cr)[0][0]
+        else:
+            trial["correct_resp"] = 99
         trial["emp_resp"] = test_resp
-        trial["cue_type"] = self.currentMode
         core.wait(0.2)
 
     
