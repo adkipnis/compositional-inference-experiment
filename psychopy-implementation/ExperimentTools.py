@@ -1969,9 +1969,9 @@ class Experiment:
         # set up probar
         streak_goal = 1 if self.test_mode else 8  # per map
         trial_numbers = [
-            len(self.trials_obj_dec) if not self.test_mode else 6,  # object decoder
-            self.n_primitives * streak_goal//2,  # cue practice 1
-            self.n_primitives * streak_goal//2,  # cue practice 2
+            len(self.trials_obj_dec) if not self.test_mode else 10,  # object decoder
+            self.n_primitives * streak_goal,  # cue practice 1
+            self.n_primitives * streak_goal,  # cue practice 2
             self.n_primitives * streak_goal,  # test practice 1
             self.n_primitives * streak_goal,  # test practice 2
             len(self.trials_prim_dec) if not self.test_mode else 6,  # spell decoder
@@ -1994,17 +1994,14 @@ class Experiment:
         self.add2meta("first_test", first_test)
         tFirst = self.tCount if id_is_in_seq else self.tPosition
         tSecond = self.tPosition if id_is_in_seq else self.tCount
-        trials_test_1 = self.trials_prim_prac_c.copy(
-        ) if id_is_in_seq else self.trials_prim_prac_p.copy()
-        trials_test_2 = self.trials_prim_prac_p.copy(
-        ) if id_is_in_seq else self.trials_prim_prac_c.copy()
+        trials_test_0 = self.trials_prim_cue.copy()
+        trials_test_1 = self.trials_prim_prac_c.copy() if id_is_in_seq else self.trials_prim_prac_p.copy()
+        trials_test_2 = self.trials_prim_prac_p.copy() if id_is_in_seq else self.trials_prim_prac_c.copy()
 
         # Get Demo trials
-        demoTrials1 = data.TrialHandler(
-            trials_test_1[:1], 1, method="sequential")
-        demoTrials2 = data.TrialHandler(
-            trials_test_2[:1], 1, method="sequential")
-        demoTrial1, demoTrial2 = demoTrials1.trialList[0], demoTrials2.trialList[0]
+        demoTrial0 = data.TrialHandler(trials_test_0[:1], 1, method="sequential").next()
+        demoTrial1 = data.TrialHandler(trials_test_1[:1], 1, method="sequential").next()
+        demoTrial2 = data.TrialHandler(trials_test_2[:1], 1, method="sequential").next()
         print("Starting Session 1.")
 
         ''' --- 1. Initial instructions and object decoder ---------------------------'''
