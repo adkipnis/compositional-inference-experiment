@@ -2271,10 +2271,10 @@ class Experiment:
                                  {"demonstration": True},
                                  ])
         
-        self.df_out_outo = self.autonomousBlock(self.trials_auto, goal_rt=4.0,
-                                                numTrials= 1 if self.test_mode else 20)
+        self.df_out_auto = self.autonomousBlock(self.trials_auto, goal_rt=2.0,
+                                                correct_goal = 1 if self.test_mode else 10)
         fname = self.writeFileName("autonomousTrials")
-        self.save_object(self.df_out_outo, fname, ending='csv')
+        self.save_object(self.df_out_auto, fname, ending='csv')
                 
         
         ''' ---  Finalization '''
