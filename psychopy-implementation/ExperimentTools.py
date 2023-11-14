@@ -345,7 +345,7 @@ class Experiment:
 
         self.stopPrompt = visual.TextStim(
             self.win,
-            text="Unfortunately you did not manage to learn\nthe spells in the given time.\n\nPlease contact the experimenter.",
+            text="Unfortunately you did not manage\nto give enough correct responses in time.\n\nPlease contact the experimenter.",
             height=1.5,
             wrapWidth=40,
             font="mono",
