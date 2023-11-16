@@ -36,6 +36,7 @@ class Experiment:
         self.stim_dir = os.path.join(self.main_dir, "stimuli")
         sys.path.insert(0, './stimuli')
         import Instructions_EN
+        self.instruction_mode = False # indicates if currently instructions are shown
 
         # data dir
         self.data_dir = os.path.join(self.main_dir, "data")
@@ -182,7 +183,7 @@ class Experiment:
 
 
     def optionally_send_trigger(self, trigger_type="trial"):
-        if self.use_pp:
+        if self.use_pp and not self.instruction_mode:
             self.send_trigger(trigger_type)
         else:
             self.drawAllAndFlip()
@@ -824,6 +825,7 @@ class Experiment:
 
         # Initialize parameters
         finished = False
+        self.instruction_mode = True
         Part = self.instructions[part_key]
         page = 0
         self.win.color = self.color_dict["instructions"]
@@ -863,6 +865,7 @@ class Experiment:
         self.win.color = self.color_dict["white"]
         self.win.flip()
         core.wait(loading_time)
+        self.instruction_mode = False
 
     ###########################################################################
     # Cues
@@ -996,8 +999,7 @@ class Experiment:
         testRespList = []
         testRTList = []
         trial["start_time"] = self.exp_clock.getTime()
-        if self.use_pp:
-            self.send_trigger("trial")
+        self.optionally_send_trigger("trial")
 
         # Fixation Cross
         self.tFixation()
@@ -1521,8 +1523,7 @@ class Experiment:
         self.drawList = []
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-        if self.use_pp:
-            self.send_trigger("trial")
+        self.optionally_send_trigger("trial")
 
         # Fixation
         self.tFixation(duration=fixation_duration)
@@ -1572,8 +1573,7 @@ class Experiment:
         self.drawList = []
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-        if self.use_pp:
-            self.send_trigger("trial")
+        self.optionally_send_trigger("trial")
 
         # Fixation
         self.tFixation(duration=fixation_duration)
@@ -1720,8 +1720,7 @@ class Experiment:
         test_rt, test_resp = None, None
         trial["start_time"] = self.exp_clock.getTime()
         self.drawList = []
-        if self.use_pp:
-            self.send_trigger("trial")
+        self.optionally_send_trigger("trial")
 
         # Fixation
         self.enqueueDraw(func=self.fixation.draw, unroll=False)
