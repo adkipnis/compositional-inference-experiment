@@ -1815,7 +1815,7 @@ class Experiment:
         ''' interleaved block of trials, with streak goal and pause between runs'''
         self.drawList = []
         start_width_initial = self.start_width if self.show_progress else 0. # progbar
-        trials = data.TrialHandler(trial_df, 1, method="sequential")
+        trials = data.TrialHandler(trial_df, 1, method="random")
         self.generateCounterDict(map_type="all")
         out = []
         queue = []
