@@ -1622,8 +1622,8 @@ class Experiment:
         # Choice Display
         if test_resp != 99:
             self.tFixation()
-            choice_rt, choice_resp = self.tSpellOptions(demonstration=False, goal_rt=goal_rt, duration=0.5)
-            self.win.flip()
+            choice_rt, choice_resp = self.tSpellOptions(demonstration=False, wait_s=0.5)
+            self.drawAllAndFlip()
         else:
             choice_rt, choice_resp = 0.0, 99
         
