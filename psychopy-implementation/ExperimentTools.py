@@ -134,15 +134,15 @@ class Experiment:
         self.exp_clock = core.Clock()
 
         # set response keys according to device
+        self.use_pp = False
         self.resp_keys = self.resp_keys_kb
         self.proceedKey = "space"
-        self.use_pp = False
-
+        
         if expInfo["MEG"]:
-            self.init_interface()
             self.use_pp = True
             self.resp_keys = self.resp_keys_vpixx
             self.proceedKey = self.resp_keys_vpixx[-1]
+            self.init_interface()
 
         # response keys for main task
         self.resp_keys_4 = self.resp_keys[:-2]
