@@ -965,7 +965,7 @@ class Experiment:
         stimulus.draw()
 
 
-    def redrawFeedback(self, stimulus, rectPos=(0, 0), stimPos=None, wait_s=1):
+    def redrawFeedback(self, stimulus, rectPos=(0, 0), stimPos=None, wait_s=0.5):
         ''' Mark the correct response option as feedback '''
         if stimPos is None:
             stimPos = rectPos
