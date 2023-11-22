@@ -71,16 +71,21 @@ class Experiment:
                            }
 
         # Trigger codes
-        self.trigger_dict = {"trial": 1,
+        self.trigger_dict = {"trial_od": 11, # object decoder
+                             "trial_cp": 12, # cue practice
+                             "trial_sd": 13, # spell decoder
+                             "trial_g": 14, # generic 
+                             "trial_an": 15, # autonomous
+                             "end_trial": 10,
                              "display": 2,
-                             "visual": 3,
-                             "textual": 4,
-                             "squares": 5,
-                             "position": 6,
-                             "count": 7,
-                             "catch": 8,
-                             "auto": 9,
-                             "run": 10}
+                             "visual": 30,
+                             "textual": 31,
+                             "squares": 4,
+                             "test_pos": 50,
+                             "test_count": 51,
+                             "test_catch": 52,
+                             "test_spell": 53,
+                             "pause": 6}
 
 
     def dialogue_box(self, participant=None, session=1, run_length=300, test_mode=False, meg=False, show_progress=True, show=True, ):
@@ -182,7 +187,7 @@ class Experiment:
         self.drawAllAndFlip()
 
 
-    def optionally_send_trigger(self, trigger_type="trial"):
+    def optionally_send_trigger(self, trigger_type):
         if self.use_pp and not self.instruction_mode:
             self.send_trigger(trigger_type)
         else:
@@ -999,7 +1004,7 @@ class Experiment:
         testRespList = []
         testRTList = []
         trial["start_time"] = self.exp_clock.getTime()
-        self.optionally_send_trigger("trial")
+        self.optionally_send_trigger("trial_cp")
 
         # Fixation Cross
         self.tFixation()
@@ -1043,6 +1048,7 @@ class Experiment:
                                        1-i))
 
         # Save data and clear screen
+        self.optionally_send_trigger("end_trial")
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = mode
@@ -1296,16 +1302,16 @@ class Experiment:
 
     def tPause(self):
         ''' draw pause screen and wait for response'''
+        self.drawList = []
+        self.optionally_send_trigger("pause")
         self.pauseClock.draw()
         self.pauseText.draw()
         self.win.flip()
         intermediateRT = self.tIndermediateResponse(
             core.Clock(), max_wait=float('inf'))
         self.win.flip()
+        self.optionally_send_trigger("pause")
         core.wait(0.5)
-        if self.use_pp:
-            self.drawList = []
-            self.send_trigger("run")
         return intermediateRT
 
 
@@ -1363,7 +1369,7 @@ class Experiment:
         self.enqueueDraw(func=self.drawSpellOptions, unroll=False)
 
         # Send trigger
-        self.optionally_send_trigger("auto")
+        self.optionally_send_trigger("test_spell")
         
         # Optionally break for demonstration purposes        
         if demonstration:
@@ -1407,7 +1413,7 @@ class Experiment:
                          unroll=False)
 
         # Send trigger
-        self.optionally_send_trigger("count")
+        self.optionally_send_trigger("test_count")
 
         # Get response
         if demonstration:
@@ -1481,7 +1487,7 @@ class Experiment:
                          unroll=False)
         
         # Send trigger
-        self.optionally_send_trigger("position")
+        self.optionally_send_trigger("test_pos")
 
         # Get response
         if demonstration:
@@ -1523,7 +1529,7 @@ class Experiment:
         self.drawList = []
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-        self.optionally_send_trigger("trial")
+        self.optionally_send_trigger("trial_g")
 
         # Fixation
         self.tFixation(duration=fixation_duration)
@@ -1559,6 +1565,7 @@ class Experiment:
         self.drawAllAndFlip()
 
         # Save data
+        self.optionally_send_trigger("end_trial")
         trial["display_RT"] = display_rt
         trial["inter_RT"] = inter_rt
         trial["resp_RT"] = test_rt
@@ -1573,7 +1580,7 @@ class Experiment:
         self.drawList = []
         self.win.flip()
         trial["start_time"] = self.exp_clock.getTime()
-        self.optionally_send_trigger("trial")
+        self.optionally_send_trigger("trial_an")
 
         # Fixation
         self.tFixation(duration=fixation_duration)
@@ -1612,6 +1619,7 @@ class Experiment:
             choice_rt, choice_resp = 0.0, 99
 
         # Save remaining data
+        self.optionally_send_trigger("end_trial")
         trial["display_RT"] = display_rt
         trial["splash_RT"] = splash_rt
         trial["inter_RT"] = inter_rt
@@ -1707,7 +1715,7 @@ class Experiment:
         self.enqueueDraw(func=self.drawCatchResponses, unroll=False)
 
         # Send trigger
-        self.optionally_send_trigger("catch")
+        self.optionally_send_trigger("test_catch")
 
         testRT, testResp = self.tTestResponse(
             core.Clock(), [no, yes], return_numeric=False)
@@ -1720,7 +1728,7 @@ class Experiment:
         test_rt, test_resp = None, None
         trial["start_time"] = self.exp_clock.getTime()
         self.drawList = []
-        self.optionally_send_trigger("trial")
+        self.optionally_send_trigger("trial_od")
 
         # Fixation
         self.enqueueDraw(func=self.fixation.draw, unroll=False)
@@ -1737,6 +1745,7 @@ class Experiment:
             test_rt, test_resp = self.oneBackTest(trial)
 
         # Save data
+        self.optionally_send_trigger("end_trial")
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         core.wait(0.5)
