@@ -85,7 +85,8 @@ class Experiment:
                              "test_count": 51,
                              "test_catch": 52,
                              "test_spell": 53,
-                             "pause": 6}
+                             "pause": 6,
+                             "run": 7,}
 
 
     def dialogue_box(self, participant=None, session=1, run_length=300, test_mode=False, meg=False, show_progress=True, show=True, ):
@@ -1646,8 +1647,7 @@ class Experiment:
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
-            if self.use_pp:
-                self.send_trigger("run")
+            self.optionally_send_trigger("run")
 
         while n_correct < correct_goal:
             # Optionally requeue trials
@@ -1695,6 +1695,7 @@ class Experiment:
                     self.tPause()
                     timer.reset()
                     run_number += 1
+                    self.optionally_send_trigger("run")
                     
             # finally
             out.append(trial)
@@ -1777,8 +1778,7 @@ class Experiment:
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
-            if self.use_pp:
-                self.send_trigger("run")
+            self.optionally_send_trigger("run")
 
         while not self.streakGoalReached(streak_goal=streak_goal):
             if trials.nRemaining == 0:
@@ -1810,6 +1810,7 @@ class Experiment:
                     self.tPause()
                     timer.reset()
                     run_number += 1
+                    self.optionally_send_trigger("run")
             # finally
             out.append(trial)
             core.wait(0.5)
@@ -1832,8 +1833,7 @@ class Experiment:
         if pause_between_runs:
             run_number = 1
             timer = core.CountdownTimer(self.run_length)
-            if self.use_pp:
-                self.send_trigger("run")
+            self.optionally_send_trigger("run")
 
         while not self.streakGoalReachedMultiple(streak_goals,
                                                  key_lists=[self.map_names, self.map_names_bin]):
@@ -1877,6 +1877,8 @@ class Experiment:
                     self.tPause()
                     timer.reset()
                     run_number += 1
+                    self.optionally_send_trigger("run")
+                    
             # finally
             out.append(trial)
             core.wait(0.5)
@@ -1900,8 +1902,7 @@ class Experiment:
         
         if pause_between_runs:
             timer = core.CountdownTimer(self.run_length)
-            if self.use_pp:
-                self.send_trigger("run")
+            self.optionally_send_trigger("run")
 
         while trials.nRemaining > 0:
             trial = trials.next()
@@ -1964,6 +1965,8 @@ class Experiment:
                     self.tPause()
                     timer.reset()
                     run_number += 1
+                    self.optionally_send_trigger("run")
+                    
         return out
 
 
