@@ -8,7 +8,7 @@ from psychopy.parallel import ParallelPort
 from psychopy import __version__, core, event, visual, gui, data, monitors
 import os
 import glob
-import warnings
+import inspect
 import pickle
 import copy
 import sys
@@ -177,15 +177,15 @@ class Experiment:
 
         
     def send_trigger(self, trigger_type):
+        # print(f"Trigger: {trigger_type}")
         trigger_code = self.trigger_dict[trigger_type]
         self.port_out.setData(trigger_code)
         self.diodeBack.autoDraw = False
-#        print(f"Trigger: {trigger_type}")
-        self.drawAllAndFlip()
+        self.drawAllAndFlip(no_wait=True)
         core.wait(0.05)
         self.port_out.setData(0)
         self.diodeBack.autoDraw = True
-        self.drawAllAndFlip()
+        self.drawAllAndFlip(no_wait=True)
 
 
     def optionally_send_trigger(self, trigger_type):
@@ -752,7 +752,7 @@ class Experiment:
                 stim.draw()
 
         # Input display
-        self.enqueueDraw(func=drawInput, args=(0,))
+        self.enqueueDraw(func=drawInput, args=[0,])
         core.wait(1)
 
         # Let the magic happen
@@ -760,7 +760,7 @@ class Experiment:
         core.wait(1)
 
         # Output display
-        self.enqueueDraw(func=drawInput, args=(1,))
+        self.enqueueDraw(func=drawInput, args=[1,])
         core.wait(1)
 
 
@@ -980,16 +980,25 @@ class Experiment:
         stimulus.draw()
 
 
-    def drawAllAndFlip(self):
+    def drawAllAndFlip(self, no_wait=False):
         for func, args in self.drawList:
-            if args is None:
+            if len(args) == 0:
                 func()
             else:
+                if no_wait:
+                    func_args = inspect.getfullargspec(func).args
+                    if "wait_s" in func_args:
+                        idx = func_args.index("wait_s") - 1
+                        if idx < len(args):
+                            args[idx] = 0.
+                        else:
+                            func(*args, wait_s=0.)
+                            continue
                 func(*args)
         self.win.flip()
 
 
-    def enqueueDraw(self, func=None, args=None, unroll=True):
+    def enqueueDraw(self, func=None, args=[], unroll=True):
         self.drawList += [(func, args)]
         if unroll:
             self.drawAllAndFlip()
@@ -1017,7 +1026,7 @@ class Experiment:
         cue.pos = cue_pos
         self.enqueueDraw(func=cue.draw, unroll=False)
         self.enqueueDraw(func=self.drawResponseOptions,
-                         args=(stimuli, trial["resp_options"]))
+                         args=[stimuli, trial["resp_options"]])
         self.optionally_send_trigger(mode)
 
         # Optionally terminate demonstration
@@ -1034,19 +1043,19 @@ class Experiment:
             testRespList.append(testResp)
             if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
-                                 args=(stimuli[trial["resp_options"][testResp]],
+                                 args=[stimuli[trial["resp_options"][testResp]],
                                        self.cuepractice_pos[testResp],
                                        False,
                                        correctResp == testResp,
-                                       sum(testRTList) <= goal_rt))
+                                       sum(testRTList) <= goal_rt])
         # Feedback (if incorrect)
         if trial["correct_resp"] != testRespList:
             for i, correctResp in enumerate(trial["correct_resp"]):
                 self.enqueueDraw(func=self.redrawFeedback,
-                                 args=(stimuli[trial["resp_options"][correctResp]],
+                                 args=[stimuli[trial["resp_options"][correctResp]],
                                        self.cuepractice_pos[correctResp],
                                        None,
-                                       1-i))
+                                       1-i])
 
         # Save data and clear screen
         self.optionally_send_trigger("end_trial")
@@ -1180,7 +1189,7 @@ class Experiment:
         self.drawList = []
         
         # draw cue(s)
-        self.enqueueDraw(func=self.drawCue, args=(trial, mode), unroll=False)
+        self.enqueueDraw(func=self.drawCue, args=[trial, mode], unroll=False)
 
         # send trigger
         self.optionally_send_trigger(self.currentMode)
@@ -1287,7 +1296,7 @@ class Experiment:
         self.enqueueDraw(func=self.drawEmptySquares, unroll=False)
 
         # draw stimuli
-        self.enqueueDraw(func=self.drawStimuli, args=(trial,), unroll=False)
+        self.enqueueDraw(func=self.drawStimuli, args=[trial,], unroll=False)
 
         # send trigger
         self.optionally_send_trigger("display")
@@ -1384,12 +1393,12 @@ class Experiment:
             testResp = 3
         if testResp != 99 and testResp is not None:
             self.enqueueDraw(func=self.redrawAfterResponse,
-                             args=(stimuli[testResp],
+                             args=[stimuli[testResp],
                                    self.spell_pos[testResp],
                                    True,
                                    False,
                                    False,
-                                   self.spell_pos[testResp]))
+                                   self.spell_pos[testResp]])
         if testResp == 3:
             testResp = 99
             
@@ -1408,10 +1417,9 @@ class Experiment:
 
         # Draw stimuli
         self.enqueueDraw(func=self.drawCountTarget,
-                         args=(stimuli[trial["target"]],),
+                         args=[stimuli[trial["target"]],],
                          unroll=False)
-        self.enqueueDraw(func=self.drawCountResponses,
-                         unroll=False)
+        self.enqueueDraw(func=self.drawCountResponses, unroll=False)
 
         # Send trigger
         self.optionally_send_trigger("test_count")
@@ -1427,27 +1435,27 @@ class Experiment:
             # immediate
             if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
-                                 args=(self.count_dict[str(testResp)],
+                                 args=[self.count_dict[str(testResp)],
                                        self.resp_pos[testResp],
                                        False,
                                        corResp == testResp,
                                        testRT <= goal_rt,
-                                       self.resp_pos_num[testResp]))
+                                       self.resp_pos_num[testResp]])
 
             # correct solution
             if corResp != testResp:
                 self.enqueueDraw(func=self.redrawFeedback,
-                                 args=(self.count_dict[str(corResp)],
+                                 args=[self.count_dict[str(corResp)],
                                        self.resp_pos[corResp],
-                                       self.resp_pos_num[corResp]))
+                                       self.resp_pos_num[corResp]])
         elif testResp != 99:
             self.enqueueDraw(func=self.redrawAfterResponse,
-                                 args=(self.count_dict[str(testResp)],
+                                 args=[self.count_dict[str(testResp)],
                                        self.resp_pos[testResp],
                                        True,
                                        False,
                                        False,
-                                       self.resp_pos_num[testResp]))
+                                       self.resp_pos_num[testResp]])
         core.wait(duration)
         return testRT, testResp
 
@@ -1481,10 +1489,10 @@ class Experiment:
 
         # Draw stimuli
         self.enqueueDraw(func=self.drawPositionTarget,
-                         args=(trial["target"],),
+                         args=[trial["target"],],
                          unroll=False)
         self.enqueueDraw(func=self.drawPositionResponses,
-                         args=(stimuli, trial["resp_options"],),
+                         args=[stimuli, trial["resp_options"],],
                          unroll=False)
         
         # Send trigger
@@ -1501,23 +1509,23 @@ class Experiment:
             # immediate
             if testResp != 99:
                 self.enqueueDraw(func=self.redrawAfterResponse,
-                                 args=(stimuli[trial["resp_options"][testResp]],
+                                 args=[stimuli[trial["resp_options"][testResp]],
                                        self.resp_pos[testResp],
                                        False,
                                        corResp == testResp,
-                                       testRT <= goal_rt))
+                                       testRT <= goal_rt])
             # correct solution
             if corResp != testResp:
                 self.enqueueDraw(func=self.redrawFeedback,
-                                 args=(stimuli[trial["resp_options"][corResp]],
-                                       self.resp_pos[corResp]))
+                                 args=[stimuli[trial["resp_options"][corResp]],
+                                       self.resp_pos[corResp]])
         elif testResp != 99:
             self.enqueueDraw(func=self.redrawAfterResponse,
-                             args=(stimuli[trial["resp_options"][testResp]],
+                             args=[stimuli[trial["resp_options"][testResp]],
                                    self.resp_pos[testResp],
                                    True,
                                    False,
-                                   False))
+                                   False])
 
         core.wait(duration)
         return testRT, testResp
@@ -1711,8 +1719,9 @@ class Experiment:
         stimuli = self.stim_dict.copy()
 
         # Draw stimuli
-        self.enqueueDraw(func=self.drawCountTarget, args=(
-            stimuli[trial["target"]],), unroll=False)
+        self.enqueueDraw(func=self.drawCountTarget,
+                         args=[stimuli[trial["target"]],],
+                         unroll=False)
         self.enqueueDraw(func=self.drawCatchResponses, unroll=False)
 
         # Send trigger
@@ -1737,7 +1746,7 @@ class Experiment:
         core.wait(fixation_duration)
 
         # Display input
-        self.enqueueDraw(func=self.drawStimuli, args=(trial,), unroll=False)
+        self.enqueueDraw(func=self.drawStimuli, args=[trial,], unroll=False)
         self.optionally_send_trigger("display")
         core.wait(1.0)
 
