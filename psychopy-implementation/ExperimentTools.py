@@ -1058,12 +1058,12 @@ class Experiment:
                                        1-i])
 
         # Save data and clear screen
-        self.optionally_send_trigger("end_trial")
         trial["emp_resp"] = testRespList
         trial["resp_RT"] = testRTList
         trial["cue_type"] = mode
         self.drawAllAndFlip()
         core.wait(0.2)
+        self.optionally_send_trigger("end_trial")
 
 
     def streakGoalReached(self, streak_goal=5, keys=[]):
@@ -1574,13 +1574,13 @@ class Experiment:
         self.drawAllAndFlip()
 
         # Save data
-        self.optionally_send_trigger("end_trial")
         trial["display_RT"] = display_rt
         trial["inter_RT"] = inter_rt
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         trial["cue_type"] = self.currentMode
         core.wait(0.2)
+        self.optionally_send_trigger("end_trial")
 
 
     def autonomousTrial(self, trial, self_paced=True, fixation_duration=0.3, goal_rt=2.0):
@@ -1626,9 +1626,8 @@ class Experiment:
             self.win.flip()
         else:
             choice_rt, choice_resp = 0.0, 99
-
+        
         # Save remaining data
-        self.optionally_send_trigger("end_trial")
         trial["display_RT"] = display_rt
         trial["splash_RT"] = splash_rt
         trial["inter_RT"] = inter_rt
@@ -1642,6 +1641,7 @@ class Experiment:
             trial["correct_resp"] = 99
         trial["emp_resp"] = test_resp
         core.wait(0.2)
+        self.optionally_send_trigger("end_trial")
 
     
     def autonomousBlock(self, trial_df, pause_between_runs=True, self_paced=True, goal_rt=2.0, correct_goal=10,):
@@ -1755,10 +1755,10 @@ class Experiment:
             test_rt, test_resp = self.oneBackTest(trial)
 
         # Save data
-        self.optionally_send_trigger("end_trial")
         trial["resp_RT"] = test_rt
         trial["emp_resp"] = test_resp
         core.wait(0.5)
+        self.optionally_send_trigger("end_trial")
 
 
     def generateCounterDict(self, map_type="primitive"):
