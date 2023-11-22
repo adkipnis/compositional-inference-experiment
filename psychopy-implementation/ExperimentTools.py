@@ -1205,7 +1205,7 @@ class Experiment:
                 stim.draw()
 
 
-    def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=20.0):
+    def tIndermediateResponse(self, IRClock, min_wait=0.1, max_wait=10.0):
         ''' wait for intermediate response and return RT'''
         core.wait(min_wait)
         while True:
