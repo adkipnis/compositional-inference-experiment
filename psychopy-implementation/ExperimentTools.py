@@ -1371,7 +1371,7 @@ class Experiment:
             resp.draw()
 
     
-    def tSpellOptions(self, demonstration=False, duration=0.5, goal_rt=2.0,):
+    def tSpellOptions(self, demonstration=False, wait_s=0.5):
         ''' wrapper for count test'''
         # Init
         self.drawList = []
@@ -1403,7 +1403,7 @@ class Experiment:
             testResp = 99
             
         # Wait
-        core.wait(duration)
+        core.wait(wait_s)
         return testRT, testResp
     
 
